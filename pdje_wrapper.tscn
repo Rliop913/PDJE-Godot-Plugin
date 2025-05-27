@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://byq81s15edne0"]
+
+[sub_resource type="GDScript" id="GDScript_2w4ev"]
+script/source = "extends PDJE_Wrapper
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+"
+
+[node name="PDJE_Wrapper" type="PDJE_Wrapper"]
+script = SubResource("GDScript_2w4ev")

@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "pdje_wrapper_init"
+compatibility_minimum = "4.4"
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 = "res://PDJE_Prebuilt/libPDJE_godot_wrapper.so"
+linux.release.x86_64 = "res://PDJE_Prebuilt/libPDJE_godot_wrapper.so"
+linux.debug.arm64 = "res://PDJE_Prebuilt/libPDJE_godot_wrapper.so"
+linux.release.arm64 = "res://PDJE_Prebuilt/libPDJE_godot_wrapper.so"
