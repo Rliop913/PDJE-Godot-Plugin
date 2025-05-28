@@ -1,18 +1,27 @@
 [gd_scene load_steps=2 format=3 uid="uid://byq81s15edne0"]
 
 [sub_resource type="GDScript" id="GDScript_2w4ev"]
-script/source = "extends PDJE_Wrapper
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
+script/source = "extends Node
+var engine:PDJE_Wrapper
+var player:PlayerWrapper
 # Called every frame. 'delta' is the elapsed time since the previous frame.
+func _ready() -> void:
+	engine = PDJE_Wrapper.new()
+	engine.InitEngine(\"res://tempdb.db\")
+	print(engine.SearchMusic(\"\", \"\", -1.0))
+	print(engine.SearchTrack(\"\"))
+	engine.InitPlayer(engine.FULL_PRE_RENDER, \"testmix111\", 48)
+	player = engine.GetPlayer()
+	
+	print(player.GetStatus())
+	player.Activate()
+	#player.GetStatus
+	#print(player)
+	
 func _process(delta: float) -> void:
+	print(player.GetConsumedFrames())
 	pass
 "
 
-[node name="PDJE_Wrapper" type="PDJE_Wrapper"]
+[node name="PDJE_Wrapper" type="Node"]
 script = SubResource("GDScript_2w4ev")

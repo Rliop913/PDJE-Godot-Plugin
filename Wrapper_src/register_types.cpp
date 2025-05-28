@@ -12,8 +12,13 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	ClassDB::register_class<PlayerWrapper>();
+	ClassDB::register_class<PDJE_Wrapper>();
+	
+	// GDREGISTER_RUNTIME_CLASS(PlayerWrapper);
+	
+	// GDREGISTER_RUNTIME_CLASS(PDJE_Wrapper);
 
-	GDREGISTER_RUNTIME_CLASS(PDJE_Wrapper);
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

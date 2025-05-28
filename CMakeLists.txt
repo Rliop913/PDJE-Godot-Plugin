@@ -29,10 +29,19 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
 
 
 
-add_library(PDJE_godot_wrapper SHARED ${CMAKE_SOURCE_DIR}/Wrapper_src/PDJE_Wrapper.cpp ${CMAKE_SOURCE_DIR}/Wrapper_src/register_types.cpp)
+add_library(PDJE_godot_wrapper SHARED 
+${CMAKE_SOURCE_DIR}/Wrapper_src/PDJE_Wrapper.cpp 
+${CMAKE_SOURCE_DIR}/Wrapper_src/register_types.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_src/PlayerWrapper.cpp
+)
 target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE 
 ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
+
+set_target_properties(PDJE_godot_wrapper PROPERTIES 
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
+)
+
 message(${CMAKE_BINARY_DIR})
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
