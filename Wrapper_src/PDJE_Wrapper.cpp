@@ -147,11 +147,11 @@ PDJE_Wrapper::InitEngine(String DBPath)
 Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
-	if(!engine->player.has_value()){
-		return Ref<PlayerWrapper>();
-	}
 	auto ref =  Ref<PlayerWrapper>(memnew(PlayerWrapper));
-	ref->Init(&(engine->player.value()));
+	if(!engine->player.has_value()){
+		return ref;
+	}
+	ref->Init(&(engine->player.value()), &engine.value());
 	return ref;
 }
 

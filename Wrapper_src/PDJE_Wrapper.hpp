@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/ref.hpp>
 #include "PDJE_Utils.hpp"
 #include "PlayerWrapper.hpp"
+#include "MusPannelWrapper.hpp"
 // #include "PDJE_interface.hpp"
 
 namespace godot {

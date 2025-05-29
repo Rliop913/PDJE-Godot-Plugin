@@ -4,22 +4,46 @@
 script/source = "extends Node
 var engine:PDJE_Wrapper
 var player:PlayerWrapper
+var FXPannel:FXWrapper
+var FXArgPannel:FXArgWrapper
+var MusPannel:MusPannelWrapper
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _ready() -> void:
 	engine = PDJE_Wrapper.new()
 	engine.InitEngine(\"res://tempdb.db\")
 	print(engine.SearchMusic(\"\", \"\", -1.0))
 	print(engine.SearchTrack(\"\"))
-	engine.InitPlayer(engine.FULL_PRE_RENDER, \"testmix111\", 48)
+	engine.InitPlayer(engine.HYBRID_RENDER, \"testmix111\", 48)
 	player = engine.GetPlayer()
 	
 	print(player.GetStatus())
 	player.Activate()
+	FXPannel = player.GetFXControlPannel()
+	FXPannel.CheckFXOn()
+	FXPannel.FX_ON_OFF(EnumWrapper.FILTER, true)
+	FXArgPannel = FXPannel.GetArgSetter(EnumWrapper.FILTER)
+	print(FXArgPannel.GetFXArgKeys(EnumWrapper.FILTER))
+	FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"HLswitch\", 0.0)
+	MusPannel = player.GetMusicControlPannel()
 	#player.GetStatus
 	#print(player)
-	
+var freq:float = 10000
 func _process(delta: float) -> void:
-	print(player.GetConsumedFrames())
+	if Input.is_key_pressed(KEY_J):
+		if freq > 10:
+			freq -= 10
+		print(FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"Filterfreq\", freq))
+		print(FXPannel.CheckFXOn())
+		print(freq)
+	elif Input.is_key_pressed(KEY_K):
+		if freq < 19990:
+			freq += 10
+		FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"Filterfreq\", freq)
+		print(freq)
+	elif Input.is_key_pressed(KEY_Q):
+		MusPannel.LoadMusic(\"WTC\", \"\", -1.0)
+		MusPannel.SetMusic(\"WTC\", true)
+		
 	pass
 "
 
