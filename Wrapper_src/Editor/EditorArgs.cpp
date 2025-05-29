@@ -1,0 +1,236 @@
+#include "EditorArgs.hpp"
+
+using namespace godot;
+
+
+VARIANT_ENUM_CAST(PDJE_EDITOR_ARG::EDITOR_TYPE_LIST);
+VARIANT_ENUM_CAST(PDJE_EDITOR_ARG::EDITOR_DETAIL_LIST);
+
+void
+PDJE_EDITOR_ARG::_bind_methods()
+{
+    BIND_ENUM_CONSTANT(FILTER);
+    BIND_ENUM_CONSTANT(EQ);
+    BIND_ENUM_CONSTANT(DISTORTION);
+    BIND_ENUM_CONSTANT(CONTROL);
+    BIND_ENUM_CONSTANT(VOL);
+    BIND_ENUM_CONSTANT(LOAD);
+    BIND_ENUM_CONSTANT(UNLOAD);
+    BIND_ENUM_CONSTANT(BPM_CONTROL);
+    BIND_ENUM_CONSTANT(ECHO);
+    BIND_ENUM_CONSTANT(OSC_FILTER);
+    BIND_ENUM_CONSTANT(FLANGER);
+    BIND_ENUM_CONSTANT(PHASER);
+    BIND_ENUM_CONSTANT(TRANCE);
+    BIND_ENUM_CONSTANT(PANNER);
+    BIND_ENUM_CONSTANT(BATTLE_DJ);
+    BIND_ENUM_CONSTANT(ROLL);
+    BIND_ENUM_CONSTANT(COMPRESSOR);
+    BIND_ENUM_CONSTANT(ROBOT);
+
+    BIND_ENUM_CONSTANT(HIGH);
+    BIND_ENUM_CONSTANT(MID);
+    BIND_ENUM_CONSTANT(LOW);
+    BIND_ENUM_CONSTANT(PAUSE);
+    BIND_ENUM_CONSTANT(CUE);
+    BIND_ENUM_CONSTANT(TRIM);
+    BIND_ENUM_CONSTANT(FADER);
+    BIND_ENUM_CONSTANT(TIME_STRETCH);
+    BIND_ENUM_CONSTANT(SPIN);
+    BIND_ENUM_CONSTANT(PITCH);
+    BIND_ENUM_CONSTANT(REV);
+    BIND_ENUM_CONSTANT(SCRATCH);
+    BIND_ENUM_CONSTANT(BSCRATCH);
+}
+void 
+PDJE_EDITOR_ARG::InitNoteArg(
+    String Note_Type    ,
+    String Note_Detail  ,
+    String first        ,
+    String second       ,
+    String third        ,
+    int bar          ,
+    int beat         ,
+    int separate     ,
+    int Ebar         ,
+    int Ebeat        ,
+    int Eseparate)
+{
+    note.emplace();
+    
+    note->Note_Type     = GStrToCStr(Note_Type);
+    note->Note_Detail   = GStrToCStr(Note_Detail);
+    note->first         = GStrToCStr(first);
+    note->second        = GStrToCStr(second);
+    note->third         = GStrToCStr(third);
+    note->bar           = bar;
+    note->beat          = beat;
+    note->separate      = separate;
+    note->Ebar          = Ebar;
+    note->Ebeat         = Ebeat;
+    note->Eseparate     = Eseparate;
+
+    useFlag = NOTE;
+}
+void 
+PDJE_EDITOR_ARG::InitMusicArg(
+    String musicName,
+    String bpm      ,
+    int bar         ,
+    int beat        ,
+    int separate )
+{
+    music.emplace();
+    music->musicName = GStrToCStr(musicName);
+    music->arg.bpm = GStrToCStr(bpm);
+    music->arg.bar;
+    music->arg.beat;
+    music->arg.separate;
+
+    useFlag = MUSIC;
+}
+
+void
+PDJE_EDITOR_ARG::InitMixArg(
+    int type       ,
+    int details  ,
+    int ID              ,
+    String first   ,
+    String second  ,
+    String third   ,
+    int bar       ,
+    int beat      ,
+    int separate  ,
+    int Ebar      ,
+    int Ebeat     ,
+    int Eseparate)
+{
+    mix.emplace();
+    switch (type)
+    {
+    case FILTER:
+        mix->type = TypeEnum::FILTER;
+        break;
+    case EQ:
+        mix->type = TypeEnum::EQ;
+        break;
+    case DISTORTION:
+        mix->type = TypeEnum::DISTORTION;
+        break;
+    case CONTROL:
+        mix->type = TypeEnum::CONTROL;
+        break;
+    case VOL:
+        mix->type = TypeEnum::VOL;
+        break;
+    case LOAD:
+        mix->type = TypeEnum::LOAD;
+        break;
+    case UNLOAD:
+        mix->type = TypeEnum::UNLOAD;
+        break;
+    case BPM_CONTROL:
+        mix->type = TypeEnum::BPM_CONTROL;
+        break;
+    case ECHO:
+        mix->type = TypeEnum::ECHO;
+        break;
+    case OSC_FILTER:
+        mix->type = TypeEnum::OSC_FILTER;
+        break;
+    case FLANGER:
+        mix->type = TypeEnum::FLANGER;
+        break;
+    case PHASER:
+        mix->type = TypeEnum::PHASER;
+        break;
+    case TRANCE:
+        mix->type = TypeEnum::TRANCE;
+        break;
+    case PANNER:
+        mix->type = TypeEnum::PANNER;
+        break;
+    case BATTLE_DJ:
+        mix->type = TypeEnum::BATTLE_DJ;
+        break;
+    case ROLL:
+        mix->type = TypeEnum::ROLL;
+        break;
+    case COMPRESSOR:
+        mix->type = TypeEnum::COMPRESSOR;
+        break;
+    case ROBOT:
+        mix->type = TypeEnum::ROBOT;
+        break;
+    default:
+        return;
+    }
+
+    switch (details)
+    {
+        case HIGH:
+            mix->details = DetailEnum::HIGH;
+            break;
+        case MID:
+            mix->details = DetailEnum::MID;
+            break;
+        case LOW:
+            mix->details = DetailEnum::LOW;
+            break;
+        case PAUSE:
+            mix->details = DetailEnum::PAUSE;
+            break;
+        case CUE:
+            mix->details = DetailEnum::CUE;
+            break;
+        case TRIM:
+            mix->details = DetailEnum::TRIM;
+            break;
+        case FADER:
+            mix->details = DetailEnum::FADER;
+            break;
+        case TIME_STRETCH:
+            mix->details = DetailEnum::TIME_STRETCH;
+            break;
+        case SPIN:
+            mix->details = DetailEnum::SPIN;
+            break;
+        case PITCH:
+            mix->details = DetailEnum::PITCH;
+            break;
+        case REV:
+            mix->details = DetailEnum::REV;
+            break;
+        case SCRATCH:
+            mix->details = DetailEnum::SCRATCH;
+            break;
+        case BSCRATCH:
+            mix->details = DetailEnum::BSCRATCH;
+            break;
+    
+    default:
+        return;
+    }
+    mix->ID         =  ID;
+    mix->first      =  GStrToCStr(first)   ;
+    mix->second     =  GStrToCStr(second)  ;
+    mix->third      =  GStrToCStr(third)   ;
+    mix->bar        =  bar          ;
+    mix->beat       =  beat         ;
+    mix->separate   =  separate     ;
+    mix->Ebar       =  Ebar         ;
+    mix->Ebeat      =  Ebeat        ;
+    mix->Eseparate  =  Eseparate    ;
+
+    useFlag = MIX;
+}
+
+void
+PDJE_EDITOR_ARG::InitKeyValueArg(String key, String value)
+{
+    kv.emplace();
+    kv->first = GStrToCStr(key);
+    kv->second = GStrToCStr(value);
+    useFlag = KV;
+}
+

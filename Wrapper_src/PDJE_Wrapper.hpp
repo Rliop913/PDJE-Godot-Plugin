@@ -7,6 +7,7 @@
 #include "PDJE_Utils.hpp"
 #include "PlayerWrapper.hpp"
 #include "MusPannelWrapper.hpp"
+#include "EditorWrapper.hpp"
 // #include "PDJE_interface.hpp"
 
 namespace godot {
@@ -31,10 +32,12 @@ public:
 		FULL_MANUAL_RENDER
 	};
 	bool InitEngine(String DBPath);
+	bool InitEditor(String authName, String authEmail, String projectRoot);
 	Array SearchMusic(String Title, String composer, double bpm = -1.0);
 	Array SearchTrack(String Title);
 	bool InitPlayer(PDJE_PLAY_MODE mode, String trackTitle, unsigned int FrameBufferSize);
 	Ref<PlayerWrapper> GetPlayer();
+	Ref<EditorWrapper> GetEditor();
 	PDJE_Wrapper();
 	~PDJE_Wrapper();
 

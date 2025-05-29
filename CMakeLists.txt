@@ -37,6 +37,10 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/PlayerWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/FXWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/EnumWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/MusPannelWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorArgs.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
+
 
 
 
@@ -54,6 +58,8 @@ message(${CMAKE_BINARY_DIR})
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
+    ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
+    
     ${CMAKE_BINARY_DIR}/godot-cpp/gen/include
     ${CMAKE_BINARY_DIR}/godot-cpp/gen/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/include

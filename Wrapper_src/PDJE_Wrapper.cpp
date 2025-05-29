@@ -37,19 +37,6 @@ PDJE_Wrapper::~PDJE_Wrapper() {
 	// Add your cleanup here.
 }
 
-// std::string
-// PDJE_Wrapper::GStrToCStr(const String& gstr)
-// {
-// 	auto gbin = gstr.to_utf8_buffer();
-// 	return std::string(reinterpret_cast<const char*>(gbin.ptr()),gbin.size());
-// }
-
-// String
-// PDJE_Wrapper::CStrToGStr(const std::string& cstr)
-// {
-// 	return godot::String::utf8(cstr.c_str());
-// }
-
 
 Array 
 PDJE_Wrapper::SearchTrack(String Title)
@@ -144,6 +131,22 @@ PDJE_Wrapper::InitEngine(String DBPath)
 	return engine.has_value();
 }
 
+bool
+PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
+{
+
+	if(!engine.has_value()){
+		return false;
+	}
+	auto gpath = ProjectSettings::get_singleton()->globalize_path(projectRoot);
+	return
+	engine->InitEditor(
+		GStrToCStr(authName),
+		GStrToCStr(authEmail),
+		GStrToCStr(gpath)
+	);
+}
+
 Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
@@ -155,20 +158,21 @@ PDJE_Wrapper::GetPlayer()
 	return ref;
 }
 
+Ref<EditorWrapper>
+PDJE_Wrapper::GetEditor()
+{
+	auto ref =  Ref<EditorWrapper>(memnew(EditorWrapper));
+	if(!engine->editor.has_value()){
+		return ref;
+	}
+	
+	ref->Init(&(engine->editor.value()), &engine.value());
+	return ref;
+}
 void
 PDJE_Wrapper::_ready()
 {
 	
-	// engine->player->GetMusicControlPannel()->
-	// auto rootpath = godot::OS::get_singleton()->get_executable_path();
-	// godot::print_line(rootpath);
-	// auto rootbin = rootpath.to_utf8_buffer();
-	// std::string cppstring(reinterpret_cast<const char*>(rootbin.ptr()),rootbin.size());
-	// auto pathh = std::filesystem::path(cppstring);
-	// pathh /= "testpath.sqlite";
-	// godot::print_line(String(pathh.c_str()));
-	// engine.emplace(pathh);
-	// engine->InitPlayer(PLAY_MODE::FULL_MANUAL_RENDER)
 }
 
 void 
