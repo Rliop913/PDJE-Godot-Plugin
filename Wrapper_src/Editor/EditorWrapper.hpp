@@ -7,7 +7,6 @@ namespace godot{
 
 
 class EditorWrapper : public RefCounted{
-    
     GDCLASS(EditorWrapper, RefCounted)
 
 private:
@@ -16,7 +15,12 @@ private:
 protected:
     static void _bind_methods();
 public:
-
+    enum FLAG_EDITOR_OBJ{
+        NOTE = 0,
+        KV,
+        MIX,
+        MUSIC
+    };
     bool AddLine(PDJE_EDITOR_ARG arg);
     bool EditMusicFirstBar(String title, String firstBar);
     int deleteLine(
@@ -34,56 +38,41 @@ public:
 
     Dictionary getAll();
 
+    bool Undo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
 
-//todo-implement below
-template<typename EDIT_ARG_TYPE> 
-bool Undo();
+    bool Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
+    
+    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, git_oid* commitID);
+    
+    String GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
 
-template<typename EDIT_ARG_TYPE> 
-bool Undo(const std::string& musicName);
+    bool UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName="");
 
-
-template<typename EDIT_ARG_TYPE> 
-bool Redo();
-
-template<typename EDIT_ARG_TYPE> 
-bool Redo(const std::string& musicName);
-
-template<typename EDIT_ARG_TYPE> 
-bool Go(const std::string& branchName, git_oid* commitID);
-
-template<typename EDIT_ARG_TYPE> 
-std::string GetLogWithJSONGraph();
-
-template<typename EDIT_ARG_TYPE> 
-std::string GetLogWithJSONGraph(const std::string& musicName);
-
-
-template<typename EDIT_ARG_TYPE> 
-bool UpdateLog();
-
-template<typename EDIT_ARG_TYPE> 
-bool UpdateLog(const std::string& branchName);
-
-template<typename EDIT_ARG_TYPE> 
-DiffResult GetDiff(const gitwrap::commit& oldTimeStamp, const gitwrap::commit& newTimeStamp);
-
-nj& operator[](const std::string& key){
-    return E_obj->KVHandler.second[key];
-}
-
-///WARNING!!! THERE IS NO TURNING BACK
-std::string DESTROY_PROJECT();
-
-bool ConfigNewMusic(const std::string& NewMusicName, 
-                    const std::string& composer,
-                    const std::string& musicPath,
-                    const std::string& firstBar = "0");
-
-
-bool Open(const std::string& projectPath);
+    ///WARNING!!! THERE IS NO TURNING BACK
+    String DESTROY_PROJECT();
+    bool Open(String projectPath);
 
     void Init(editorObject* refobj, PDJE* refengine);
+
+    bool ConfigNewMusic(String NewMusicName, 
+                        String composer,
+                        String musicPath,
+                        String firstBar = "0");
+    DiffResult GetDiff(const int _FLAG_EDITOR_OBJ, const gitwrap::commit& oldTimeStamp, const gitwrap::commit& newTimeStamp);
+//todo-implement below
+
+
+
+
+
+// nj& operator[](const std::string& key){
+//     return E_obj->KVHandler.second[key];
+// }
+
+
+
+
+
     EditorWrapper() = default;
     ~EditorWrapper() = default;
 };

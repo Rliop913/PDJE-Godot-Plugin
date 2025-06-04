@@ -46,8 +46,9 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 
 
 )
-target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE 
-${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
+
+target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE godot::cpp
+# ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
 set_target_properties(PDJE_godot_wrapper PROPERTIES 

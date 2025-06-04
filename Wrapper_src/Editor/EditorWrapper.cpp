@@ -244,7 +244,7 @@ EditorWrapper::getAll()
             musicline["musicName"]  = CStrToGStr( margs.musicName);
             musicline["bar"]        = static_cast<int>(margs.arg.bar);
             musicline["beat"]       = static_cast<int>(margs.arg.beat);
-            musicline["bpm"]        = static_cast<int>(margs.arg.bpm);
+            musicline["bpm"]        = CStrToGStr(margs.arg.bpm);
             musicline["separate"]   = static_cast<int>(margs.arg.separate);
             musics.push_back(musicline);
         }

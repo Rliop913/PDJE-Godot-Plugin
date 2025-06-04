@@ -6,7 +6,7 @@ namespace godot{
 
 
 
-class EnumWrapper : RefCounted{
+class EnumWrapper : public RefCounted{
     GDCLASS(EnumWrapper, RefCounted)
 private:
 
