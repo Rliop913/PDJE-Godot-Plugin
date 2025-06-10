@@ -1,6 +1,7 @@
 #pragma once
 
 #include <godot_cpp/classes/ref.hpp>
+
 #include "PDJE_interface.hpp"
 #include "EditorArgs.hpp"
 namespace godot{
@@ -36,13 +37,17 @@ public:
 
     bool pushToRootDB(String musicTitle, String musicComposer);
 
+    bool getMixDatas(Callable mixCallback);
+    bool getMusicDatas(Callable musicCallback);
+    bool getNoteDatas(Callable noteCallback);
+    bool getKeyValueDatas(Callable KVCallback);
     Dictionary getAll();
 
     bool Undo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
 
     bool Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
     
-    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, git_oid* commitID);
+    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID);
     
     String GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
 
@@ -58,7 +63,8 @@ public:
                         String composer,
                         String musicPath,
                         String firstBar = "0");
-    DiffResult GetDiff(const int _FLAG_EDITOR_OBJ, const gitwrap::commit& oldTimeStamp, const gitwrap::commit& newTimeStamp);
+                        
+    DiffResult GetDiff(const int _FLAG_EDITOR_OBJ, String oldNodeID, String newNodeID);
 //todo-implement below
 
 

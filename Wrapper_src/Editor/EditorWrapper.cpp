@@ -108,12 +108,88 @@ EditorWrapper::pushToRootDB(String musicTitle, String musicComposer)
         GStrToCStr(musicComposer));
 }
 
+
+bool
+EditorWrapper::getMixDatas(Callable mixCallback)
+{
+    if(edit == nullptr) return false;
+    if(!mixCallback.is_valid()) return false;
+    edit->getAll<EDIT_ARG_MIX>(
+        [&mixCallback](const EDIT_ARG_MIX& margs){
+            mixCallback.call(
+                static_cast<int>(margs.type),
+                margs.ID,
+                static_cast<int>(margs.details),
+                CStrToGStr(margs.first),
+                CStrToGStr(margs.second),
+                CStrToGStr(margs.third),
+                static_cast<int>(margs.bar),
+                static_cast<int>(margs.beat),
+                static_cast<int>(margs.separate),
+                static_cast<int>(margs.Ebar),
+                static_cast<int>(margs.Ebeat),
+                static_cast<int>(margs.Eseparate)
+            );
+        }
+    );
+    return true;
+}
+
+bool
+EditorWrapper::getMusicDatas(Callable musicCallback)
+{
+    if(edit == nullptr) return false;
+    if(!musicCallback.is_valid()) return false;
+    edit->getAll<EDIT_ARG_MUSIC>(
+        [&musicCallback](const EDIT_ARG_MUSIC& margs){
+            musicCallback.call(
+                CStrToGStr( margs.musicName),
+                static_cast<int>(margs.arg.bar),
+                static_cast<int>(margs.arg.beat),
+                CStrToGStr(margs.arg.bpm),
+                static_cast<int>(margs.arg.separate)
+            );
+        }
+    );
+    return true;
+}
+
+
+bool
+EditorWrapper::getNoteDatas(Callable noteCallback)
+{
+    if(edit == nullptr) return false;
+    if(!noteCallback.is_valid()) return false;
+    edit->getAll<EDIT_ARG_NOTE>(
+        [&noteCallback](const EDIT_ARG_NOTE& margs){
+            noteCallback.call(
+                CStrToGStr(margs.Note_Type),
+                CStrToGStr(margs.Note_Detail),
+                CStrToGStr(margs.first),
+                CStrToGStr(margs.second),
+                CStrToGStr(margs.third),
+                static_cast<int>(margs.bar),
+                static_cast<int>(margs.beat),
+                static_cast<int>(margs.separate),
+                static_cast<int>(margs.Ebar),
+                static_cast<int>(margs.Ebeat),
+                static_cast<int>(margs.Eseparate)
+            );
+        }
+    );
+    return true;
+}
+
+
+
+
 Dictionary
 EditorWrapper::getAll()
 {
     if(edit == nullptr) return Dictionary();
     Dictionary result;
     Array mixs;
+    
     edit->getAll<EDIT_ARG_MIX>(
         [&mixs](const EDIT_ARG_MIX& margs){
             Dictionary mixline;
@@ -281,3 +357,4 @@ EditorWrapper::getAll()
     result["musicDatas"] = keyValues;
     return result;
 }
+

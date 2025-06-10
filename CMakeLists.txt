@@ -13,19 +13,124 @@ set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets
 project(PDJE_godot_wrapper VERSION 0.1.0 LANGUAGES C CXX)
 
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/godot-cpp)
-add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
-# include(ExternalProject)
+include(ExternalProject)
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_ID_LOWER)
+#-------------------
 
-# ExternalProject_Add(PDJE
-#     SOURCE_DIR ${CMAKE_SOURCE_DIR}/Project_DJ_Engine
-#     CMAKE_ARGS
-#         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/pdje
-#         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-#     BUILD_COMMAND ${CMAKE_COMMAND} --build . --parallel 12
-#     INSTALL_DIR ${CMAKE_BINARY_DIR}/_install/pdje
-# )
-# add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
+set(ARCH_LIST
+    x86_32
+    x86_64
+    arm32
+    arm64
+    rv64
+    ppc32
+    ppc64
+    wasm32
+)
+
+
+function(godot_arch_name OUTVAR)
+    # Special case for macos universal builds that target both x86_64 and arm64
+    if(DEFINED CMAKE_OSX_ARCHITECTURES)
+        if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES AND "arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+            set(${OUTVAR} "universal" PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
+    # Direct match early out.
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" ARCH)
+    if(ARCH IN_LIST ARCH_LIST)
+        set(${OUTVAR} "${ARCH}" PARENT_SCOPE)
+        return()
+    endif()
+
+    # Known aliases
+    set(x86_64 "w64;amd64;x86-64")
+    set(arm32 "armv7;armv7-a")
+    set(arm64 "armv8;arm64v8;aarch64;armv8-a")
+    set(rv64 "rv;riscv;riscv64")
+    set(ppc32 "ppcle;ppc")
+    set(ppc64 "ppc64le")
+
+    if(ARCH IN_LIST x86_64)
+        set(${OUTVAR} "x86_64" PARENT_SCOPE)
+    elseif(ARCH IN_LIST arm32)
+        set(${OUTVAR} "arm32" PARENT_SCOPE)
+    elseif(ARCH IN_LIST arm64)
+        set(${OUTVAR} "arm64" PARENT_SCOPE)
+    elseif(ARCH IN_LIST rv64)
+        set(${OUTVAR} "rv64" PARENT_SCOPE)
+    elseif(ARCH IN_LIST ppc32)
+        set(${OUTVAR} "ppc32" PARENT_SCOPE)
+    elseif(ARCH IN_LIST ppc64)
+        set(${OUTVAR} "ppc64" PARENT_SCOPE)
+    elseif(ARCH MATCHES "86")
+        # Catches x86, i386, i486, i586, i686, etc.
+        set(${OUTVAR} "x86_32" PARENT_SCOPE)
+    else()
+        # Default value is whatever the processor is.
+        set(${OUTVAR} ${CMAKE_SYSTEM_PROCESSOR} PARENT_SCOPE)
+    endif()
+endfunction()
+
+
+
+#-------------------
+godot_arch_name(ARCH_LOWER)
+# string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" ARCH_LOWER)
+
+set(GODOTCPP_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
+string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+
+if(WIN32)
+
+ExternalProject_Add(godot_cpp_external
+  PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${GODOTCPP_PATH}
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
+  BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
+  CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
+    # -DCMAKE_BUILD_TYPE=$<CONFIG>
+
+    INSTALL_COMMAND ""
+    # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
+    # BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<CONFIG>.${ARCH_LOWER}${LIB_END}"
+)
+else()
+
+ExternalProject_Add(godot_cpp_external
+  PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${GODOTCPP_PATH}
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
+  BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
+  CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
+    INSTALL_COMMAND ""
+    # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
+    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
+)
+endif()
+add_library(godotcppEx STATIC IMPORTED GLOBAL)
+
+
+if(WIN32)
+
+set_target_properties(godotcppEx PROPERTIES
+  IMPORTED_CONFIGURATIONS Debug Release
+  IMPORTED_LOCATION_DEBUG "${CMAKE_BINARY_DIR}/_build/godotcpp/.../bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_debug.${ARCH_LOWER}.lib"
+  IMPORTED_LOCATION_RELEASE "${CMAKE_BINARY_DIR}/_build/godotcpp/.../bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_release.${ARCH_LOWER}.lib"
+)
+
+else()
+set_target_properties(godotcppEx PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
+)
+endif()
+add_dependencies(godotcppEx godot_cpp_external)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
 
 
 
@@ -46,8 +151,8 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 
 
 )
-
-target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE godot::cpp
+target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
+target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
@@ -66,65 +171,6 @@ target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/godot-cpp/include
     ${CMAKE_SOURCE_DIR}/godot-cpp/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/gdextension
-    
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine/EFFECT
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine/FAUST_VALS
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine/MUSIC_CTR
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine/MiniaudioObjects
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/MixMachine/INTERPOLATOR
-  
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/ManualMix
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/audioRender/ManualMix/ManualFausts
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db/Capnp/CapnpBinary
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db/Capnp/Translators
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db/Capnp/Translators/MixTranslator
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db/Capnp/Translators/MusicTranslator
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/db/Capnp/Translators/NoteTranslator
-  
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/third_party/Capnp
-    
-    #   ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/third_party/SoundTouch/soundtouch_include
-    #   ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/third_party/Faust/compiled
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/third_party/Faust/manual_compiled
-    
-  
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/input
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/input/linux
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/input/macos
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/MainObjects
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/MainObjects/audioPlayer
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/MainObjects/editorObject
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/MainObjects/tempDBObject
-    
-  
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/interface
-  
-  
-  
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/edit
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Branch
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Commit
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Add
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Blame
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Diff
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/GitWrap/Log
-    
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/featureWrapper/JSONWrap
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/objects
-    # ${CMAKE_SOURCE_DIR}/Project_DJ_Engine/include/editor/renderer
     
     
     

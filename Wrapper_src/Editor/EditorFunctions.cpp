@@ -52,23 +52,32 @@ EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music)
     }
 }
 
+constexpr int GIT_OID_BUFFER_SIZE = GIT_OID_HEXSZ + 1;
+
 bool
 EditorWrapper::Go(
     const int _FLAG_EDITOR_OBJ, 
     String branchName, 
-    git_oid* commitID)
+    String NodeID)
 {
     if(edit == nullptr) return false;
+    git_oid commit_oid;
+    int error = git_oid_fromstr(&commit_oid, GStrToCStr(NodeID).c_str());
+    if (error != 0) {
+        const git_error* err = git_error_last();
+        godot::print_error("Failed to get nodeid: " + String(err->message));
+        return false;
+    }
     switch (_FLAG_EDITOR_OBJ)
     {
     case 0:
-        return edit->Go<EDIT_ARG_NOTE>(GStrToCStr(branchName), commitID);
+        return edit->Go<EDIT_ARG_NOTE>(GStrToCStr(branchName), &commit_oid);
     case 1:
-        return edit->Go<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName), commitID);
+        return edit->Go<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName), &commit_oid);
     case 2:
-        return edit->Go<EDIT_ARG_MIX>(GStrToCStr(branchName), commitID);
+        return edit->Go<EDIT_ARG_MIX>(GStrToCStr(branchName), &commit_oid);
     case 3:
-        return edit->Go<EDIT_ARG_MUSIC>(GStrToCStr(branchName), commitID);
+        return edit->Go<EDIT_ARG_MUSIC>(GStrToCStr(branchName), &commit_oid);
     default:
         return false;
     }
@@ -168,21 +177,39 @@ EditorWrapper::ConfigNewMusic(
 DiffResult
 EditorWrapper::GetDiff(
     const int _FLAG_EDITOR_OBJ, 
-    const gitwrap::commit& oldTimeStamp, 
-    const gitwrap::commit& newTimeStamp)
+    String oldNodeID, 
+    String newNodeID)
 {
     if(edit == nullptr) return DiffResult();
-    switch (_FLAG_EDITOR_OBJ)
-    {
-    case 0:
-        return edit->GetDiff<EDIT_ARG_NOTE>(oldTimeStamp, newTimeStamp);
-    case 1:
-        return edit->GetDiff<EDIT_ARG_KEY_VALUE>(oldTimeStamp, newTimeStamp);
-    case 2:
-        return edit->GetDiff<EDIT_ARG_MIX>(oldTimeStamp, newTimeStamp);
-    case 3:
-        return edit->GetDiff<EDIT_ARG_MUSIC>(oldTimeStamp, newTimeStamp);
-    default:
+    git_oid old_oid;
+    git_oid new_oid;
+    
+    int olderror = git_oid_fromstr(&old_oid, GStrToCStr(oldNodeID).c_str());
+    int newerror = git_oid_fromstr(&new_oid, GStrToCStr(newNodeID).c_str());
+    
+
+    if (olderror != 0 || newerror != 0) {
+        const git_error* err = git_error_last();
+        godot::print_error("Failed to get nodeid: " + String(err->message));
         return DiffResult();
     }
+    return DiffResult();
+//     auto old = gitwrap::commit(
+// ,   old_oid,
+//     edit-
+//     );
+    // if(edit == nullptr) return DiffResult();
+    // switch (_FLAG_EDITOR_OBJ)
+    // {
+    // case 0:
+    //     return edit->GetDiff<EDIT_ARG_NOTE>(oldTimeStamp, newTimeStamp);
+    // case 1:
+    //     return edit->GetDiff<EDIT_ARG_KEY_VALUE>(oldTimeStamp, newTimeStamp);
+    // case 2:
+    //     return edit->GetDiff<EDIT_ARG_MIX>(oldTimeStamp, newTimeStamp);
+    // case 3:
+    //     return edit->GetDiff<EDIT_ARG_MUSIC>(oldTimeStamp, newTimeStamp);
+    // default:
+    //     return DiffResult();
+    // }
 }
