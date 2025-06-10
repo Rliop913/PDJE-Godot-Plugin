@@ -1,7 +1,7 @@
 set(cmake_cxx_standard 20)
 set(cmake_cxx_flags -std=c++20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+add_compile_definitions(TYPED_METHOD_BIND)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_minimum_required(VERSION 3.10.0)
@@ -91,8 +91,12 @@ ExternalProject_Add(godot_cpp_external
   BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
   CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
+    -DTYPED_METHOD_BIND:BOOL=ON
     # -DCMAKE_BUILD_TYPE=$<CONFIG>
-
+    -DCMAKE_C_FLAGS_DEBUG:STRING="/MDd"
+    -DCMAKE_CXX_FLAGS_DEBUG:STRING="/MDd"
+    -DCMAKE_C_FLAGS_RELEASE:STRING="/MD"
+    -DCMAKE_CXX_FLAGS_RELEASE:STRING="/MD"
     INSTALL_COMMAND ""
     # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
     # BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<CONFIG>.${ARCH_LOWER}${LIB_END}"
@@ -118,9 +122,10 @@ add_library(godotcppEx STATIC IMPORTED GLOBAL)
 if(WIN32)
 
 set_target_properties(godotcppEx PROPERTIES
-  IMPORTED_CONFIGURATIONS Debug Release
-  IMPORTED_LOCATION_DEBUG "${CMAKE_BINARY_DIR}/_build/godotcpp/.../bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_debug.${ARCH_LOWER}.lib"
-  IMPORTED_LOCATION_RELEASE "${CMAKE_BINARY_DIR}/_build/godotcpp/.../bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_release.${ARCH_LOWER}.lib"
+    # IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<IF:$<CONFIG:Debug,Release>:debug,release>.${ARCH_LOWER}.lib"
+  IMPORTED_CONFIGURATIONS "Debug;Release"
+  IMPORTED_LOCATION_DEBUG "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_debug.${ARCH_LOWER}.lib"
+  IMPORTED_LOCATION_RELEASE "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_release.${ARCH_LOWER}.lib"
 )
 
 else()
@@ -151,7 +156,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 
 
 )
-target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
+# target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
@@ -160,14 +165,14 @@ set_target_properties(PDJE_godot_wrapper PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
 )
 
-message(${CMAKE_BINARY_DIR})
+message(${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include)
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
     
-    ${CMAKE_BINARY_DIR}/godot-cpp/gen/include
-    ${CMAKE_BINARY_DIR}/godot-cpp/gen/include/godot_cpp
+    ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include
+    ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/include
     ${CMAKE_SOURCE_DIR}/godot-cpp/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/gdextension
