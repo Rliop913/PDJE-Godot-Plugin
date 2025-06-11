@@ -13,7 +13,7 @@ void PDJE_Wrapper::_bind_methods() {
 		&PDJE_Wrapper::InitPlayer);
 	ClassDB::bind_method(
 		D_METHOD("SearchMusic", "Title", "composer", "bpm"),
-		&PDJE_Wrapper::SearchMusic);
+		&PDJE_Wrapper::SearchMusic, DEFVAL(-1.0));
 	ClassDB::bind_method(
 		D_METHOD("SearchTrack", "Title"),
 		&PDJE_Wrapper::SearchTrack);

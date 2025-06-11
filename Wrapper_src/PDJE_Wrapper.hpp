@@ -18,8 +18,6 @@ class PDJE_Wrapper : public Node {
 	GDCLASS(PDJE_Wrapper, Node)
 
 private:
-	// std::string GStrToCStr(const String& gstr);
-	// String CStrToGStr(const std::string& cstr);
 	std::optional<PDJE> engine;
 
 protected:

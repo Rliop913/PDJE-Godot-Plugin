@@ -11,21 +11,21 @@ EditorWrapper::Init(editorObject* refobj, PDJE* refengine)
 }
 
 bool
-EditorWrapper::AddLine(PDJE_EDITOR_ARG arg)
+EditorWrapper::AddLine(Ref<PDJE_EDITOR_ARG> arg)
 {
     if(edit == nullptr) return false;
-    switch (arg.useFlag)
+    switch (arg->useFlag)
     {
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::FLAG_NULL:
         return false;
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::NOTE:
-        return edit->AddLine(arg.note.value());
+        return edit->AddLine(arg->note.value());
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::MUSIC:
-        return edit->AddLine(arg.music.value());
+        return edit->AddLine(arg->music.value());
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::MIX:
-        return edit->AddLine(arg.mix.value());
+        return edit->AddLine(arg->mix.value());
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::KV:
-        return edit->AddLine(arg.kv.value());
+        return edit->AddLine(arg->kv.value());
     default:
         return false;
     }
@@ -45,23 +45,23 @@ EditorWrapper::EditMusicFirstBar(String title, String firstBar)
 
 int 
 EditorWrapper::deleteLine(
-    PDJE_EDITOR_ARG obj,
+    Ref<PDJE_EDITOR_ARG> obj,
     bool skipType_if_mix_obj, 
     bool skipDetail_if_mix_obj)
 {
     if(edit == nullptr) return 0;
-    switch (obj.useFlag)
+    switch (obj->useFlag)
     {
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::FLAG_NULL:
         return 0;
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::NOTE:
-        return edit->deleteLine(obj.note.value());
+        return edit->deleteLine(obj->note.value());
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::MUSIC:
-        return edit->deleteLine(obj.music.value());
+        return edit->deleteLine(obj->music.value());
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::MIX:
-        return edit->deleteLine(obj.mix.value(), skipType_if_mix_obj, skipDetail_if_mix_obj);
+        return edit->deleteLine(obj->mix.value(), skipType_if_mix_obj, skipDetail_if_mix_obj);
     case PDJE_EDITOR_ARG::FLAG_WHAT_TO_USE::KV:
-        return edit->deleteLine(obj.kv.value());
+        return edit->deleteLine(obj->kv.value());
     default:
         return 0;
     }
@@ -90,7 +90,7 @@ EditorWrapper::demoPlayInit(unsigned int frameBufferSize, String trackTitle)
 }
 
 bool
-EditorWrapper::pushTrackToRootDB(String& trackTitleToPush)
+EditorWrapper::pushTrackToRootDB(String trackTitleToPush)
 {
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
@@ -180,7 +180,21 @@ EditorWrapper::getNoteDatas(Callable noteCallback)
     return true;
 }
 
-
+bool
+EditorWrapper::getKeyValueDatas(Callable KVCallback)
+{
+    if(edit == nullptr) return false;
+    if(!KVCallback.is_valid()) return false;
+    edit->getAll<EDIT_ARG_KEY_VALUE>(
+        [&KVCallback](const EDIT_ARG_KEY_VALUE& margs){
+            KVCallback.call(
+                CStrToGStr(margs.first),
+                CStrToGStr(margs.second)
+            );
+        }
+    );
+    return true;
+}
 
 
 Dictionary

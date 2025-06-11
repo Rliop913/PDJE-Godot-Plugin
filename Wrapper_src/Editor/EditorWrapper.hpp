@@ -22,10 +22,10 @@ public:
         MIX,
         MUSIC
     };
-    bool AddLine(PDJE_EDITOR_ARG arg);
+    bool AddLine(Ref<PDJE_EDITOR_ARG> arg);
     bool EditMusicFirstBar(String title, String firstBar);
     int deleteLine(
-        PDJE_EDITOR_ARG obj,
+        Ref<PDJE_EDITOR_ARG> obj,
         bool skipType_if_mix_obj, 
         bool skipDetail_if_mix_obj);
 
@@ -33,7 +33,7 @@ public:
 
     bool demoPlayInit(unsigned int frameBufferSize, String trackTitle);
 
-    bool pushTrackToRootDB(String& trackTitleToPush);
+    bool pushTrackToRootDB(String trackTitleToPush);
 
     bool pushToRootDB(String musicTitle, String musicComposer);
 
@@ -47,7 +47,7 @@ public:
 
     bool Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
     
-    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID);
+    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, String TimeNodeID);
     
     String GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
 
@@ -64,20 +64,11 @@ public:
                         String musicPath,
                         String firstBar = "0");
                         
-    DiffResult GetDiff(const int _FLAG_EDITOR_OBJ, String oldNodeID, String newNodeID);
-//todo-implement below
-
-
-
-
-
-// nj& operator[](const std::string& key){
-//     return E_obj->KVHandler.second[key];
-// }
-
-
-
-
+    Dictionary GetDiff(
+        const int _FLAG_EDITOR_OBJ, 
+        String musicName_if_flag_music, 
+        String oldTimeNodeID, 
+        String newTimeNodeID);
 
     EditorWrapper() = default;
     ~EditorWrapper() = default;
