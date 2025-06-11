@@ -1,3 +1,4 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
 PDJE_Prebuilt/libPDJE_godot_wrapper.so filter=lfs diff=lfs merge=lfs -text
+PDJE_Prebuilt/libPDJE_godot_wrapper.so filter=lfs diff=lfs merge=lfs -text
