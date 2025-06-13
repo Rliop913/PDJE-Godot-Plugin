@@ -9,157 +9,25 @@ set(HWY_ENABLE_TESTS OFF)
 set(CAPNP_BUILD_TESTS OFF)
 set(BUILD_TESTING OFF CACHE BOOL "Disable testing")
 set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets" FORCE)
-if(MSVC)
+
+if(WIN32)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC runtime" FORCE)
 endif()
-
 
 project(PDJE_godot_wrapper VERSION 0.1.0 LANGUAGES C CXX)
 
 
 include(ExternalProject)
+set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
+
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_ID_LOWER)
-#-------------------
 
-set(ARCH_LIST
-    x86_32
-    x86_64
-    arm32
-    arm64
-    rv64
-    ppc32
-    ppc64
-    wasm32
-)
-
-
-function(godot_arch_name OUTVAR)
-    # Special case for macos universal builds that target both x86_64 and arm64
-    if(DEFINED CMAKE_OSX_ARCHITECTURES)
-        if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES AND "arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
-            set(${OUTVAR} "universal" PARENT_SCOPE)
-            return()
-        endif()
-    endif()
-
-    # Direct match early out.
-    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" ARCH)
-    if(ARCH IN_LIST ARCH_LIST)
-        set(${OUTVAR} "${ARCH}" PARENT_SCOPE)
-        return()
-    endif()
-
-    # Known aliases
-    set(x86_64 "w64;amd64;x86-64")
-    set(arm32 "armv7;armv7-a")
-    set(arm64 "armv8;arm64v8;aarch64;armv8-a")
-    set(rv64 "rv;riscv;riscv64")
-    set(ppc32 "ppcle;ppc")
-    set(ppc64 "ppc64le")
-
-    if(ARCH IN_LIST x86_64)
-        set(${OUTVAR} "x86_64" PARENT_SCOPE)
-    elseif(ARCH IN_LIST arm32)
-        set(${OUTVAR} "arm32" PARENT_SCOPE)
-    elseif(ARCH IN_LIST arm64)
-        set(${OUTVAR} "arm64" PARENT_SCOPE)
-    elseif(ARCH IN_LIST rv64)
-        set(${OUTVAR} "rv64" PARENT_SCOPE)
-    elseif(ARCH IN_LIST ppc32)
-        set(${OUTVAR} "ppc32" PARENT_SCOPE)
-    elseif(ARCH IN_LIST ppc64)
-        set(${OUTVAR} "ppc64" PARENT_SCOPE)
-    elseif(ARCH MATCHES "86")
-        # Catches x86, i386, i486, i586, i686, etc.
-        set(${OUTVAR} "x86_32" PARENT_SCOPE)
-    else()
-        # Default value is whatever the processor is.
-        set(${OUTVAR} ${CMAKE_SYSTEM_PROCESSOR} PARENT_SCOPE)
-    endif()
-endfunction()
-
-
-
-#-------------------
-godot_arch_name(ARCH_LOWER)
-# string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" ARCH_LOWER)
-
-set(GODOTCPP_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
-message("WINDOWS BUILD TYPE: ${CMAKE_CFG_INTDIR}")
 string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+include(cmake/godotExternalSetter.cmake)
 
-if(WIN32)
-
-set(GODOTCPP_PATH  "${PLATFORM_ID_LOWER}-debug")
-ExternalProject_Add(godot_cpp_external_debug
-  PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${GODOTCPP_PATH}
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
-  BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
-  CMAKE_ARGS
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
-    -DTYPED_METHOD_BIND:BOOL=ON
-    -DGODOTCPP_DEBUG_CRT:BOOL=ON
-    -DGODOTCPP_USE_STATIC_CPP:BOOL=OFF
-    -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL
-
-    BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Debug
-    INSTALL_COMMAND ""
-    # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
-    # BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<CONFIG>.${ARCH_LOWER}${LIB_END}"
-)
-set(GODOTCPP_PATH  "${PLATFORM_ID_LOWER}-release")
-ExternalProject_Add(godot_cpp_external_release
-  PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${GODOTCPP_PATH}
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
-  BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
-  CMAKE_ARGS
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
-    -DTYPED_METHOD_BIND:BOOL=ON
-    -DGODOTCPP_DEBUG_CRT=OFF
-    -DGODOTCPP_USE_STATIC_CPP=OFF
-    -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
-    -DGODOTCPP_TARGET=template_release
-
-    BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release
-    INSTALL_COMMAND ""
-    # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
-    # BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<CONFIG>.${ARCH_LOWER}${LIB_END}"
-)
-
-else()
-
-ExternalProject_Add(godot_cpp_external
-  PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${GODOTCPP_PATH}
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
-  BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}
-  CMAKE_ARGS
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${GODOTCPP_PATH}
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-
-    INSTALL_COMMAND ""
-    # -DCMAKE_CXX_FLAGS=${MY_CUSTOM_FLAGS}
-    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
-)
-endif()
-add_library(godotcppEx STATIC IMPORTED GLOBAL)
+# include(cmake/pdjeExternalSetter.cmake)
 
 
-if(WIN32)
-
-set_target_properties(godotcppEx PROPERTIES
-    # IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_$<IF:$<CONFIG:Debug,Release>:debug,release>.${ARCH_LOWER}.lib"
-  IMPORTED_CONFIGURATIONS "Debug;Release"
-  IMPORTED_LOCATION_DEBUG "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_ID_LOWER}-debug/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_debug.${ARCH_LOWER}.lib"
-  IMPORTED_LOCATION_RELEASE "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_ID_LOWER}-release/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_release.${ARCH_LOWER}.lib"
-    MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
-)
-add_dependencies(godotcppEx godot_cpp_external_debug godot_cpp_external_release)
-else()
-set_target_properties(godotcppEx PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
-)
-add_dependencies(godotcppEx godot_cpp_external)
-endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
 
@@ -183,7 +51,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 )
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
-target_link_libraries(PDJE_godot_wrapper PRIVATE PDJE godotcppEx
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
@@ -191,7 +59,7 @@ set_target_properties(PDJE_godot_wrapper PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
 )
 if(WIN32)
-set_target_properties(PDJE PROPERTIES 
+set_target_properties(PDJE_dynamic PROPERTIES 
     MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
 )
 set_target_properties(PDJE_godot_wrapper PROPERTIES 
@@ -199,21 +67,19 @@ set_target_properties(PDJE_godot_wrapper PROPERTIES
     MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
 )
 endif()
-message(${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include)
+message(${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include)
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
     
-    ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include
-    ${CMAKE_BINARY_DIR}/_build/godotcpp/${GODOTCPP_PATH}/gen/include/godot_cpp
+    ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include
+    ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/include
     ${CMAKE_SOURCE_DIR}/godot-cpp/include/godot_cpp
     ${CMAKE_SOURCE_DIR}/godot-cpp/gdextension
     
     
     
-  
-  
   
 )

@@ -13,3 +13,7 @@ config_version=5
 config/name="Godot_DJ_Engine_Plugin"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[dotnet]
+
+project/assembly_name="Godot_DJ_Engine_Plugin"
