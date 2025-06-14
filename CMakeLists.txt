@@ -66,6 +66,7 @@ set_target_properties(PDJE_godot_wrapper PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
     MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
 )
+target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
 message(${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include)
 target_include_directories( PDJE_godot_wrapper PRIVATE
