@@ -57,15 +57,10 @@ target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
 
 set_target_properties(PDJE_godot_wrapper PROPERTIES 
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
 )
 if(WIN32)
-set_target_properties(PDJE_dynamic PROPERTIES 
-    MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
-)
-set_target_properties(PDJE_godot_wrapper PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
-    MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
-)
+
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
 message(${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include)

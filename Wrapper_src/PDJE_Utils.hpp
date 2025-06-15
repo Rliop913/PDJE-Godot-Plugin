@@ -2,6 +2,8 @@
 
 #include <string>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
+#include <filesystem>
 using namespace godot;
 
 inline 
@@ -16,4 +18,13 @@ String
 CStrToGStr(const std::string& cstr)
 {
     return godot::String::utf8(cstr.c_str());
+}
+
+inline
+std::string
+GpathToCPath(const String& gpath)
+{
+    auto GlobalGpath = ProjectSettings::get_singleton()->globalize_path(gpath);
+    std::string Cpath = GStrToCStr(GlobalGpath);
+    return std::filesystem::path(Cpath).string();
 }

@@ -41,6 +41,50 @@ PDJE_EDITOR_ARG::_bind_methods()
     BIND_ENUM_CONSTANT(REV);
     BIND_ENUM_CONSTANT(SCRATCH);
     BIND_ENUM_CONSTANT(BSCRATCH);
+    ClassDB::bind_method(
+		D_METHOD("InitNoteArg", 
+        "Note_Type"    ,
+        "Note_Detail"  ,
+        "first"        ,
+        "second"       ,
+        "third"        ,
+        "bar"          ,
+        "beat"         ,
+        "separate"     ,
+        "Ebar"         ,
+        "Ebeat"        ,
+        "Eseparate"),
+		&PDJE_EDITOR_ARG::InitNoteArg);
+
+    ClassDB::bind_method(
+		D_METHOD("InitMusicArg",
+        "musicName" ,
+        "bpm"       ,
+        "bar"       ,
+        "beat"      ,
+        "separate"),
+		&PDJE_EDITOR_ARG::InitMusicArg);
+    ClassDB::bind_method(
+		D_METHOD("InitMixArg",
+        "enum_editor_type"      ,
+        "enum_editor_details"   ,
+        "ID"                    ,
+        "first"                 ,
+        "second"                ,
+        "third"                 ,
+        "bar"                   ,
+        "beat"                  ,
+        "separate"              ,
+        "Ebar"                  ,
+        "Ebeat"                 ,
+        "Eseparate"),
+		&PDJE_EDITOR_ARG::InitMixArg);
+    ClassDB::bind_method(
+		D_METHOD("InitKeyValueArg",
+        "key",
+        "value"),
+		&PDJE_EDITOR_ARG::InitKeyValueArg);
+
 }
 void 
 PDJE_EDITOR_ARG::InitNoteArg(

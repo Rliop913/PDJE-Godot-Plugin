@@ -1,6 +1,7 @@
 #include "PDJE_Wrapper.hpp"
 #include <godot_cpp/core/class_db.hpp>
 #include <filesystem>
+
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_Wrapper::PDJE_PLAY_MODE);
@@ -23,7 +24,12 @@ void PDJE_Wrapper::_bind_methods() {
 	ClassDB::bind_method(
 		D_METHOD("GetPlayer"),
 		&PDJE_Wrapper::GetPlayer);
-		
+	ClassDB::bind_method(
+		D_METHOD("InitEditor",  "authName",  "authEmail",  "projectRoot"),
+		&PDJE_Wrapper::InitEditor);
+	ClassDB::bind_method(
+		D_METHOD("GetEditor"),
+		&PDJE_Wrapper::GetEditor);
 	
 	
 }
@@ -123,10 +129,9 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode, String trackTitle, unsigned int Fr
 bool
 PDJE_Wrapper::InitEngine(String DBPath)
 {
-	auto gpath = ProjectSettings::get_singleton()->globalize_path(DBPath);
 	
 	engine.emplace(
-		GStrToCStr(gpath)
+		GpathToCPath(DBPath)
 	);
 	return engine.has_value();
 }
@@ -138,12 +143,12 @@ PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
 	if(!engine.has_value()){
 		return false;
 	}
-	auto gpath = ProjectSettings::get_singleton()->globalize_path(projectRoot);
+	
 	return
 	engine->InitEditor(
 		GStrToCStr(authName),
 		GStrToCStr(authEmail),
-		GStrToCStr(gpath)
+		GpathToCPath(projectRoot)
 	);
 }
 

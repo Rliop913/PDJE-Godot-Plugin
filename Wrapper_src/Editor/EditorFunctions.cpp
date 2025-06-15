@@ -214,8 +214,8 @@ bool
 EditorWrapper::Open(String projectPath)
 {
     if(edit == nullptr) return false;
-    auto gpath = ProjectSettings::get_singleton()->globalize_path(projectPath);
-    return edit->Open(GStrToCStr(gpath));
+    
+    return edit->Open(GpathToCPath(projectPath));
 }
 
 bool
@@ -230,7 +230,7 @@ EditorWrapper::ConfigNewMusic(
     edit->ConfigNewMusic(
         GStrToCStr(NewMusicName),
         GStrToCStr(composer),
-        GStrToCStr(musicPath),
+        GpathToCPath(musicPath),
         GStrToCStr(firstBar)
     );
 }
