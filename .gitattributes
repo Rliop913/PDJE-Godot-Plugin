@@ -5,3 +5,4 @@ PDJE_Prebuilt/libPDJE_godot_wrapper.so filter=lfs diff=lfs merge=lfs -text
 PDJE_Prebuilt/Release/PDJE_godot_wrapper.dll filter=lfs diff=lfs merge=lfs -text
 PDJE_Prebuilt/Debug/ filter=lfs diff=lfs merge=lfs -text
 PDJE_Prebuilt/Release/ filter=lfs diff=lfs merge=lfs -text
+PDJE_Prebuilt/Debug/libPDJE_godot_wrapper.so filter=lfs diff=lfs merge=lfs -text

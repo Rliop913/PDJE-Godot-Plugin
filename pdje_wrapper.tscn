@@ -11,7 +11,7 @@ var editor:EditorWrapper
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 
 func find_demo_musics():
-	engine.InitEditor(\"\", \"\", \"res://DemoSandbox\")
+	engine.InitEditor(\"test\", \"testsss\", \"res://DemoSandbox\")
 	editor = engine.GetEditor()
 	#editor.
 	print(editor.ConfigNewMusic(\"testMiku\", \"Camellia\", \"res://Project_DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))
@@ -23,10 +23,10 @@ func find_demo_musics():
 	second_music_args.InitMusicArg(\"test1234\", \"134\", 0, 0, 4)
 	
 	print(editor.AddLine(first_music_args))
-	print(editor.AddLine(second_music_args))
-	
+	#print(editor.AddLine(second_music_args))
+	editor.render(\"testTrack\")
 	print(editor.pushToRootDB(\"testMiku\", \"Camellia\"))
-	print(editor.pushToRootDB(\"test1234\", \"Camellia\"))
+	#print(editor.pushToRootDB(\"test1234\", \"Camellia\"))
 	
 	#editor.AddLine()
 	#print(editor.ConfigNewMusic(\"miku\", \"Camellia\", \"res://DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))
@@ -44,6 +44,13 @@ func _ready() -> void:
 		pass
 	else:
 		print(engine.SearchMusic(\"\",\"\",-1.0))
+		engine.InitPlayer(PDJE_Wrapper.FULL_MANUAL_RENDER, \"null\", 48)
+		player = engine.GetPlayer()
+		print(player.Activate())
+		var mpan:MusPannelWrapper = player.GetMusicControlPannel()
+		print(mpan.LoadMusic(\"testMiku\", \"Camellia\", 138.0))
+		print(mpan.SetMusic(\"testMiku\", true))
+		print(mpan.GetLoadedMusicList())
 		#
 	#print(engine.SearchTrack(\"\"))
 	#engine.InitPlayer(engine.HYBRID_RENDER, \"testmix111\", 48)

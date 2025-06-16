@@ -103,5 +103,5 @@ MusPannelWrapper::LoadMusic(String Title, String composer, double bpm)
         bpm
     );
     if(muslist.empty()) return -2;
-    return musref->LoadMusic(muslist.front());
+    return musref->LoadMusic(engine->DBROOT.value(), muslist.front());
 }

@@ -127,9 +127,9 @@ PDJE_EDITOR_ARG::InitMusicArg(
     music.emplace();
     music->musicName = GStrToCStr(musicName);
     music->arg.bpm = GStrToCStr(bpm);
-    music->arg.bar;
-    music->arg.beat;
-    music->arg.separate;
+    music->arg.bar = bar;
+    music->arg.beat = beat;
+    music->arg.separate = separate;
 
     useFlag = MUSIC;
 }

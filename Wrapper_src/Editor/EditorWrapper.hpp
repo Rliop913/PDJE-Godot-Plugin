@@ -13,6 +13,7 @@ class EditorWrapper : public RefCounted{
 private:
     editorObject* edit;
     PDJE* engine;
+    bool Flag_is_rendered = false;
 protected:
     static void _bind_methods();
 public:

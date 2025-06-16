@@ -56,8 +56,8 @@ target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
 )
 
 set_target_properties(PDJE_godot_wrapper PROPERTIES 
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/Release"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/Debug"
 )
 if(WIN32)
 

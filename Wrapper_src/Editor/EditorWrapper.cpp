@@ -73,6 +73,7 @@ EditorWrapper::render(String trackTitle)
 {
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
+    Flag_is_rendered = true;
     return
     edit->render(
         GStrToCStr(trackTitle),
@@ -94,6 +95,7 @@ EditorWrapper::pushTrackToRootDB(String trackTitleToPush)
 {
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
+    if(!Flag_is_rendered) return false;
     return edit->pushToRootDB(engine->DBROOT.value(), GStrToCStr(trackTitleToPush));
 }
 
@@ -102,6 +104,7 @@ EditorWrapper::pushToRootDB(String musicTitle, String musicComposer)
 {
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
+    if(!Flag_is_rendered) return false;
     return
     edit->pushToRootDB(engine->DBROOT.value(),
         GStrToCStr(musicTitle),
