@@ -70,7 +70,7 @@ public:
         String musicName_if_flag_music, 
         String oldTimeNodeID, 
         String newTimeNodeID);
-
+    String GetLastErr();
     EditorWrapper() = default;
     ~EditorWrapper() = default;
 };

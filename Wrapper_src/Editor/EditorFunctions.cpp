@@ -73,6 +73,16 @@ EditorWrapper::_bind_methods()
     ClassDB::bind_method(
 		D_METHOD("GetDiff", "_FLAG_EDITOR_OBJ", "musicName_if_flag_music", "oldTimeNodeID", "newTimeNodeID"),
 		&EditorWrapper::GetDiff);
+    ClassDB::bind_method(
+		D_METHOD("GetLastErr"),
+		&EditorWrapper::GetLastErr);
+}
+
+String
+EditorWrapper::GetLastErr()
+{
+    if(edit == nullptr) return "";
+    return CStrToGStr(edit->RECENT_ERR);
 }
 
 
@@ -220,7 +230,7 @@ EditorWrapper::Open(String projectPath)
 
 bool
 EditorWrapper::ConfigNewMusic(
-    String NewMusicName, 
+    String NewMusicName,
     String composer,
     String musicPath,
     String firstBar)
@@ -331,3 +341,4 @@ EditorWrapper::GetDiff(
     if(Dresult.has_value()) return DiffResultToDictionary(Dresult.value());
     else return Dictionary();
 }
+

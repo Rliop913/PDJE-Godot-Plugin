@@ -21,10 +21,10 @@ CStrToGStr(const std::string& cstr)
 }
 
 inline
-std::string
+std::u8string
 GpathToCPath(const String& gpath)
 {
     auto GlobalGpath = ProjectSettings::get_singleton()->globalize_path(gpath);
     std::string Cpath = GStrToCStr(GlobalGpath);
-    return std::filesystem::path(Cpath).string();
+    return std::filesystem::path(Cpath).generic_u8string();
 }
