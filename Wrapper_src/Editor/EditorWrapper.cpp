@@ -38,8 +38,8 @@ EditorWrapper::EditMusicFirstBar(String title, String firstBar)
     if(edit == nullptr) return false;
     return
     edit->AddLine(
-        GStrToCStr(title),
-        GStrToCStr(firstBar)
+        GStrToCUStr(title),
+        GStrToCUStr(firstBar)
     );
 }
 
@@ -76,7 +76,7 @@ EditorWrapper::render(String trackTitle)
     Flag_is_rendered = true;
     return
     edit->render(
-        GStrToCStr(trackTitle),
+        GStrToCUStr(trackTitle),
         engine->DBROOT.value()
     );
 }
@@ -86,7 +86,7 @@ EditorWrapper::demoPlayInit(unsigned int frameBufferSize, String trackTitle)
 {
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
-    edit->demoPlayInit(engine->player, frameBufferSize, GStrToCStr(trackTitle));
+    edit->demoPlayInit(engine->player, frameBufferSize, GStrToCUStr(trackTitle));
     return true;
 }
 
@@ -96,7 +96,7 @@ EditorWrapper::pushTrackToRootDB(String trackTitleToPush)
     if(edit == nullptr) return false;
     if(engine == nullptr) return false;
     if(!Flag_is_rendered) return false;
-    return edit->pushToRootDB(engine->DBROOT.value(), GStrToCStr(trackTitleToPush));
+    return edit->pushToRootDB(engine->DBROOT.value(), GStrToCUStr(trackTitleToPush));
 }
 
 bool
@@ -107,8 +107,8 @@ EditorWrapper::pushToRootDB(String musicTitle, String musicComposer)
     if(!Flag_is_rendered) return false;
     return
     edit->pushToRootDB(engine->DBROOT.value(),
-        GStrToCStr(musicTitle),
-        GStrToCStr(musicComposer));
+        GStrToCUStr(musicTitle),
+        GStrToCUStr(musicComposer));
 }
 
 

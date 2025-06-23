@@ -52,7 +52,7 @@ PDJE_Wrapper::SearchTrack(String Title)
 	}
 	auto res =
 	engine->SearchTrack(
-		GStrToCStr(Title)
+		GStrToCUStr(Title)
 	);
 
 	Array trackList;
@@ -72,8 +72,8 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
 	}
 	auto res =
 	engine->SearchMusic(
-		GStrToCStr(Title),
-		GStrToCStr(composer),
+		GStrToCUStr(Title),
+		GStrToCUStr(composer),
 		bpm
 	);
 	
@@ -96,7 +96,7 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode, String trackTitle, unsigned int Fr
 	if(!engine.has_value()){
 		return false;
 	}
-	auto td = engine->SearchTrack(GStrToCStr(trackTitle));
+	auto td = engine->SearchTrack(GStrToCUStr(trackTitle));
 	if(td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER){
 		return false;
 	}

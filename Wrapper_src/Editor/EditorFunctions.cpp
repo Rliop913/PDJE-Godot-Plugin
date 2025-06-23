@@ -99,7 +99,7 @@ EditorWrapper::Undo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music)
     case 2:
         return edit->Undo<EDIT_ARG_MIX>();
     case 3:
-        return edit->Undo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music));
+        return edit->Undo<EDIT_ARG_MUSIC>(GStrToCUStr(musicName_if_flag_music));
     default:
         return false;
     }
@@ -118,7 +118,7 @@ EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music)
     case 2:
         return edit->Redo<EDIT_ARG_MIX>();
     case 3:
-        return edit->Redo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music));
+        return edit->Redo<EDIT_ARG_MUSIC>(GStrToCUStr(musicName_if_flag_music));
     default:
         return false;
     }
@@ -168,7 +168,7 @@ EditorWrapper::GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName_
     case 2:
         return CStrToGStr(edit->GetLogWithJSONGraph<EDIT_ARG_MIX>());
     case 3:
-        return CStrToGStr(edit->GetLogWithJSONGraph<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music)));
+        return CStrToGStr(edit->GetLogWithJSONGraph<EDIT_ARG_MUSIC>(GStrToCUStr(musicName_if_flag_music)));
     default:
         return "no match flag";
     }
@@ -185,28 +185,28 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
             return edit->UpdateLog<EDIT_ARG_NOTE>();
         }
         else{
-            return edit->UpdateLog<EDIT_ARG_NOTE>(GStrToCStr(branchName));
+            return edit->UpdateLog<EDIT_ARG_NOTE>(GStrToCUStr(branchName));
         }
     case 1:
         if(branchName.is_empty()){
             return edit->UpdateLog<EDIT_ARG_KEY_VALUE>();
         }
         else{
-            return edit->UpdateLog<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName));
+            return edit->UpdateLog<EDIT_ARG_KEY_VALUE>(GStrToCUStr(branchName));
         }
     case 2:
         if(branchName.is_empty()){
             return edit->UpdateLog<EDIT_ARG_MIX>();
         }
         else{
-            return edit->UpdateLog<EDIT_ARG_MIX>(GStrToCStr(branchName));
+            return edit->UpdateLog<EDIT_ARG_MIX>(GStrToCUStr(branchName));
         }
     case 3:
         if(branchName.is_empty()){
             return edit->UpdateLog<EDIT_ARG_MUSIC>();
         }
         else{
-            return edit->UpdateLog<EDIT_ARG_MUSIC>(GStrToCStr(branchName));
+            return edit->UpdateLog<EDIT_ARG_MUSIC>(GStrToCUStr(branchName));
         }
     default:
         return false;
@@ -238,10 +238,10 @@ EditorWrapper::ConfigNewMusic(
     if(edit == nullptr) return false;
     return 
     edit->ConfigNewMusic(
-        GStrToCStr(NewMusicName),
-        GStrToCStr(composer),
+        GStrToCUStr(NewMusicName),
+        GStrToCUStr(composer),
         GpathToCPath(musicPath),
-        GStrToCStr(firstBar)
+        GStrToCUStr(firstBar)
     );
 }
 
@@ -328,7 +328,7 @@ EditorWrapper::GetDiff(
         }
         break;
     case 3:
-        baseRepo = edit->getMusicRepo(GStrToCStr(musicName_if_flag_music));
+        baseRepo = edit->getMusicRepo(GStrToCUStr(musicName_if_flag_music));
         CommitSetter(oldC, newC, baseRepo);
         if(oldC.has_value() && newC.has_value()){
             Dresult = edit->GetDiff<EDIT_ARG_MUSIC>(oldC.value(), newC.value());

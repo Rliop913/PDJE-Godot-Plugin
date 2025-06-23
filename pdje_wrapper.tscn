@@ -26,7 +26,7 @@ func find_demo_musics():
 	#print(editor.AddLine(second_music_args))
 	editor.render(\"testTrack\")
 	print(editor.pushToRootDB(\"testMiku\", \"Camellia\"))
-	#print(editor.pushToRootDB(\"test1234\", \"Camellia\"))
+	print(editor.pushToRootDB(\"test1234\", \"Camellia\"))
 	
 	#editor.AddLine()
 	#print(editor.ConfigNewMusic(\"miku\", \"Camellia\", \"res://DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))

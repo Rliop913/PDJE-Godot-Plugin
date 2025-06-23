@@ -43,7 +43,7 @@ MusPannelWrapper::getFXHandle(String title)
     auto ref = Ref<FXWrapper>(memnew(FXWrapper));
     if(musref == nullptr) return ref;
 
-    ref->Init(musref->getFXHandle(GStrToCStr(title)));
+    ref->Init(musref->getFXHandle(GStrToCUStr(title)));
     return ref;
 }
 
@@ -58,7 +58,7 @@ MusPannelWrapper::CueMusic(String title, String newPos)
         std::stoull(
             GStrToCStr(newPos)
         );
-        return musref->CueMusic(GStrToCStr(title), posull);
+        return musref->CueMusic(GStrToCUStr(title), posull);
     }
     catch(...){
         return false;
@@ -69,14 +69,14 @@ bool
 MusPannelWrapper::SetMusic(String title, const bool onOff)
 {
     if(musref == nullptr) return false;
-    return musref->SetMusic(GStrToCStr(title), onOff);
+    return musref->SetMusic(GStrToCUStr(title), onOff);
 }
 
 bool
 MusPannelWrapper::UnloadMusic(String title)
 {
     if(musref == nullptr) return false;
-    return musref->UnloadMusic(GStrToCStr(title));
+    return musref->UnloadMusic(GStrToCUStr(title));
 }
 
 Array
@@ -98,8 +98,8 @@ MusPannelWrapper::LoadMusic(String Title, String composer, double bpm)
     if(engine == nullptr) return -1;
     auto muslist =
     engine->SearchMusic(
-        GStrToCStr(Title),
-        GStrToCStr(composer),
+        GStrToCUStr(Title),
+        GStrToCUStr(composer),
         bpm
     );
     if(muslist.empty()) return -2;
