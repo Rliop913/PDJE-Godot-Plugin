@@ -18,7 +18,7 @@ public:
     void Init(FXControlPannel* refobj);
     bool CheckFXOn();
     bool FX_ON_OFF(int fx, bool onoff);
-    Ref<FXArgWrapper> GetArgSetter(int fx);
+    Ref<FXArgWrapper> GetArgSetter();
     ~FXWrapper() = default;
     
 };

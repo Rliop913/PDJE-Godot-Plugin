@@ -18,7 +18,7 @@ FXWrapper::_bind_methods()
 		D_METHOD("FX_ON_OFF", "fx", "onoff"),
 		&FXWrapper::FX_ON_OFF);
     ClassDB::bind_method(
-		D_METHOD("GetArgSetter", "fx"),
+		D_METHOD("GetArgSetter"),
 		&FXWrapper::GetArgSetter);
     
 }
@@ -43,11 +43,10 @@ FXWrapper::FX_ON_OFF(int fx, bool onoff)
 
 
 Ref<FXArgWrapper>
-FXWrapper::GetArgSetter(int fx)
+FXWrapper::GetArgSetter()
 {
     auto ref = Ref<FXArgWrapper>(memnew(FXArgWrapper));
     if(fxpannel == nullptr) return ref;
-    FXList ofx = static_cast<FXList>(fx);
     ref->Init(fxpannel);
     return ref;
 }

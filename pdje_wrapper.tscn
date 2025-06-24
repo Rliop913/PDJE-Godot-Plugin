@@ -1,4 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://byq81s15edne0"]
+[gd_scene load_steps=7 format=3 uid="uid://byq81s15edne0"]
+
+[ext_resource type="PackedScene" uid="uid://cr2o05trb3oxl" path="res://obj.tscn" id="1_jix4m"]
 
 [sub_resource type="GDScript" id="GDScript_2w4ev"]
 script/source = "extends Node
@@ -8,6 +10,8 @@ var FXPannel:FXWrapper
 var FXArgPannel:FXArgWrapper
 var MusPannel:MusPannelWrapper
 var editor:EditorWrapper
+var MusFXPannel:FXWrapper
+var MusFXArgPannel:FXArgWrapper
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 
 func find_demo_musics():
@@ -23,68 +27,143 @@ func find_demo_musics():
 	second_music_args.InitMusicArg(\"test1234\", \"134\", 0, 0, 4)
 	
 	print(editor.AddLine(first_music_args))
-	#print(editor.AddLine(second_music_args))
 	editor.render(\"testTrack\")
 	print(editor.pushToRootDB(\"testMiku\", \"Camellia\"))
 	print(editor.pushToRootDB(\"test1234\", \"Camellia\"))
 	
-	#editor.AddLine()
-	#print(editor.ConfigNewMusic(\"miku\", \"Camellia\", \"res://DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))
-	#editor.pushToRootDB(\"ドクヘビ\", \"Camellia\")
-	#editor.DESTROY_PROJECT()
-	pass
 	
 
 
-func _ready() -> void:
+func _init() -> void:
 	engine = PDJE_Wrapper.new()
 	engine.InitEngine(\"res://demodb.db\")
 	if engine.SearchMusic(\"\",\"\",-1.0).is_empty():
 		find_demo_musics()
 		pass
-	else:
-		print(engine.SearchMusic(\"\",\"\",-1.0))
-		engine.InitPlayer(PDJE_Wrapper.FULL_MANUAL_RENDER, \"null\", 48)
-		player = engine.GetPlayer()
-		print(player.Activate())
-		var mpan:MusPannelWrapper = player.GetMusicControlPannel()
-		print(mpan.LoadMusic(\"testMiku\", \"Camellia\", 138.0))
-		print(mpan.SetMusic(\"testMiku\", true))
-		print(mpan.GetLoadedMusicList())
-		#
-	#print(engine.SearchTrack(\"\"))
-	#engine.InitPlayer(engine.HYBRID_RENDER, \"testmix111\", 48)
-	#player = engine.GetPlayer()
-	#
-	#print(player.GetStatus())
-	#player.Activate()
-	#FXPannel = player.GetFXControlPannel()
-	#FXPannel.CheckFXOn()
-	#FXPannel.FX_ON_OFF(EnumWrapper.FILTER, true)
-	#FXArgPannel = FXPannel.GetArgSetter(EnumWrapper.FILTER)
-	#print(FXArgPannel.GetFXArgKeys(EnumWrapper.FILTER))
-	#FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"HLswitch\", 0.0)
-	#MusPannel = player.GetMusicControlPannel()
-	##player.GetStatus
-	##print(player)
-#var freq:float = 10000
-#func _process(delta: float) -> void:
-	#if Input.is_key_pressed(KEY_J):
-		#if freq > 10:
-			#freq -= 10
-		#print(FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"Filterfreq\", freq))
-		#print(FXPannel.CheckFXOn())
-		#print(freq)
-	#elif Input.is_key_pressed(KEY_K):
-		#if freq < 19990:
-			#freq += 10
-		#FXArgPannel.SetFXArg(EnumWrapper.FILTER, \"Filterfreq\", freq)
-		#print(freq)
-	#elif Input.is_key_pressed(KEY_Q):
-		#MusPannel.LoadMusic(\"WTC\", \"\", -1.0)
-		#MusPannel.SetMusic(\"WTC\", true)
+	
+	print(engine.SearchMusic(\"\",\"\",-1.0))
+	engine.InitPlayer(PDJE_Wrapper.FULL_MANUAL_RENDER, \"null\", 48)
+	player = engine.GetPlayer()
+	print(player.Activate())
+	MusPannel = player.GetMusicControlPannel()
+	print(MusPannel.LoadMusic(\"testMiku\", \"Camellia\", 138.0))
+	print(MusPannel.SetMusic(\"testMiku\", true))
+	print(MusPannel.GetLoadedMusicList())
+	MusFXPannel = MusPannel.getFXHandle(\"testMiku\")
+	MusFXArgPannel = MusFXPannel.GetArgSetter()
+	print(MusFXArgPannel.GetFXArgKeys(EnumWrapper.FILTER))
 		
-	pass
+
+
+func filter_toggle(toggled_on: bool) -> void:
+	MusFXPannel.FX_ON_OFF(EnumWrapper.FILTER, toggled_on)
+	MusFXArgPannel.SetFXArg(EnumWrapper.FILTER, \"HLswitch\", 1)
+	pass # Replace with function body.
+
+
+func filter_range(value_changed: bool) -> void:
+	pass # Replace with function body.
+
+
+func filter_value_changed(value: float) -> void:
+	MusFXArgPannel.SetFXArg(EnumWrapper.FILTER, \"Filterfreq\", value)
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_o1a8x"]
+script/source = "extends VBoxContainer
+var FX:FXWrapper
+var FXArg:FXArgWrapper
+var Root:MusPannelWrapper
+
+func _ready() -> void:
+	FX = $\"../../../../../\".MusPannel.getFXHandle(\"testMiku\")
+	FXArg =	FX.GetArgSetter()
+	FXArg.SetFXArg(EnumWrapper.FLANGER, \"bps\", 138.0 / 240.0)
+	#print(FXArg.GetFXArgKeys(EnumWrapper.FLANGER))
+	
+	#FX.FX_ON_OFF(EnumWrapper.ROBOT, toggled_on)
+
+func _on_check_button_toggled(toggled_on: bool) -> void:
+	FX.FX_ON_OFF(EnumWrapper.FLANGER, toggled_on)
+	pass # Replace with function body.
+
+
+func _on_h_slider_value_changed(value: float) -> void:
+	FXArg.SetFXArg(EnumWrapper.FLANGER, \"FlangerDryWet\", value)
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_jix4m"]
+script/source = "extends VBoxContainer
+
+var FX:FXWrapper
+var FXArg:FXArgWrapper
+var Root:MusPannelWrapper
+func _ready() -> void:
+	FX = $\"../../../../../\".MusPannel.getFXHandle(\"testMiku\")
+	FXArg =	FX.GetArgSetter()
+	FXArg.SetFXArg(EnumWrapper.ROBOT, \"RobotDryWet\", 1)
+	#print(FXArg.GetFXArgKeys(EnumWrapper.ROBOT))
+	
+
+func _on_check_button_toggled(toggled_on: bool) -> void:
+	FX.FX_ON_OFF(EnumWrapper.ROBOT, toggled_on)
+
+func _on_h_slider_value_changed(value: float) -> void:
+	FXArg.SetFXArg(EnumWrapper.ROBOT, \"robotFreq\", value)
+"
+
+[sub_resource type="GDScript" id="GDScript_lv5w7"]
+script/source = "extends VBoxContainer
+var FX:FXWrapper
+var FXArg:FXArgWrapper
+var Root:MusPannelWrapper
+func _ready() -> void:
+	FX = $\"../../../../../\".MusPannel.getFXHandle(\"testMiku\")
+	FXArg =	FX.GetArgSetter()
+	
+	#print(FXArg.GetFXArgKeys(EnumWrapper.ROLL))
+	FX.FX_ON_OFF(EnumWrapper.ROLL, true)
+
+func _on_check_button_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		FXArg.SetFXArg(EnumWrapper.ROLL, \"RollPower\", 1)
+	else:
+		FXArg.SetFXArg(EnumWrapper.ROLL, \"RollPower\", 0)
+	pass # Replace with function body.
+
+
+func _on_h_slider_value_changed(value: float) -> void:
+	FXArg.SetFXArg(EnumWrapper.ROLL, \"RollBpm\", value)
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_soao4"]
+script/source = "extends VBoxContainer
+var FX:FXWrapper
+var FXArg:FXArgWrapper
+var Root:MusPannelWrapper
+func _ready() -> void:
+	FX = $\"../../../../../\".MusPannel.getFXHandle(\"testMiku\")
+	FXArg = FX.GetArgSetter()
+	#Root = $\"../../../../../\".MusPannel
+	#Root.set
+	print(FXArg.GetFXArgKeys(EnumWrapper.TRANCE))
+	FXArg.SetFXArg(EnumWrapper.TRANCE, \"gain\", 0.5)
+	FXArg.SetFXArg(EnumWrapper.TRANCE, \"TranceDryWet\", 1)
+	#FX.FX_ON_OFF(EnumWrapper.ROBOT, true)
+	
+
+
+func _on_check_button_toggled(toggled_on: bool) -> void:
+	FX.FX_ON_OFF(EnumWrapper.TRANCE, toggled_on)
+	pass # Replace with function body.
+
+
+func _on_h_slider_value_changed(value: float) -> void:
+	FXArg.SetFXArg(EnumWrapper.TRANCE, \"bps\", value / 60.0)
+	pass # Replace with function body.
 "
 
 [node name="PDJE_Wrapper" type="Node"]
@@ -97,3 +176,142 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="obj" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj/HBoxContainer" index="0"]
+text = "COMPRESSOR"
+
+[node name="obj2" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj2/HBoxContainer" index="0"]
+text = "EQ"
+
+[node name="obj3" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj3/HBoxContainer" index="0"]
+text = "FILTER"
+
+[node name="HSlider" parent="Control/Panel/HBoxContainer/VBoxContainer/obj3" index="1"]
+max_value = 10000.0
+step = 100.0
+
+[node name="obj4" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+script = SubResource("GDScript_o1a8x")
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj4/HBoxContainer" index="0"]
+text = "FLANGER"
+
+[node name="HSlider" parent="Control/Panel/HBoxContainer/VBoxContainer/obj4" index="1"]
+max_value = 1.0
+step = 0.1
+
+[node name="obj5" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj5/HBoxContainer" index="0"]
+text = "OCS_FILTER"
+
+[node name="obj6" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj6/HBoxContainer" index="0"]
+text = "PANNER"
+
+[node name="obj7" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj7/HBoxContainer" index="0"]
+text = "PHASER"
+
+[node name="obj8" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+script = SubResource("GDScript_jix4m")
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj8/HBoxContainer" index="0"]
+text = "ROBOT"
+
+[node name="HSlider" parent="Control/Panel/HBoxContainer/VBoxContainer/obj8" index="1"]
+min_value = 10.0
+value = 10.0
+
+[node name="obj9" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+script = SubResource("GDScript_lv5w7")
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj9/HBoxContainer" index="0"]
+text = "ROLL"
+
+[node name="HSlider" parent="Control/Panel/HBoxContainer/VBoxContainer/obj9" index="1"]
+min_value = 138.0
+max_value = 690.0
+step = 138.0
+value = 138.0
+
+[node name="obj10" parent="Control/Panel/HBoxContainer/VBoxContainer" instance=ExtResource("1_jix4m")]
+layout_mode = 2
+script = SubResource("GDScript_soao4")
+
+[node name="Label" parent="Control/Panel/HBoxContainer/VBoxContainer/obj10/HBoxContainer" index="0"]
+text = "TRANCE"
+
+[node name="HSlider" parent="Control/Panel/HBoxContainer/VBoxContainer/obj10" index="1"]
+min_value = 138.0
+max_value = 552.0
+step = 138.0
+value = 138.0
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="toggled" from="Control/Panel/HBoxContainer/VBoxContainer/obj3/HBoxContainer/CheckButton" to="." method="filter_toggle"]
+[connection signal="drag_ended" from="Control/Panel/HBoxContainer/VBoxContainer/obj3/HSlider" to="." method="filter_range"]
+[connection signal="value_changed" from="Control/Panel/HBoxContainer/VBoxContainer/obj3/HSlider" to="." method="filter_value_changed"]
+[connection signal="toggled" from="Control/Panel/HBoxContainer/VBoxContainer/obj4/HBoxContainer/CheckButton" to="Control/Panel/HBoxContainer/VBoxContainer/obj4" method="_on_check_button_toggled"]
+[connection signal="value_changed" from="Control/Panel/HBoxContainer/VBoxContainer/obj4/HSlider" to="Control/Panel/HBoxContainer/VBoxContainer/obj4" method="_on_h_slider_value_changed"]
+[connection signal="toggled" from="Control/Panel/HBoxContainer/VBoxContainer/obj8/HBoxContainer/CheckButton" to="Control/Panel/HBoxContainer/VBoxContainer/obj8" method="_on_check_button_toggled"]
+[connection signal="value_changed" from="Control/Panel/HBoxContainer/VBoxContainer/obj8/HSlider" to="Control/Panel/HBoxContainer/VBoxContainer/obj8" method="_on_h_slider_value_changed"]
+[connection signal="toggled" from="Control/Panel/HBoxContainer/VBoxContainer/obj9/HBoxContainer/CheckButton" to="Control/Panel/HBoxContainer/VBoxContainer/obj9" method="_on_check_button_toggled"]
+[connection signal="value_changed" from="Control/Panel/HBoxContainer/VBoxContainer/obj9/HSlider" to="Control/Panel/HBoxContainer/VBoxContainer/obj9" method="_on_h_slider_value_changed"]
+[connection signal="toggled" from="Control/Panel/HBoxContainer/VBoxContainer/obj10/HBoxContainer/CheckButton" to="Control/Panel/HBoxContainer/VBoxContainer/obj10" method="_on_check_button_toggled"]
+[connection signal="value_changed" from="Control/Panel/HBoxContainer/VBoxContainer/obj10/HSlider" to="Control/Panel/HBoxContainer/VBoxContainer/obj10" method="_on_h_slider_value_changed"]
+
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj2"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj3"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj4"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj5"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj6"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj7"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj8"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj9"]
+[editable path="Control/Panel/HBoxContainer/VBoxContainer/obj10"]
