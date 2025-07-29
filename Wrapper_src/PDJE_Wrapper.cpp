@@ -52,7 +52,7 @@ PDJE_Wrapper::SearchTrack(String Title)
 	}
 	auto res =
 	engine->SearchTrack(
-		GStrToCUStr(Title)
+		GStrToCStr(Title)
 	);
 
 	Array trackList;
@@ -72,8 +72,8 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
 	}
 	auto res =
 	engine->SearchMusic(
-		GStrToCUStr(Title),
-		GStrToCUStr(composer),
+		GStrToCStr(Title),
+		GStrToCStr(composer),
 		bpm
 	);
 	
@@ -96,7 +96,7 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode, String trackTitle, unsigned int Fr
 	if(!engine.has_value()){
 		return false;
 	}
-	auto td = engine->SearchTrack(GStrToCUStr(trackTitle));
+	auto td = engine->SearchTrack(GStrToCStr(trackTitle));
 	if(td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER){
 		return false;
 	}
@@ -156,10 +156,10 @@ Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
 	auto ref =  Ref<PlayerWrapper>(memnew(PlayerWrapper));
-	if(!engine->player.has_value()){
+	if(!engine->player){
 		return ref;
 	}
-	ref->Init(&(engine->player.value()), &engine.value());
+	ref->Init(engine->player.get(), &engine.value());
 	return ref;
 }
 
@@ -167,11 +167,11 @@ Ref<EditorWrapper>
 PDJE_Wrapper::GetEditor()
 {
 	auto ref =  Ref<EditorWrapper>(memnew(EditorWrapper));
-	if(!engine->editor.has_value()){
+	if(!engine->editor){
 		return ref;
 	}
 	
-	ref->Init(&(engine->editor.value()), &engine.value());
+	ref->Init(engine->editor.get(), &engine.value());
 	return ref;
 }
 void

@@ -15,32 +15,18 @@ GStrToCStr(const String& gstr)
 }
 
 inline 
-std::u8string 
-GStrToCUStr(const String& gstr)
-{
-    auto gbin = gstr.to_utf8_buffer();
-	return std::u8string(reinterpret_cast<const char8_t*>(gbin.ptr()),gbin.size());
-}
-inline 
 String 
 CStrToGStr(const std::string& cstr)
 {
     return godot::String::utf8(cstr.c_str());
 }
 
-inline 
-String 
-CStrToGStr(const std::u8string& cstr)
-{
-    auto safeStr = std::string(cstr.begin(), cstr.end());
-    return CStrToGStr(safeStr);
-}
 
 inline
 std::filesystem::path
 GpathToCPath(const String& gpath)
 {
     auto GlobalGpath = ProjectSettings::get_singleton()->globalize_path(gpath);
-    std::u8string Cpath = GStrToCUStr(GlobalGpath);
+    std::string Cpath = GStrToCStr(GlobalGpath);
     return std::filesystem::path(Cpath);
 }

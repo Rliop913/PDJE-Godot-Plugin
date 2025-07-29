@@ -102,11 +102,11 @@ PDJE_EDITOR_ARG::InitNoteArg(
 {
     note.emplace();
     
-    note->Note_Type     = GStrToCUStr(Note_Type);
-    note->Note_Detail   = GStrToCUStr(Note_Detail);
-    note->first         = GStrToCUStr(first);
-    note->second        = GStrToCUStr(second);
-    note->third         = GStrToCUStr(third);
+    note->Note_Type     = GStrToCStr(Note_Type);
+    note->Note_Detail   = GStrToCStr(Note_Detail);
+    note->first         = GStrToCStr(first);
+    note->second        = GStrToCStr(second);
+    note->third         = GStrToCStr(third);
     note->bar           = bar;
     note->beat          = beat;
     note->separate      = separate;
@@ -125,8 +125,8 @@ PDJE_EDITOR_ARG::InitMusicArg(
     int separate )
 {
     music.emplace();
-    music->musicName = GStrToCUStr(musicName);
-    music->arg.bpm = GStrToCUStr(bpm);
+    music->musicName = GStrToCStr(musicName);
+    music->arg.bpm = GStrToCStr(bpm);
     music->arg.bar = bar;
     music->arg.beat = beat;
     music->arg.separate = separate;
@@ -256,9 +256,9 @@ PDJE_EDITOR_ARG::InitMixArg(
         return;
     }
     mix->ID         =  ID;
-    mix->first      =  GStrToCUStr(first)   ;
-    mix->second     =  GStrToCUStr(second)  ;
-    mix->third      =  GStrToCUStr(third)   ;
+    mix->first      =  GStrToCStr(first)   ;
+    mix->second     =  GStrToCStr(second)  ;
+    mix->third      =  GStrToCStr(third)   ;
     mix->bar        =  bar          ;
     mix->beat       =  beat         ;
     mix->separate   =  separate     ;
