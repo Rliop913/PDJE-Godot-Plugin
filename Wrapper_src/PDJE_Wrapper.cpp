@@ -174,6 +174,12 @@ PDJE_Wrapper::GetEditor()
 	ref->Init(engine->editor.get(), &engine.value());
 	return ref;
 }
+
+void
+PDJE_Wrapper::ResetPlayer()
+{
+	engine->ResetPlayer();
+}
 void
 PDJE_Wrapper::_ready()
 {

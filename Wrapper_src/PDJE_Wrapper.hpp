@@ -34,6 +34,7 @@ public:
 	Array SearchMusic(String Title, String composer, double bpm = -1.0);
 	Array SearchTrack(String Title);
 	bool InitPlayer(PDJE_PLAY_MODE mode, String trackTitle, unsigned int FrameBufferSize);
+	void ResetPlayer();
 	Ref<PlayerWrapper> GetPlayer();
 	Ref<EditorWrapper> GetEditor();
 	PDJE_Wrapper();
