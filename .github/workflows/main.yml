@@ -1,0 +1,69 @@
+name: autoBuilder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            build_type: Release
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Release
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Release
+    steps:
+    - uses: action/checkout@v3
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    - name: set linux Requirements
+      id: set_libevdev_and_ccache
+      shell: bash
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install libevdev-dev ccache swig
+    - name: set macos Requirements
+      id: set_macos_ccache_swig
+      shell: bash
+      if: runner.os == 'macos'
+      run: |
+        brew install swig ccache
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
+    - name: Upload artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}-build
+        path: ${{ steps.strings.outputs.build-output-dir }}
+  autoUpload:
+    name: Post step
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - run: echo " ALL OK "
+  
+      
