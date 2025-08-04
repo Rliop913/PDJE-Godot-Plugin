@@ -2,13 +2,14 @@
 
 include(cmake/godotArchNameSetter.cmake)
 
-
+# https://github.com/godotengine/godot-cpp.git
 if(WIN32)
 
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-debug")
     ExternalProject_Add(godot_cpp_external_debug
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
-    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
+    GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
+    GIT_TAG         godot-4.4.1-stable
     BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
@@ -24,7 +25,8 @@ if(WIN32)
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-release")
     ExternalProject_Add(godot_cpp_external_release
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
-    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
+    GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
+    GIT_TAG         godot-4.4.1-stable
     BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
@@ -42,7 +44,8 @@ else()
 
     ExternalProject_Add(godot_cpp_external
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
-    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/godot-cpp
+    GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
+    GIT_TAG         godot-4.4.1-stable
     BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
