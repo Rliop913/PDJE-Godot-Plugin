@@ -31,6 +31,13 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    
+    - name: pull pdje
+      id: pull_main_pdje
+      shell: bash
+      run: |
+        cd Project_DJ_Engine && git pull origin main
+        
     - name: set linux Requirements
       id: set_libevdev_and_ccache
       shell: bash
