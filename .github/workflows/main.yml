@@ -35,8 +35,7 @@ jobs:
     - name: pull pdje
       id: pull_main_pdje
       shell: bash
-      run: |
-        cd Project_DJ_Engine && git pull origin main
+      run: git clone https://github.com/Rliop913/Project_DJ_Engine.git Project_DJ_Engine
         
     - name: set linux Requirements
       id: set_libevdev_and_ccache
