@@ -55,12 +55,6 @@ target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
-set_target_properties(PDJE_godot_wrapper PROPERTIES 
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/Release"
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/Debug"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/WinRelease"
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/PDJE_Prebuilt/WinDebug"
-)
 if(WIN32)
 
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)

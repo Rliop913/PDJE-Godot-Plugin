@@ -131,7 +131,7 @@ PDJE_Wrapper::InitEngine(String DBPath)
 {
 	
 	engine.emplace(
-		GpathToCPath(DBPath)
+		GpathToCPath(DBPath).string()
 	);
 	return engine.has_value();
 }
@@ -148,7 +148,7 @@ PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
 	engine->InitEditor(
 		GStrToCStr(authName),
 		GStrToCStr(authEmail),
-		GpathToCPath(projectRoot)
+		GpathToCPath(projectRoot).string()
 	);
 }
 
