@@ -68,7 +68,7 @@ jobs:
     name: Post step
     needs: build
     runs-on: ubuntu-latest
-    if: success()
+    if: runner.os == 'macos'
     steps:
       - run: echo " ALL OK "
   
