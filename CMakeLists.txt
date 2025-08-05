@@ -56,11 +56,13 @@ target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
+add_dependencies(PDJE_godot_wrapper godotcppEx)
+
 if(WIN32)
 
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
-message(${binary_dir})
+message(${source_dir})
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player

@@ -38,12 +38,8 @@ if(WIN32)
         BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release
         INSTALL_COMMAND ""
     )
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(project_name godot_cpp_external_release)
-    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(project_name godot_cpp_external_debug)
-    endif()
-    ExternalProject_Get_Property(${project_name} source_dir binary_dir install_dir)
+    
+    ExternalProject_Get_Property(godot_cpp_external_release source_dir binary_dir install_dir)
 else()
 
     ExternalProject_Add(godot_cpp_external
