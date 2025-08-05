@@ -8,8 +8,9 @@ cmake_minimum_required(VERSION 3.10.0)
 set(HWY_ENABLE_TESTS OFF)
 set(CAPNP_BUILD_TESTS OFF)
 set(BUILD_TESTING OFF CACHE BOOL "Disable testing")
-set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets" FORCE)
-
+# if(APPLE)
+# set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets" FORCE)
+# endif()
 if(WIN32)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC runtime" FORCE)
 endif()
@@ -59,17 +60,17 @@ if(WIN32)
 
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
-message(${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include)
+message(${binary_dir})
 target_include_directories( PDJE_godot_wrapper PRIVATE
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
     
-    ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include
-    ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/gen/include/godot_cpp
-    ${CMAKE_SOURCE_DIR}/godot-cpp/include
-    ${CMAKE_SOURCE_DIR}/godot-cpp/include/godot_cpp
-    ${CMAKE_SOURCE_DIR}/godot-cpp/gdextension
+    ${binary_dir}/gen/include
+    ${binary_dir}/gen/include/godot_cpp
+    ${source_dir}/include
+    ${source_dir}/include/godot_cpp
+    ${source_dir}/gdextension
     
     
     

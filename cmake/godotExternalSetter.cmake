@@ -2,7 +2,6 @@
 
 include(cmake/godotArchNameSetter.cmake)
 
-# https://github.com/godotengine/godot-cpp.git
 if(WIN32)
 
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-debug")
@@ -39,7 +38,12 @@ if(WIN32)
         BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release
         INSTALL_COMMAND ""
     )
-
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(project_name godot_cpp_external_release)
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(project_name godot_cpp_external_debug)
+    endif()
+    ExternalProject_Get_Property(${project_name} source_dir binary_dir install_dir)
 else()
 
     ExternalProject_Add(godot_cpp_external
@@ -54,9 +58,9 @@ else()
         INSTALL_COMMAND ""
         BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
     )
+    ExternalProject_Get_Property(godot_cpp_external source_dir binary_dir install_dir)
 endif()
 add_library(godotcppEx STATIC IMPORTED GLOBAL)
-
 if(WIN32)
 
     set_target_properties(godotcppEx PROPERTIES
