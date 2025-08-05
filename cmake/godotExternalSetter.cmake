@@ -41,7 +41,7 @@ if(WIN32)
     
     ExternalProject_Get_Property(godot_cpp_external_release source_dir binary_dir install_dir)
 else()
-
+    set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
     ExternalProject_Add(godot_cpp_external
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
     GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
@@ -66,6 +66,10 @@ if(WIN32)
         MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
     )
     add_dependencies(godotcppEx godot_cpp_external_debug godot_cpp_external_release)
+elseif(APPLE)
+set_target_properties(godotcppEx PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
+    )
 else()
     set_target_properties(godotcppEx PROPERTIES
     IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
