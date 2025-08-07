@@ -32,6 +32,30 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
     
+    - name: set conan
+      id: set_conan
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install conan
+        conan profile detect
+
+    - name: init conan on windows
+      id: init_conan_windows
+      shell: pwsh
+      if: runner.os == 'Windows'
+      run: |
+        cd "$env:GITHUB_WORKSPACE"
+        ./BuildInitwithConan.bat . dynamic Release
+    - name: init conan
+      id: init_conan
+      shell: bash
+      if: runner.os != 'Windows'
+      run: |
+        cd ${{ github.workspace }}
+        bash BuildInitwithConan.sh . Release
+
+
     - name: pull pdje
       id: pull_main_pdje
       shell: bash
