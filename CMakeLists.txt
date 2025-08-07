@@ -53,7 +53,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 )
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_shared godotcppEx
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
@@ -79,3 +79,15 @@ target_include_directories( PDJE_godot_wrapper PRIVATE
     
   
 )
+
+get_target_property(out PDJE INTERFACE_INCLUDE_DIRECTORIES)
+
+message("pdje include dirs: ${out}")
+
+get_cmake_property(_vars VARIABLES)
+
+foreach(var ${_vars})
+    if(var MATCHES "^PDJE")
+        message(STATUS "환경변수: ${var} = [${${var}}]")
+    endif()
+endforeach()
