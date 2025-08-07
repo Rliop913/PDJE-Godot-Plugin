@@ -8,27 +8,28 @@ cmake_minimum_required(VERSION 3.10.0)
 set(HWY_ENABLE_TESTS OFF)
 set(CAPNP_BUILD_TESTS OFF)
 set(BUILD_TESTING OFF CACHE BOOL "Disable testing")
+cmake_policy(SET CMP0091 NEW)
 # if(APPLE)
 # set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets" FORCE)
 # endif()
-if(WIN32)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC runtime" FORCE)
-endif()
+# if(WIN32)
+#   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC runtime" FORCE)
+# endif()
 
 project(PDJE_godot_wrapper VERSION 0.1.0 LANGUAGES C CXX)
 
 
-include(ExternalProject)
 set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
 
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_ID_LOWER)
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+include(ExternalProject)
 include(cmake/godotExternalSetter.cmake)
 
 # include(cmake/pdjeExternalSetter.cmake)
 
-
+set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
 
@@ -52,7 +53,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 )
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_dynamic godotcppEx
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_shared godotcppEx
 # ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
 )
 
