@@ -53,9 +53,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
 )
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx
-# ${CMAKE_BINARY_DIR}/bin/libgodot-cpp.linux.template_debug.x86_64.a
-)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
 
 add_dependencies(PDJE_godot_wrapper godotcppEx)
 
@@ -64,7 +62,7 @@ if(WIN32)
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
 message(${source_dir})
-target_include_directories( PDJE_godot_wrapper PRIVATE
+target_include_directories( PDJE_godot_wrapper PUBLIC
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
@@ -80,9 +78,12 @@ target_include_directories( PDJE_godot_wrapper PRIVATE
   
 )
 
-get_target_property(out PDJE INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(pdjeout PDJE INTERFACE_INCLUDE_DIRECTORIES)
 
-message("pdje include dirs: ${out}")
+foreach(indluepdjedir IN LISTS pdjeout)
+  message(STATUS "PDJE include indluepdjedir -> ${indluepdjedir}")
+endforeach()
+
 
 get_cmake_property(_vars VARIABLES)
 
