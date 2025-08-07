@@ -85,18 +85,52 @@ jobs:
         -S ${{ github.workspace }}
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-    - name: Upload artifacts
+    - name: Upload failed artifacts
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-build
+        name: ${{ matrix.os }}-failedbuild
         path: ${{ steps.strings.outputs.build-output-dir }}
+    - name: stage files
+      if: success()
+      id: stage_valid_files
+      shell: bash
+      run: |
+        mkdir -p staged_bins
+        find "${{ github.workspace }}" \
+        -type f \( \
+        -name "PDJE_godot_wrapper.dll"\
+        -o -name "*PDJE_godot_wrapper.so"\
+        -o -name "*PDJE_godot_wrapper.dylib"\
+        -o -name "*PDJE.so"\
+        -o -name "PDJE.dll"\
+        -o -name "PDJE.dylib"\
+        -o -name "*hwy.so"\
+        -o -name "*hwy.dylib"\
+        -o -name "hwy.dll"\
+           \) \
+        -exec rsync {} staged_bins/ \;
+
+
+    - name: Upload artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}-success_builds
+        path: staged_bins
+    
+
   autoUpload:
     name: Post step
     needs: build
     runs-on: ubuntu-latest
     if: success()
     steps:
-      - run: echo " ALL OK "
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: builds
+
+      - run: ls builds
   
       

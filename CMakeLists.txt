@@ -78,11 +78,6 @@ target_include_directories( PDJE_godot_wrapper PUBLIC
   
 )
 
-get_target_property(pdjeout PDJE INTERFACE_INCLUDE_DIRECTORIES)
-
-foreach(indluepdjedir IN LISTS pdjeout)
-  message(STATUS "PDJE include indluepdjedir -> ${indluepdjedir}")
-endforeach()
 
 
 get_cmake_property(_vars VARIABLES)

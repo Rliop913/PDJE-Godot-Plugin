@@ -13,3 +13,4 @@ CMakeToolchain
 [options]
 spdlog/1.15.3:header_only=True
 zlib/*:shared=False
+highway/*:shared=True
