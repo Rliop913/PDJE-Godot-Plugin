@@ -109,7 +109,7 @@ jobs:
         -o -name "*hwy.dylib"\
         -o -name "hwy.dll"\
            \) \
-        -exec rsync {} staged_bins/ \;
+        -exec cp {} staged_bins/ \;
 
 
     - name: Upload artifacts
