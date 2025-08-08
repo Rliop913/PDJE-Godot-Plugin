@@ -59,6 +59,11 @@ jobs:
       run: |
         cd "$env:GITHUB_WORKSPACE"
         ./BuildInitwithConan.bat . dynamic ${{ matrix.build_type }}
+        ls ./conan_cmakes/
+        ls ./conan_cmakes/direct_deploy
+        ls ./conan_cmakes/direct_deploy/highway
+        ls ./conan_cmakes/direct_deploy/highway/bin
+        
     - name: init conan
       id: init_conan
       shell: bash
@@ -66,7 +71,10 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         bash BuildInitwithConan.sh . ${{ matrix.build_type }}
-
+        ls ./conan_cmakes/
+        ls ./conan_cmakes/direct_deploy
+        ls ./conan_cmakes/direct_deploy/highway
+        ls ./conan_cmakes/direct_deploy/highway/bin
 
     - name: pull pdje
       id: pull_main_pdje
