@@ -117,7 +117,7 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-success_builds
+        name: ${{ matrix.os }}-success_debug
         path: ${{ steps.strings.outputs.build-output-dir }}
         
         # path: staged_bins
