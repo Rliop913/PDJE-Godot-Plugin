@@ -57,6 +57,11 @@ elseif(APPLE)
     )
     ExternalProject_Get_Property(godot_cpp_external source_dir binary_dir install_dir)
 else()
+    if(APPLE)
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            add_definitions(-DHOT_RELOAD_ENABLED)
+        endif()
+    endif()
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
     ExternalProject_Add(godot_cpp_external
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
@@ -67,7 +72,7 @@ else()
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
-        -DGODOTCPP_USE_HOT_RELOAD=OFF
+        
         INSTALL_COMMAND ""
         BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.${PLATFORM_ID_LOWER}.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
     )
