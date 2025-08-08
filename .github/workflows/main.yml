@@ -23,6 +23,18 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            build_type: Debug
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Debug
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Debug
     steps:
     - uses: actions/checkout@v3
 
@@ -46,14 +58,14 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         cd "$env:GITHUB_WORKSPACE"
-        ./BuildInitwithConan.bat . dynamic Release
+        ./BuildInitwithConan.bat . dynamic ${{ matrix.build_type }}
     - name: init conan
       id: init_conan
       shell: bash
       if: runner.os != 'Windows'
       run: |
         cd ${{ github.workspace }}
-        bash BuildInitwithConan.sh . Release
+        bash BuildInitwithConan.sh . ${{ matrix.build_type }}
 
 
     - name: pull pdje
@@ -89,7 +101,7 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-failedbuild
+        name: ${{ matrix.os }}-${{ matrix.build_type }}-failedbuild
         path: ${{ steps.strings.outputs.build-output-dir }}
     - name: stage files
       if: success()
@@ -108,7 +120,7 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-success_builds
+        name: ${{ matrix.os }}-${{ matrix.build_type }}-success_builds
         path: staged_bins
     
 
@@ -128,12 +140,20 @@ jobs:
       - run: |
           gh auth setup-git 
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/win
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/macos
-          cp builds/windows-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/
-          cp builds/ubuntu-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/
-          cp builds/macos-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/win/release
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux/release
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/macos/release
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/win/debug
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux/debug
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/macos/debug
+          
+          cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/release
+          cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/release
+          cp builds/macos-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/release
+          cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/debug
+          cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/debug
+          cp builds/macos-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/debug
+          
           cd Project_DJ_Godot
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
