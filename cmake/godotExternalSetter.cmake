@@ -54,7 +54,7 @@ elseif(APPLE)
             -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
-            -DHOT_RELOAD=OFF
+            -DHOT_RELOAD:BOOL=FALSE
 
             INSTALL_COMMAND ""
             BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.macos.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
