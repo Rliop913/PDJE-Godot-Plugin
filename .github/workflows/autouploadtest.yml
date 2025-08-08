@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "${{ secrets.PDJE_AUTO_PUSH }}" | gh auto login --with-token
+          echo "${{ secrets.PDJE_AUTO_PUSH }}" | gh auth login --with-token
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           ls
           cd Project_DJ_Godot
