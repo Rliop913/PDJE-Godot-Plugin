@@ -76,11 +76,6 @@ elseif(APPLE)
     endif()
     ExternalProject_Get_Property(godot_cpp_external source_dir binary_dir install_dir)
 else()
-    if(APPLE)
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            add_definitions(-DHOT_RELOAD_ENABLED)
-        endif()
-    endif()
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
     ExternalProject_Add(godot_cpp_external
     PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
