@@ -14,6 +14,22 @@ jobs:
           gh auth setup-git 
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           cd Project_DJ_Godot
+          mkdir staged_bins
+          find . \
+          -type f \( \
+            -name "PDJE_godot_wrapper.dll" \
+            -o -name "*PDJE_godot_wrapper.so" \
+            -o -name "*PDJE_godot_wrapper.dylib" \
+            -o -name "*PDJE.so" \
+            -o -name "PDJE.dll" \
+            -o -name "PDJE.dylib" \
+            -o -name "*.txt" \
+            -o -name "*hwy.so" \
+            -o -name "*hwy.dylib" \
+            -o -name "hwy.dll" \
+          \) \
+          -exec cp {} staged_bins/ \;
+          ls staged_bins
           echo "push pull test\n" >> dummy.txt
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
