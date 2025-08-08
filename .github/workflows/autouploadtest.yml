@@ -7,6 +7,8 @@ jobs:
   autoUpload:
     name: Post step
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PDJE_AUTO_PUSH }}
     steps:
       - run: |
           
@@ -27,8 +29,6 @@ jobs:
           git commit -m "autoPublishTest"
           echo "before push"
           git push origin main
-        env:
-          GH_TOKEN: ${{ secrets.PDJE_AUTO_PUSH }}
         
   
       
