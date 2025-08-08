@@ -125,12 +125,27 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: success()
+    env:
+      GH_TOKEN: ${{ secrets.PDJE_AUTO_PUSH }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           path: builds
 
-      - run: ls builds
-  
+      - run: |
+          gh auth setup-git 
+          gh repo clone https://github.com/Rliop913/Project_DJ_Godot
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/win
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux
+          mkdir -p Project_DJ_Godot/addons/Prebuilts/macos
+          cp builds/windows-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/
+          cp builds/ubuntu-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/
+          cp builds/macos-latest-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/
+          cd Project_DJ_Godot
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add addons
+          git commit -m "autoPublish"
+          git push origin main
       
