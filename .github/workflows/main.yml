@@ -59,10 +59,7 @@ jobs:
       run: |
         cd "$env:GITHUB_WORKSPACE"
         ./BuildInitwithConan.bat . dynamic ${{ matrix.build_type }}
-        ls ./conan_cmakes/
-        ls ./conan_cmakes/direct_deploy
-        ls ./conan_cmakes/direct_deploy/highway
-        ls ./conan_cmakes/direct_deploy/highway/bin
+        
         
     - name: init conan
       id: init_conan
@@ -71,10 +68,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         bash BuildInitwithConan.sh . ${{ matrix.build_type }}
-        ls ./conan_cmakes/
-        ls ./conan_cmakes/direct_deploy
-        ls ./conan_cmakes/direct_deploy/highway
-        ls ./conan_cmakes/direct_deploy/highway/bin
+        
 
     - name: pull pdje
       id: pull_main_pdje
@@ -120,7 +114,7 @@ jobs:
         find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
           cp "$file" ./staged_bins
         done
-        find ./conan_cmakes/direct_deploy/highway/bin -type f -name "*hwy.*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+        find ./conan_cmakes/direct_deploy/highway/ -type f -name "*hwy.*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
           cp "$file" ./staged_bins
         done
 
