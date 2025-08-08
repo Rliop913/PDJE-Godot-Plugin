@@ -111,11 +111,13 @@ jobs:
       shell: bash
       run: |
         mkdir -p staged_bins
-        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
-          cp "$file" ./staged_bins
+        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib)$" || true | while read -r file; do
+          echo "found: $file"
+          cp -v "$file" ./staged_bins
         done
-        find ./conan_cmakes/direct_deploy/highway/ -type f -name "*hwy.*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
-          cp "$file" ./staged_bins
+        find ./conan_cmakes/direct_deploy/highway/ -type f -name "*hwy.*" | grep -E "\.(so|dll|dylib)$" || true | while read -r file; do
+          echo "found: $file"
+          cp -v "$file" ./staged_bins
         done
 
     - name: Upload artifacts
