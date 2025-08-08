@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          
+          echo "Secret length: ${#GH_TOKEN}"
           gh auth status
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           ls
