@@ -97,30 +97,19 @@ jobs:
       shell: bash
       run: |
         mkdir -p staged_bins
-        find . -type f -name "*PDJE*"
-        # find . \
-        # -type f \( \
-        # -name "PDJE_godot_wrapper.dll"\
-        # -o -name "*PDJE_godot_wrapper.so"\
-        # -o -name "*PDJE_godot_wrapper.dylib"\
-        # -o -name "*PDJE.so"\
-        # -o -name "PDJE.dll"\
-        # -o -name "PDJE.dylib"\
-        # -o -name "*hwy.so"\
-        # -o -name "*hwy.dylib"\
-        # -o -name "hwy.dll"\
-        #    \) \
-        # -exec cp {} staged_bins/ \;
-
+        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+          cp "$file" ./staged_bins
+        done
+        find ./conan_cmakes/direct_deploy/highway/bin -type f -name "*hwy.*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+          cp "$file" ./staged_bins
+        done
 
     - name: Upload artifacts
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-success_debug
-        path: ${{ steps.strings.outputs.build-output-dir }}
-        
-        # path: staged_bins
+        name: ${{ matrix.os }}-success_builds
+        path: staged_bins
     
 
   autoUpload:
