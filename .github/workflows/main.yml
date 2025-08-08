@@ -97,19 +97,20 @@ jobs:
       shell: bash
       run: |
         mkdir -p staged_bins
-        find . \
-        -type f \( \
-        -name "PDJE_godot_wrapper.dll"\
-        -o -name "*PDJE_godot_wrapper.so"\
-        -o -name "*PDJE_godot_wrapper.dylib"\
-        -o -name "*PDJE.so"\
-        -o -name "PDJE.dll"\
-        -o -name "PDJE.dylib"\
-        -o -name "*hwy.so"\
-        -o -name "*hwy.dylib"\
-        -o -name "hwy.dll"\
-           \) \
-        -exec cp {} staged_bins/ \;
+        find . -type f -name "*PDJE*"
+        # find . \
+        # -type f \( \
+        # -name "PDJE_godot_wrapper.dll"\
+        # -o -name "*PDJE_godot_wrapper.so"\
+        # -o -name "*PDJE_godot_wrapper.dylib"\
+        # -o -name "*PDJE.so"\
+        # -o -name "PDJE.dll"\
+        # -o -name "PDJE.dylib"\
+        # -o -name "*hwy.so"\
+        # -o -name "*hwy.dylib"\
+        # -o -name "hwy.dll"\
+        #    \) \
+        # -exec cp {} staged_bins/ \;
 
 
     - name: Upload artifacts
@@ -117,7 +118,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-success_builds
-        path: staged_bins
+        path: ${{ steps.strings.outputs.build-output-dir }}
+        
+        # path: staged_bins
     
 
   autoUpload:
