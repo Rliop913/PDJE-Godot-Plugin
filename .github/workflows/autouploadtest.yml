@@ -7,9 +7,12 @@ jobs:
   autoUpload:
     name: Post step
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PDJE_AUTO_PUSH }}
+      
     steps:
       - run: |
-          echo "${{ secrets.PDJE_AUTO_PUSH }}" | gh auth login --hostname github.com --git-protocol https --with-token
+          gh auth status
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           ls
           cd Project_DJ_Godot
