@@ -41,20 +41,39 @@ if(WIN32)
     
     ExternalProject_Get_Property(godot_cpp_external_release source_dir binary_dir install_dir)
 elseif(APPLE)
-    set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
-    ExternalProject_Add(godot_cpp_external
-    PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
-    GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
-    GIT_TAG         godot-4.4.1-stable
-    BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
-    CMAKE_ARGS
-        -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
 
-        INSTALL_COMMAND ""
-        BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.macos.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
-    )
+    set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_definitions(-DHOT_RELOAD_ENABLED)
+        ExternalProject_Add(godot_cpp_external
+        PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
+        GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
+        GIT_TAG         godot-4.4.1-stable
+        BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
+            -DHOT_RELOAD_ENABLED=ON
+
+            INSTALL_COMMAND ""
+            BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.macos.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
+        )
+    else()
+        ExternalProject_Add(godot_cpp_external
+        PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
+        GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
+        GIT_TAG         godot-4.4.1-stable
+        BINARY_DIR      ${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
+
+            INSTALL_COMMAND ""
+            BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.macos.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
+        )
+    endif()
     ExternalProject_Get_Property(godot_cpp_external source_dir binary_dir install_dir)
 else()
     if(APPLE)
