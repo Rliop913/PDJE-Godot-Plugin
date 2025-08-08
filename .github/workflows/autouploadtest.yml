@@ -8,12 +8,9 @@ jobs:
     name: Post step
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PDJE_AUTO_PUSH }}
       - run: |
-          git clone https://github.com/Rliop913/Project_DJ_Godot.git
+          echo "${{ secrets.PDJE_AUTO_PUSH }}" | gh auto login --with-token
+          gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           ls
           cd Project_DJ_Godot
           ls
