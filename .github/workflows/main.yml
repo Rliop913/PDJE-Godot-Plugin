@@ -146,6 +146,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add addons
-          git commit -m "autoPublish"
+          git commit -m "AUTO_PUBLISH_TRIG $(date +'%Y-%m-%d %H:%M:%S')"
           git push origin main
       
