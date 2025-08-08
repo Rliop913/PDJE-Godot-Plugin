@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          echo "https://x-access-token:${{ secrets.PDJE_AUTO_PUSH }}@github.com/Rliop913/Project_DJ_Godot.git"
           git clone https://x-access-token:${{ secrets.PDJE_AUTO_PUSH }}@github.com/Rliop913/Project_DJ_Godot.git
           ls
           cd Project_DJ_Godot
