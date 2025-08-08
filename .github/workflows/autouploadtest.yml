@@ -15,10 +15,15 @@ jobs:
           cd Project_DJ_Godot
           ls
           echo "push pull test\n" >> dummy.txt
+          echo "before username"
           git config user.name "github-actions[bot]"
+          echo "before useremail"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "before add"
           git add dummy.txt
+          echo "before commit"
           git commit -m "autoPublishTest"
+          echo "before push"
           git push origin main
         
   
