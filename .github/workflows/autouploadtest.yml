@@ -15,7 +15,7 @@ jobs:
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           cd Project_DJ_Godot
           mkdir staged_bins
-          find . \
+          find "${{ github.workspace }}" \
           -type f \( \
             -name "PDJE_godot_wrapper.dll" \
             -o -name "*PDJE_godot_wrapper.so" \
