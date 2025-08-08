@@ -11,9 +11,7 @@ jobs:
       GH_TOKEN: ${{ secrets.PDJE_AUTO_PUSH }}
     steps:
       - run: |
-          
-          echo "Secret length: ${#GH_TOKEN}"
-          gh auth status
+          gh auth setup-git 
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           ls
           cd Project_DJ_Godot
