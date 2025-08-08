@@ -97,7 +97,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p staged_bins
-        find "${{ github.workspace }}" \
+        find . \
         -type f \( \
         -name "PDJE_godot_wrapper.dll"\
         -o -name "*PDJE_godot_wrapper.so"\
