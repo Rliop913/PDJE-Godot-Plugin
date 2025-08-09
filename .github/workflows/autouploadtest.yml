@@ -4,35 +4,35 @@ on:
   workflow_dispatch:
 
 jobs:
-  autoUpload:
-    - name: set dummy
-      shell: bash
-      run: |
-        mkdir samples
-        cd samples
-        touch one.txt
-        touch two.txt
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: success_builds
-        path: samples
-    
+  build:                      # ← 원래 autoUpload였던 잡을 build로 바꿔도 되고,
+    runs-on: ubuntu-latest    #    그대로 쓰려면 needs에서 그 id를 참조하세요.
+    steps:
+      - name: set dummy
+        shell: bash
+        run: |
+          mkdir -p samples
+          touch samples/one.txt
+          touch samples/two.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: success_builds
+          path: samples/**
 
   test:
     name: Post step
-    needs: build
+    needs: build              # ← 위 잡 id와 일치해야 함 (autoUpload로 썼다면 여기서도 autoUpload)
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: '*success_builds'
-          merge-multiple: false
+          name: success_builds    # 단일이면 name 권장 (여러 개면 pattern + merge-multiple)
           path: builds
 
-      - run: |
+      - name: Show tree
+        shell: bash
+        run: |
           tree .
-
-    
-      
+          ls -R builds
