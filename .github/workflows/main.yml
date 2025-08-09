@@ -50,22 +50,22 @@ jobs:
     - name: replace apple clang
       id: replace_apple_clang
       shell: bash
-      if: runner.os == 'nothing'
+      if: runner.os == 'macOS'
       run: |
-        brew update
-        brew install llvm
-        echo "LLVM_PREFIX=$(brew --prefix llvm)" >> $GITHUB_ENV
-        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
-        echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
-        echo "SDKROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> $GITHUB_ENV
-        which clang && clang --version
+        #brew update
+        #brew install llvm
+        #echo "LLVM_PREFIX=$(brew --prefix llvm)" >> $GITHUB_ENV
+        #echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        #echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        #echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+        #echo "SDKROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
+        #echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> $GITHUB_ENV
+        #which clang && clang --version
 
-        export CC="$(brew --prefix llvm)/bin/clang"
-        export CXX="$(brew --prefix llvm)/bin/clang++"
-        export SDKROOT="$(xcrun --show-sdk-path)"
-        export MACOSX_DEPLOYMENT_TARGET=13.0
+        #export CC="$(brew --prefix llvm)/bin/clang"
+        #export CXX="$(brew --prefix llvm)/bin/clang++"
+        #export SDKROOT="$(xcrun --show-sdk-path)"
+        #export MACOSX_DEPLOYMENT_TARGET=13.0
 
         echo "SDKROOT=$SDKROOT"
         echo "CC=$CC"
@@ -96,22 +96,6 @@ jobs:
         cd ${{ github.workspace }}
         bash BuildInitwithConan.sh . ${{ matrix.build_type }}
     
-    - name: init conan on macOS
-      id: init_conan_on_macOS
-      shell: bash
-      if: runner.os == 'nothing'
-      run: |
-        CLANG_MAJOR=$(clang --version | head -n1 | sed -E 's/.*version ([0-9]+).*/\1/')
-        cd ${{ github.workspace }}
-        conan install . --output-folder=conan_cmakes --build=missing \
-          --settings compiler.cppstd=20 --settings build_type=${{ matrix.build_type }} \
-          --deployer=direct_deploy \
-          -s compiler=clang \
-          -s compiler.version=18 \
-          -s compiler.libcxx=libc++ \
-          -c tools.build:compiler_executables='{"c":"'"$CC"'","cpp":"'"$CXX"'"}'
-          
-
         
             
 
@@ -137,23 +121,9 @@ jobs:
       run: |
         brew install swig ccache
 
-    - name: Configure CMake on macOS
-      shell: bash
-      if: runner.os == 'nothing'
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/conan_cmakes/conan_toolchain.cmake
-        -DCMAKE_C_COMPILER="$CC"
-        -DCMAKE_CXX_COMPILER="$CXX"
-        -DCMAKE_OSX_ARCHITECTURES=arm64
-        -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET"
-        -DCMAKE_OSX_SYSROOT="$SDKROOT"
-        -S ${{ github.workspace }}
     
     - name: Configure CMake
       shell: bash
-      if: runner.os != 'nothing'
       run: >
         cmake -B "${{ steps.strings.outputs.build-output-dir }}"
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
