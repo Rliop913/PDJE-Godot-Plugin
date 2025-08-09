@@ -158,7 +158,7 @@ jobs:
           cp builds/macos-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/release
           cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/debug
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/debug
-          cp builds/macos-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/debug
+          # cp builds/macos-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macos/debug
           
           cd Project_DJ_Godot
           git config user.name "github-actions[bot]"
