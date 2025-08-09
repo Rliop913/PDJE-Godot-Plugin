@@ -19,7 +19,7 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
-          - os: macOS-latest
+          - os: macOS-14
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
@@ -31,7 +31,7 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Debug
-          - os: macOS-latest
+          - os: macOS-14
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Debug
