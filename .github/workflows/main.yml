@@ -50,7 +50,7 @@ jobs:
     - name: replace apple clang
       id: replace_apple_clang
       shell: bash
-      if: runner.os == 'macOS'
+      if: runner.os == 'nothing'
       run: |
         brew update
         brew install llvm
@@ -91,7 +91,7 @@ jobs:
     - name: init conan on linux
       id: init_conan_on_linux
       shell: bash
-      if: runner.os == 'Linux'
+      if: runner.os != "Windows'
       run: |
         cd ${{ github.workspace }}
         bash BuildInitwithConan.sh . ${{ matrix.build_type }}
@@ -99,7 +99,7 @@ jobs:
     - name: init conan on macOS
       id: init_conan_on_macOS
       shell: bash
-      if: runner.os == 'macOS'
+      if: runner.os == 'nothing'
       run: |
         CLANG_MAJOR=$(clang --version | head -n1 | sed -E 's/.*version ([0-9]+).*/\1/')
         cd ${{ github.workspace }}
@@ -139,7 +139,7 @@ jobs:
 
     - name: Configure CMake on macOS
       shell: bash
-      if: runner.os == 'macOS'
+      if: runner.os == 'nothing'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -153,7 +153,7 @@ jobs:
     
     - name: Configure CMake
       shell: bash
-      if: runner.os != 'macOS'
+      if: runner.os != 'nothing'
       run: >
         cmake -B "${{ steps.strings.outputs.build-output-dir }}"
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
