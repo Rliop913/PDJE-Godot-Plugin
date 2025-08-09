@@ -191,7 +191,7 @@ jobs:
           
           cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/release
           cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/release
-          cp builds/macOS-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/release
+          cp builds/macOS-14-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/release
           cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/debug
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/debug
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/debug
