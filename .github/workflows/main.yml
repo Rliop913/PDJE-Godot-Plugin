@@ -36,7 +36,10 @@ jobs:
             cpp_compiler: clang++
             build_type: Debug
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with: 
+        lfs: false
+        fetch-depth: 1
 
     - name: Set reusable strings
       id: strings
@@ -116,7 +119,7 @@ jobs:
       id: pull_main_pdje
       shell: bash
       run: |
-        git clone https://github.com/Rliop913/Project_DJ_Engine.git Project_DJ_Engine
+        GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/Rliop913/Project_DJ_Engine.git Project_DJ_Engine
         ls Project_DJ_Engine/include
         
     - name: set linux Requirements
