@@ -179,6 +179,7 @@ jobs:
           path: builds
 
       - run: |
+          tree
           gh auth setup-git 
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
           mkdir -p Project_DJ_Godot/addons/Prebuilts/win/release
