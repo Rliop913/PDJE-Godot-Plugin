@@ -19,20 +19,20 @@ jobs:
         path: samples
     
 
-  autoUploadtest:
-    name: get
+  autoUpload:
+    name: Post step
+    needs: build
     runs-on: ubuntu-latest
-    
-  steps:
-  - name: Download artifact
-    uses: actions/download-artifact@v4
-    with:
-      pattern: '*success_builds'
-      merge-multiple: false
-      path: builds
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*success_builds'
+          merge-multiple: false
+          path: builds
 
-    run: |
-      tree .
+      - run: |
+          tree .
 
     
       
