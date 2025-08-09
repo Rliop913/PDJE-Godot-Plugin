@@ -19,7 +19,7 @@ jobs:
         path: samples
     
 
-  autoUpload:
+  test:
     name: Post step
     needs: build
     runs-on: ubuntu-latest
