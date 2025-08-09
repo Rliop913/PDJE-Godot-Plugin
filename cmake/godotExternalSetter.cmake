@@ -44,7 +44,7 @@ elseif(APPLE)
 
     set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(HOT_RELOAD OFF CACHE BOOL "Disable hot reload" FORCE)
+        set(GODOTCPP_USE_HOT_RELOAD OFF CACHE BOOL "Disable hot reload" FORCE)
         ExternalProject_Add(godot_cpp_external
         PREFIX          ${CMAKE_BINARY_DIR}/_deps/godotcpp/${PLATFORM_BUILD_PATH}
         GIT_REPOSITORY  https://github.com/godotengine/godot-cpp.git
@@ -54,7 +54,7 @@ elseif(APPLE)
             -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_install/godotcpp/${PLATFORM_BUILD_PATH}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DGODOTCPP_TARGET=template_${BUILD_TYPE_LOWER}
-            -DHOT_RELOAD:BOOL=FALSE
+            -DGODOTCPP_USE_HOT_RELOAD=OFF
 
             INSTALL_COMMAND ""
             BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/_build/godotcpp/${PLATFORM_BUILD_PATH}/bin/libgodot-cpp.macos.template_${BUILD_TYPE_LOWER}.${ARCH_LOWER}.a"
