@@ -91,7 +91,7 @@ jobs:
     - name: init conan on linux
       id: init_conan_on_linux
       shell: bash
-      if: runner.os != "Windows'
+      if: runner.os != 'Windows'
       run: |
         cd ${{ github.workspace }}
         bash BuildInitwithConan.sh . ${{ matrix.build_type }}
