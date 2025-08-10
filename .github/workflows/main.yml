@@ -150,7 +150,7 @@ jobs:
           echo "found: $file"
           cp -v "$file" ./staged_bins
         done
-        find ./conan_cmakes/direct_deploy/highway/ \(-type f -o -type l \) -name "*hwy.*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
+        find ./conan_cmakes/direct_deploy/highway/ (-type f -o -type l ) -name "*hwy.*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
           echo "found: $file"
           cp -av "$file" ./staged_bins
         done
