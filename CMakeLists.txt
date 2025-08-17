@@ -61,7 +61,6 @@ if(WIN32)
 
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
-message(${source_dir})
 target_include_directories( PDJE_godot_wrapper PUBLIC
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
@@ -71,19 +70,35 @@ target_include_directories( PDJE_godot_wrapper PUBLIC
     ${binary_dir}/gen/include/godot_cpp
     ${source_dir}/include
     ${source_dir}/include/godot_cpp
-    ${source_dir}/gdextension
-    
-    
-    
-  
+    ${source_dir}/gdextension 
 )
 
 
+if(APPLE)
+set_target_properties(PDJE_godot_wrapper PROPERTIES
+    MACOSX_RPATH ON
+    BUILD_RPATH "@loader_path"
+)
+target_link_options(PDJE_godot_wrapper PRIVATE
+    "-Wl,-rpath,@loader_path"
+)
 
-get_cmake_property(_vars VARIABLES)
+elseif(UNIX)
+set_target_properties(PDJE_godot_wrapper PROPERTIES
+    BUILD_RPATH "\$ORIGIN"
+)
+target_link_options(PDJE_godot_wrapper PRIVATE
+"-Wl,--enable-new-dtags"
+"-Wl,-rpath,\$ORIGIN"
+)
 
-foreach(var ${_vars})
-    if(var MATCHES "^PDJE")
-        message(STATUS "환경변수: ${var} = [${${var}}]")
-    endif()
-endforeach()
+endif()
+
+
+# get_cmake_property(_vars VARIABLES)
+
+# foreach(var ${_vars})
+#     if(var MATCHES "^PDJE")
+#         message(STATUS "환경변수: ${var} = [${${var}}]")
+#     endif()
+# endforeach()
