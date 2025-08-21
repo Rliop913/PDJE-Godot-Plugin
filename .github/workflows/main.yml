@@ -162,7 +162,24 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.build_type }}-success_builds
         path: staged_bins
-    
+
+    - name: stage versions
+      if: runner.os == 'Linux'
+      id: stage_valid_versions
+      shell: bash
+      run: |
+        mkdir -p versions
+        find ./ -type f -name "PDJE_VERSION" -print0 | xargs -0 cp -t versions/
+        find ./ -type f -name "PDJE_WRAPPER_VERSION" -print0 | xargs -0 cp -t versions/
+        
+
+        
+    - name: Upload versions
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: version-of-success_builds
+        path: versions
 
   autoUpload:
     name: Post step
@@ -196,13 +213,15 @@ jobs:
           cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/debug
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/debug
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/debug
+
+          cp builds/version-of-success_builds/* Project_DJ_Godot/
           
           cd Project_DJ_Godot
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config lfs.url "https://rrop:${{ secrets.LFS_TOKEN }}@pdje.uk/rrop/PDJE_LFS_REPO.git/info/lfs"
           git lfs track "addons/**"
-          git add .gitattributes addons/
+          git add .gitattributes addons/ PDJE_VERSION PDJE_WRAPPER_VERSION 
           git commit -m "AUTO_PUBLISH_TRIG $(date +'%Y-%m-%d %H:%M:%S')"
           git push origin main
       
