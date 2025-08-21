@@ -164,7 +164,7 @@ jobs:
         path: staged_bins
 
     - name: stage versions
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && matrix.build_type == 'Release'
       id: stage_valid_versions
       shell: bash
       run: |
@@ -175,7 +175,7 @@ jobs:
 
         
     - name: Upload versions
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && matrix.build_type == 'Release'
       uses: actions/upload-artifact@v4
       with:
         name: version-of-success_builds
