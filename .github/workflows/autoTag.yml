@@ -20,17 +20,17 @@ jobs:
         with:
           fetch-depth: 0        # 전체 히스토리 + 태그 필요
 
-      - name: Read PDJE_VERSION
+      - name: Read PDJE_WRAPPER_VERSION
         id: readver
         shell: bash
         run: |
-          if [[ ! -f PDJE_VERSION ]]; then
-            echo "PDJE_VERSION file not found" >&2
+          if [[ ! -f PDJE_WRAPPER_VERSION ]]; then
+            echo "PDJE_WRAPPER_VERSION file not found" >&2
             exit 1
           fi
-          VER="$(tr -d '[:space:]' < PDJE_VERSION)"
+          VER="$(tr -d '[:space:]' < PDJE_WRAPPER_VERSION)"
           if [[ -z "$VER" ]]; then
-            echo "PDJE_VERSION is empty" >&2
+            echo "PDJE_WRAPPER_VERSION is empty" >&2
             exit 1
           fi
           if [[ ! "$VER" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -75,7 +75,7 @@ jobs:
 
           if [[ "$REMOTE_SHA" != "$HEAD_SHA" ]]; then
             echo "Tag '$VER' already exists on remote but points to a different commit ($REMOTE_SHA != $HEAD_SHA)." >&2
-            echo "Refusing to retag. Update PDJE_VERSION or create a new commit." >&2
+            echo "Refusing to retag. Update PDJE_WRAPPER_VERSION or create a new commit." >&2
             exit 1
           else
             echo "Tag '$VER' already exists and points to this commit. Nothing to do."
@@ -90,5 +90,5 @@ jobs:
           VER="${{ steps.readver.outputs.version }}"
           git config user.name  "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git tag -a "$VER" -m "Release $VER (from PDJE_VERSION)"
+          git tag -a "$VER" -m "Release $VER (from PDJE_WRAPPER_VERSION)"
           git push origin "$VER"
