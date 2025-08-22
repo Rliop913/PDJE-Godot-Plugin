@@ -218,10 +218,12 @@ jobs:
           
           cd Project_DJ_Godot
           git lfs install --local
+          git lfs pull
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config lfs.url "https://rrop:${{ secrets.LFS_TOKEN }}@pdje.uk/rrop/PDJE_LFS_REPO.git/info/lfs"
           git lfs track "addons/**"
+          
           git add .gitattributes addons/ PDJE_VERSION PDJE_WRAPPER_VERSION 
           git commit -m "AUTO_PUBLISH_TRIG $(date +'%Y-%m-%d %H:%M:%S')"
           git push origin main
