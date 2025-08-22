@@ -215,6 +215,7 @@ jobs:
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/debug
 
           cp builds/version-of-success_builds/* Project_DJ_Godot/
+          git lfs install --local
           
           cd Project_DJ_Godot
           git config user.name "github-actions[bot]"
@@ -224,4 +225,6 @@ jobs:
           git add .gitattributes addons/ PDJE_VERSION PDJE_WRAPPER_VERSION 
           git commit -m "AUTO_PUBLISH_TRIG $(date +'%Y-%m-%d %H:%M:%S')"
           git push origin main
+          git lfs push --all origin main
+          
       
