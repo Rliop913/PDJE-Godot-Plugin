@@ -215,9 +215,9 @@ jobs:
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/debug
 
           cp builds/version-of-success_builds/* Project_DJ_Godot/
-          git lfs install --local
           
           cd Project_DJ_Godot
+          git lfs install --local
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config lfs.url "https://rrop:${{ secrets.LFS_TOKEN }}@pdje.uk/rrop/PDJE_LFS_REPO.git/info/lfs"
