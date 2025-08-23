@@ -203,7 +203,6 @@ jobs:
           cd Project_DJ_Godot
           git lfs install --local
           git lfs pull
-          git lfs fetch --all
           cd ..
           mkdir -p Project_DJ_Godot/addons/Prebuilts/win/release
           mkdir -p Project_DJ_Godot/addons/Prebuilts/linux/release
@@ -230,6 +229,6 @@ jobs:
           git add .gitattributes addons/ PDJE_VERSION PDJE_WRAPPER_VERSION 
           git commit -m "AUTO_PUBLISH_TRIG $(date +'%Y-%m-%d %H:%M:%S')"
           git push origin main
-          git lfs push --all origin main
+          git lfs push origin HEAD
           
       
