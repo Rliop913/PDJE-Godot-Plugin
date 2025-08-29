@@ -2,75 +2,92 @@
 
 #include <godot_cpp/classes/ref.hpp>
 
-#include "PDJE_interface.hpp"
 #include "EditorArgs.hpp"
-namespace godot{
+#include "PDJE_interface.hpp"
+namespace godot {
 
-
-class EditorWrapper : public RefCounted{
+class EditorWrapper : public RefCounted {
     GDCLASS(EditorWrapper, RefCounted)
 
-private:
-    editorObject* edit;
-    PDJE* engine;
-    bool Flag_is_rendered = false;
-protected:
-    static void _bind_methods();
-public:
-    enum FLAG_EDITOR_OBJ{
-        NOTE = 0,
-        KV,
-        MIX,
-        MUSIC
-    };
-    bool AddLine(Ref<PDJE_EDITOR_ARG> arg);
-    bool EditMusicFirstBar(String title, String firstBar);
-    int deleteLine(
-        Ref<PDJE_EDITOR_ARG> obj,
-        bool skipType_if_mix_obj, 
-        bool skipDetail_if_mix_obj);
+  private:
+    editorObject *edit;
+    PDJE         *engine;
+    bool          Flag_is_rendered = false;
 
-    bool render(String trackTitle);
+  protected:
+    static void
+    _bind_methods();
 
-    bool demoPlayInit(unsigned int frameBufferSize, String trackTitle);
+  public:
+    enum FLAG_EDITOR_OBJ { NOTE = 0, KV, MIX, MUSIC };
+    bool
+    AddLine(Ref<PDJE_EDITOR_ARG> arg);
+    bool
+    EditMusicFirstBeat(String title, String firstBeat);
+    int
+    deleteLine(Ref<PDJE_EDITOR_ARG> obj,
+               bool                 skipType_if_mix_obj,
+               bool                 skipDetail_if_mix_obj);
 
-    bool pushTrackToRootDB(String trackTitleToPush);
+    bool
+    render(String trackTitle);
 
-    bool pushToRootDB(String musicTitle, String musicComposer);
+    bool
+    demoPlayInit(unsigned int frameBufferSize, String trackTitle);
 
-    bool getMixDatas(Callable mixCallback);
-    bool getMusicDatas(Callable musicCallback);
-    bool getNoteDatas(Callable noteCallback);
-    bool getKeyValueDatas(Callable KVCallback);
-    Dictionary getAll();
+    bool
+    pushTrackToRootDB(String trackTitleToPush);
 
-    bool Undo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
+    bool
+    pushToRootDB(String musicTitle, String musicComposer);
 
-    bool Redo(const int _FLAG_EDITOR_OBJ , String musicName_if_flag_music = "");
-    
-    bool Go(const int _FLAG_EDITOR_OBJ, String branchName, String TimeNodeID);
-    
-    String GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
+    bool
+    getMixDatas(Callable mixCallback);
+    bool
+    getMusicDatas(Callable musicCallback);
+    bool
+    getNoteDatas(Callable noteCallback);
+    bool
+    getKeyValueDatas(Callable KVCallback);
+    Dictionary
+    getAll();
 
-    bool UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName="");
+    bool
+    Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music = "");
 
-    ///WARNING!!! THERE IS NO TURNING BACK
-    String DESTROY_PROJECT();
-    bool Open(String projectPath);
+    bool
+    Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music = "");
 
-    void Init(editorObject* refobj, PDJE* refengine);
+    bool
+    Go(const int _FLAG_EDITOR_OBJ, String branchName, String TimeNodeID);
 
-    bool ConfigNewMusic(String NewMusicName, 
-                        String composer,
-                        String musicPath,
-                        String firstBar = "0");
-                        
-    Dictionary GetDiff(
-        const int _FLAG_EDITOR_OBJ, 
-        String musicName_if_flag_music, 
-        String oldTimeNodeID, 
-        String newTimeNodeID);
-    EditorWrapper() = default;
+    String
+    GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
+
+    bool
+    UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName = "");
+
+    /// WARNING!!! THERE IS NO TURNING BACK
+    String
+    DESTROY_PROJECT();
+    bool
+    Open(String projectPath);
+
+    void
+    Init(editorObject *refobj, PDJE *refengine);
+
+    bool
+    ConfigNewMusic(String NewMusicName,
+                   String composer,
+                   String musicPath,
+                   String firstBar = "0");
+
+    Dictionary
+    GetDiff(const int _FLAG_EDITOR_OBJ,
+            String    musicName_if_flag_music,
+            String    oldTimeNodeID,
+            String    newTimeNodeID);
+    EditorWrapper()  = default;
     ~EditorWrapper() = default;
 };
-}
+} // namespace godot

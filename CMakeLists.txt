@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.10.0)
 set(HWY_ENABLE_TESTS OFF)
 set(CAPNP_BUILD_TESTS OFF)
 set(BUILD_TESTING OFF CACHE BOOL "Disable testing")
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/conan_cmakes/conan_toolchain.cmake")
 cmake_policy(SET CMP0091 NEW)
 # if(APPLE)
 # set(HWY_ENABLE_TARGETS "scalar,sse4,avx,avx2" CACHE STRING "Enabled SIMD targets" FORCE)
@@ -45,10 +46,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/MusPannelWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
-
-
-
-
+${CMAKE_SOURCE_DIR}/Wrapper_src/DataLine/CoreLine.cpp
 
 )
 
@@ -65,6 +63,8 @@ target_include_directories( PDJE_godot_wrapper PUBLIC
     ${CMAKE_SOURCE_DIR}/Wrapper_src
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
     ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
+    ${CMAKE_SOURCE_DIR}/Wrapper_src/DataLine
+    
     
     ${binary_dir}/gen/include
     ${binary_dir}/gen/include/godot_cpp

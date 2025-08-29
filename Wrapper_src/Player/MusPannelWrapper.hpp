@@ -6,27 +6,36 @@
 
 #include "FXWrapper.hpp"
 
-namespace godot{
+namespace godot {
 
-
-class MusPannelWrapper : public RefCounted{
+class MusPannelWrapper : public RefCounted {
     GDCLASS(MusPannelWrapper, RefCounted)
-private:
-    MusicControlPannel* musref = nullptr;
-    PDJE* engine = nullptr;
-protected:
-    static void _bind_methods();
-public:
-    void Init(MusicControlPannel* refobj, PDJE* refengine);
+  private:
+    MusicControlPannel *musref = nullptr;
+    PDJE               *engine = nullptr;
 
-    int LoadMusic( String Title, String composer, double bpm = -1.0);
+  protected:
+    static void
+    _bind_methods();
 
-    bool CueMusic(String title, String newPos);
-    bool SetMusic(String title, const bool onOff);
-    Array GetLoadedMusicList();
-    bool UnloadMusic(String title);
-    Ref<FXWrapper> getFXHandle(String title);
-    MusPannelWrapper() = default;
+  public:
+    void
+    Init(MusicControlPannel *refobj, PDJE *refengine);
+
+    int
+    LoadMusic(String Title, String composer, double bpm = -1.0);
+
+    bool
+    CueMusic(String title, String newPos);
+    bool
+    SetMusic(String title, const bool onOff);
+    Array
+    GetLoadedMusicList();
+    bool
+    UnloadMusic(String title);
+    Ref<FXWrapper>
+    getFXHandle(String title);
+    MusPannelWrapper()  = default;
     ~MusPannelWrapper() = default;
 };
-}
+} // namespace godot

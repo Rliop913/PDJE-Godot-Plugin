@@ -2,18 +2,17 @@
 
 #include <godot_cpp/classes/ref.hpp>
 
-namespace godot{
+namespace godot {
 
-
-
-class EnumWrapper : public RefCounted{
+class EnumWrapper : public RefCounted {
     GDCLASS(EnumWrapper, RefCounted)
-private:
+  private:
+  protected:
+    static void
+    _bind_methods();
 
-protected:
-    static void _bind_methods();
-public:
-    enum PDJE_FX_LIST{
+  public:
+    enum PDJE_FX_LIST {
         COMPRESSOR = 0,
         DISTORTION,
         ECHO,
@@ -28,11 +27,8 @@ public:
         TRANCE,
         VOL
     };
-    EnumWrapper() = default;
+    EnumWrapper()  = default;
     ~EnumWrapper() = default;
-
 };
 
-
-
-}
+} // namespace godot
