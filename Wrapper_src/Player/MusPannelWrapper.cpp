@@ -19,6 +19,10 @@ MusPannelWrapper::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("getFXHandle", "title"),
                          &MusPannelWrapper::getFXHandle);
+
+    ClassDB::bind_method(
+        D_METHOD("ChangeBpm", "title", "targetBpm", "originBpm"),
+        &MusPannelWrapper::ChangeBpm);
 }
 
 void
@@ -94,4 +98,15 @@ MusPannelWrapper::LoadMusic(String Title, String composer, double bpm)
     if (muslist.empty())
         return -2;
     return musref->LoadMusic((*engine->DBROOT.get()), muslist.front());
+}
+
+bool
+MusPannelWrapper::ChangeBpm(String title, double targetBpm, double originBpm)
+{
+    if (musref == nullptr)
+        return false;
+    if (engine == nullptr)
+        return false;
+
+    return musref->ChangeBpm(GStrToCStr(title), targetBpm, originBpm);
 }

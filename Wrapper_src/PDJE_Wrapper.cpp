@@ -27,17 +27,15 @@ PDJE_Wrapper::_bind_methods()
         &PDJE_Wrapper::InitEditor);
     ClassDB::bind_method(D_METHOD("GetEditor"), &PDJE_Wrapper::GetEditor);
     ClassDB::bind_method(D_METHOD("CloseEditor"), &PDJE_Wrapper::CloseEditor);
-    
-    ADD_SIGNAL(MethodInfo(
-        "note_gen_signal",
-        PropertyInfo(Variant::STRING, "note_type"),
-        PropertyInfo(Variant::STRING, "note_detail"),
-        PropertyInfo(Variant::STRING, "first_arg"),
-        PropertyInfo(Variant::STRING, "second_arg"),
-        PropertyInfo(Variant::STRING, "third_arg"),
-        PropertyInfo(Variant::STRING, "y_pos_start"),
-        PropertyInfo(Variant::STRING, "y_pos_end")   
-    ));
+
+    ADD_SIGNAL(MethodInfo("note_gen_signal",
+                          PropertyInfo(Variant::STRING, "note_type"),
+                          PropertyInfo(Variant::STRING, "note_detail"),
+                          PropertyInfo(Variant::STRING, "first_arg"),
+                          PropertyInfo(Variant::STRING, "second_arg"),
+                          PropertyInfo(Variant::STRING, "third_arg"),
+                          PropertyInfo(Variant::STRING, "y_pos_start"),
+                          PropertyInfo(Variant::STRING, "y_pos_end")));
 }
 
 PDJE_Wrapper::PDJE_Wrapper()
@@ -188,27 +186,24 @@ bool
 PDJE_Wrapper::GetNoteObjects(String trackTitle)
 {
     auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
-    auto track = searched.front();
-    
-    OBJ_SETTER_CALLBACK osc = [this](
-        std::string note_type, 
-        std::string note_detail, 
-        std::string first_arg, 
-        std::string second_arg, 
-        std::string third_arg, 
-        unsigned long long y_pos_start, 
-        unsigned long long y_pos_end){
-            call_deferred("emit_signal",
-                "note_gen_signal",
-                CStrToGStr(note_type),
-                CStrToGStr(note_detail),
-                CStrToGStr(first_arg),
-                CStrToGStr(second_arg),
-                CStrToGStr(third_arg),
-                String::num_uint64(y_pos_start),
-                String::num_uint64(y_pos_end)
-            );
+    auto track    = searched.front();
 
+    OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
+                                     std::string        note_detail,
+                                     std::string        first_arg,
+                                     std::string        second_arg,
+                                     std::string        third_arg,
+                                     unsigned long long y_pos_start,
+                                     unsigned long long y_pos_end) {
+        call_deferred("emit_signal",
+                      "note_gen_signal",
+                      CStrToGStr(note_type),
+                      CStrToGStr(note_detail),
+                      CStrToGStr(first_arg),
+                      CStrToGStr(second_arg),
+                      CStrToGStr(third_arg),
+                      String::num_uint64(y_pos_start),
+                      String::num_uint64(y_pos_end));
     };
     return engine->GetNoteObjects(track, osc);
 }

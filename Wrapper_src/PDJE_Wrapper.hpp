@@ -1,10 +1,10 @@
 #pragma once
+#include "CoreLine.hpp"
 #include "EditorWrapper.hpp"
 #include "MusPannelWrapper.hpp"
 #include "PDJE_Utils.hpp"
 #include "PDJE_interface.hpp"
 #include "PlayerWrapper.hpp"
-#include "CoreLine.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/os.hpp>

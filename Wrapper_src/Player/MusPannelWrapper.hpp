@@ -29,12 +29,15 @@ class MusPannelWrapper : public RefCounted {
     CueMusic(String title, String newPos);
     bool
     SetMusic(String title, const bool onOff);
+    bool
+    ChangeBpm(String title, double targetBpm, double originBpm);
     Array
     GetLoadedMusicList();
     bool
     UnloadMusic(String title);
     Ref<FXWrapper>
     getFXHandle(String title);
+
     MusPannelWrapper()  = default;
     ~MusPannelWrapper() = default;
 };

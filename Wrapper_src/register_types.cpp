@@ -22,7 +22,6 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();
-    
 
     ClassDB::register_class<PlayerWrapper>();
     ClassDB::register_class<PDJE_Wrapper>();
