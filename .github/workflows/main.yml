@@ -204,19 +204,19 @@ jobs:
           git lfs install --local
           git lfs pull
           cd ..
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/win/release
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux/release
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/macOS/release
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/win/debug
-          mkdir -p Project_DJ_Godot/addons/Prebuilts/linux/debug
-          #mkdir -p Project_DJ_Godot/addons/Prebuilts/macOS/debug
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/win/release
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macOS/release
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
+          #mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
           
-          cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/release
-          cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/release
-          cp builds/macOS-14-Release-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/release
-          cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/win/debug
-          cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/linux/debug
-          # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Prebuilts/macOS/debug
+          cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/release
+          cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
+          cp builds/macOS-14-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macOS/release
+          cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
+          cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
+          # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
 
           cp builds/version-of-success_builds/* Project_DJ_Godot/
           
