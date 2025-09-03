@@ -232,7 +232,7 @@ jobs:
             echo "found: $file"
             outfile="${file}.7z"
           
-            7z a -t7z -m0=LZMA2 -mx=3 -v20m "$outfile" "$file" >/dev/null \
+            7z a -t7z -m0=LZMA2 -mx=3 -v20m -mf- "$outfile" "$file" >/dev/null \
               && echo "Compressed to: ${outfile}.001" \
               || echo "Failed: $file"
 
