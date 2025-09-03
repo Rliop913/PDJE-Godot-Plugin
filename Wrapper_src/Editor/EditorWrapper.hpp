@@ -52,25 +52,25 @@ class EditorWrapper : public RefCounted {
     Dictionary
     getAll();
 
-    bool
+    String
     Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music = "");
 
-    bool
+    String
     Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music = "");
 
-    bool
+    String
     Go(const int _FLAG_EDITOR_OBJ, String branchName, String TimeNodeID);
 
     String
     GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
 
-    bool
+    String
     UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName = "");
 
     /// WARNING!!! THERE IS NO TURNING BACK
     String
     DESTROY_PROJECT();
-    bool
+    String
     Open(String projectPath);
 
     void
