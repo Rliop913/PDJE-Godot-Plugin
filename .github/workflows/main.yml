@@ -210,7 +210,14 @@ jobs:
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           #mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
-
+          
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/win/release/* 2>/dev/null || true
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/linux/release/* 2>/dev/null || true
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/macOS/release/* 2>/dev/null || true
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/win/debug/* 2>/dev/null || true
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug/* 2>/dev/null || true
+          # rm -f Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug/* 2>/dev/null || true
+          
           sudo apt-get update
           sudo apt-get install -y p7zip-full
 
