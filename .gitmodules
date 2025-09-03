@@ -2,6 +2,6 @@
 	path = godot-cpp
 	url = https://github.com/godotengine/godot-cpp.git
 	branch = 4.4
-[submodule "Project_DJ_Engine"]
-	path = Project_DJ_Engine
-	url = https://github.com/Rliop913/Project_DJ_Engine.git
+[submodule "Project-DJ-Engine"]
+	path = Project-DJ-Engine
+	url = https://github.com/Rliop913/Project-DJ-Engine.git

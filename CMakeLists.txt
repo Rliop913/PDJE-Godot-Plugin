@@ -32,7 +32,7 @@ include(cmake/godotExternalSetter.cmake)
 
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/Project_DJ_Engine)
+add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
 
 
 add_library(PDJE_godot_wrapper SHARED 
