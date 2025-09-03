@@ -220,8 +220,6 @@ jobs:
           
           sudo apt-get update
           sudo apt-get install -y p7zip-full
-
-          COMPRESSION_LEVEL=3
           
           cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/release
           cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
@@ -234,7 +232,7 @@ jobs:
             echo "found: $file"
             outfile="${file}.7z"
           
-            7z a -t7z -mx=3 -v20m "$outfile" "$file" >/dev/null \
+            7z a -t7z -m0=LZMA2 -mx=3 -v20m "$outfile" "$file" >/dev/null \
               && echo "Compressed to: ${outfile}.001" \
               || echo "Failed: $file"
 
