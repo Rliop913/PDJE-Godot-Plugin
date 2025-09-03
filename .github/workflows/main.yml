@@ -210,6 +210,11 @@ jobs:
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           #mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
+
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+
+          COMPRESSION_LEVEL=3
           
           cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/release
           cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
@@ -218,6 +223,16 @@ jobs:
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
 
+          find Project_DJ_Godot/addons -type f | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+            echo "found: $file"
+            outfile="${file}.7z"
+          
+            7z a -t7z -mx=3 -v20m "$outfile" "$file" >/dev/null \
+              && echo "Compressed to: ${outfile}.001" \
+              || echo "Failed: $file"
+
+            rm "$file"
+          done
           cp builds/version-of-success_builds/* Project_DJ_Godot/
           
           cd Project_DJ_Godot
