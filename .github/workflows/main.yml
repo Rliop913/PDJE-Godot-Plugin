@@ -154,6 +154,10 @@ jobs:
           echo "found: $file"
           cp -av "$file" ./staged_bins
         done
+        find ./conan_cmakes/direct_deploy/zlib/ '(' -type f -o -type l ')' -name "*zlib*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
+          echo "found: $file"
+          cp -av "$file" ./staged_bins
+        done
 
 
     - name: Upload artifacts

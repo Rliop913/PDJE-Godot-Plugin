@@ -4,7 +4,8 @@ annoy/1.17.3
 capnproto/1.1.0
 highway/1.2.0
 libgit2/1.8.4
-
+zlib/1.2.13
+  
 [generators]
 CMakeDeps
 CMakeToolchain
@@ -12,5 +13,5 @@ CMakeToolchain
 
 [options]
 spdlog/1.15.3:header_only=True
-zlib/*:shared=False
+zlib/*:shared=True
 highway/*:shared=True
