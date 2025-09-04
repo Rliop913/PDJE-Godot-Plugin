@@ -1,7 +1,7 @@
 #include "PDJE_Wrapper.hpp"
 #include <filesystem>
 #include <godot_cpp/core/class_db.hpp>
-
+#include "fileNameSanitizer.hpp"
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_Wrapper::PDJE_PLAY_MODE);
@@ -57,9 +57,20 @@ PDJE_Wrapper::SearchTrack(String Title)
 
     Array trackList;
     for (auto &track : res) {
+        
+        std::stringstream before_csv(track.cachedMixList);
+        std::string sanitized_music_name;
+        std::string unsanitized_csv;
+        while(std::getline(before_csv, sanitized_music_name, ',')){
+            unsanitized_csv += PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
+            unsanitized_csv += ',';
+        }
+        if(!unsanitized_csv.empty()){
+            unsanitized_csv.pop_back();
+        }
         Dictionary trackMetaData;
-        trackMetaData["title"]  = CStrToGStr(track.trackTitle);
-        trackMetaData["mixSet"] = CStrToGStr(track.cachedMixList);
+        trackMetaData["title"]  = CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
+        trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
         trackList.push_back(trackMetaData);
     }
     return trackList;
@@ -76,8 +87,10 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
     Array musicList;
     for (auto &music : res) {
         Dictionary musicMetaData;
-        musicMetaData["title"]     = CStrToGStr(music.title);
-        musicMetaData["composer"]  = CStrToGStr(music.composer);
+        
+        
+        musicMetaData["title"]     = CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
+        musicMetaData["composer"]  = CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
         musicMetaData["bpm"]       = music.bpm;
         musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
         musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
