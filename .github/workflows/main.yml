@@ -154,11 +154,26 @@ jobs:
           echo "found: $file"
           cp -av "$file" ./staged_bins
         done
+        
+    - name: stage zlib-posix
+      if: runner.os != 'Windows'
+      id: stage_zlib_posix
+      shell: bash
+      run: |
+        find ./conan_cmakes/direct_deploy/zlib/ '(' -type f -o -type l ')' -name "*libz*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
+          echo "found: $file"
+          cp -av "$file" ./staged_bins
+        done
+        
+    - name: stage zlib-windows
+      if: runner.os == 'Windows'
+      id: stage_zlib_windows
+      shell: bash
+      run: |
         find ./conan_cmakes/direct_deploy/zlib/ '(' -type f -o -type l ')' -name "*zlib*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
           echo "found: $file"
           cp -av "$file" ./staged_bins
         done
-
 
     - name: Upload artifacts
       if: success()
