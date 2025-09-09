@@ -29,7 +29,7 @@ class EditorWrapper : public RefCounted {
                bool                 skipType_if_mix_obj,
                bool                 skipDetail_if_mix_obj);
 
-    bool
+    String
     render(String trackTitle);
 
     bool

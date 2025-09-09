@@ -64,15 +64,20 @@ EditorWrapper::deleteLine(Ref<PDJE_EDITOR_ARG> obj,
     return 0;
 }
 
-bool
+String
 EditorWrapper::render(String trackTitle)
 {
     if (edit == nullptr)
-        return false;
+        return "editor is null";
     if (engine == nullptr)
-        return false;
-    Flag_is_rendered = true;
-    return edit->render(GStrToCStr(trackTitle), *engine->DBROOT.get());
+        return "engine is null";
+    UNSANITIZED render_msg;
+    if(edit->render(GStrToCStr(trackTitle), *engine->DBROOT.get(), render_msg)){
+        return "";
+    }
+    else{
+        return CStrToGStr(render_msg);
+    }
 }
 
 bool
