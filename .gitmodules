@@ -5,3 +5,4 @@
 [submodule "Project-DJ-Engine"]
 	path = Project-DJ-Engine
 	url = https://github.com/Rliop913/Project-DJ-Engine.git
+	branch = main
