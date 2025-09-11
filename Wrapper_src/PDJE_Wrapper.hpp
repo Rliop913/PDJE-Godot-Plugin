@@ -49,7 +49,7 @@ class PDJE_Wrapper : public Node {
     CloseEditor();
 
     Ref<CoreLine>
-    PullOutCoreLine(); // IMPL NONE
+    PullOutCoreLine();
 
     bool
     GetNoteObjects(String trackTitle);

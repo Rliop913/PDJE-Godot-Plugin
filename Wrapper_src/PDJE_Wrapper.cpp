@@ -27,7 +27,9 @@ PDJE_Wrapper::_bind_methods()
         &PDJE_Wrapper::InitEditor);
     ClassDB::bind_method(D_METHOD("GetEditor"), &PDJE_Wrapper::GetEditor);
     ClassDB::bind_method(D_METHOD("CloseEditor"), &PDJE_Wrapper::CloseEditor);
-
+    ClassDB::bind_method(D_METHOD("PullOutCoreLine"), &PDJE_Wrapper::PullOutCoreLine);
+    ClassDB::bind_method(D_METHOD("GetNoteObjects", "trackTitle"), &PDJE_Wrapper::GetNoteObjects);
+    
     ADD_SIGNAL(MethodInfo("note_gen_signal",
                           PropertyInfo(Variant::STRING, "note_type"),
                           PropertyInfo(Variant::STRING, "note_detail"),
@@ -36,6 +38,7 @@ PDJE_Wrapper::_bind_methods()
                           PropertyInfo(Variant::STRING, "third_arg"),
                           PropertyInfo(Variant::STRING, "y_pos_start"),
                           PropertyInfo(Variant::STRING, "y_pos_end")));
+                        
 }
 
 PDJE_Wrapper::PDJE_Wrapper()
