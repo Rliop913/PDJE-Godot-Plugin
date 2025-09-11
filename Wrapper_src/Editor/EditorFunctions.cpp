@@ -79,28 +79,28 @@ EditorWrapper::Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
         if(edit->Undo<EDIT_ARG_NOTE>()){
-            return "NOTE Undo OK";
+            return "OK";
         }
         else{
             return "NOTE Undo Failed";
         }
     case 1:
         if(edit->Undo<EDIT_ARG_KEY_VALUE>()){
-            return "KEY_VALUE Undo OK";
+            return "OK";
         }
         else{
             return "KEY_VALUE Undo Failed";
         }
     case 2:
         if(edit->Undo<EDIT_ARG_MIX>()){
-            return "MIX Undo OK";
+            return "OK";
         }
         else{
             return "MIX Undo Failed";
         }
     case 3:
         if(edit->Undo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))){
-            return "MUSIC Undo OK";
+            return "OK";
         }
         else{
             return "MUSIC Undo Failed";
@@ -118,28 +118,28 @@ EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
         if(edit->Redo<EDIT_ARG_NOTE>()){
-            return "NOTE Redo OK";
+            return "OK";
         }
         else{
             return "NOTE Redo Failed";
         }
     case 1:
         if(edit->Redo<EDIT_ARG_KEY_VALUE>()){
-            return "KEY_VALUE Redo OK";
+            return "OK";
         }
         else{
             return "KEY_VALUE Redo Failed";
         }
     case 2:
         if(edit->Redo<EDIT_ARG_MIX>()){
-            return "MIX Redo OK";
+            return "OK";
         }
         else{
             return "MIX Redo Failed";
         }
     case 3:
         if(edit->Redo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))){
-            return "MUSIC Redo OK";
+            return "OK";
         }
         else{
             return "MUSIC Redo Failed";
@@ -161,28 +161,28 @@ EditorWrapper::Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID)
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
         if(edit->Go<EDIT_ARG_NOTE>(GStrToCStr(branchName), node_id)){
-            return "NOTE Go OK";
+            return "OK";
         }
         else{
             return "NOTE Go Failed";
         }
     case 1:
         if(edit->Go<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName), node_id)){
-            return "KEY_VALUE Go OK";
+            return "OK";
         }
         else{
             return "KEY_VALUE Go Failed";
         }
     case 2:
         if(edit->Go<EDIT_ARG_MIX>(GStrToCStr(branchName), node_id)){
-            return "MIX Go OK";
+            return "OK";
         }
         else{
             return "MIX Go Failed";
         }
     case 3:
         if(edit->Go<EDIT_ARG_MUSIC>(GStrToCStr(branchName), node_id)){
-            return "MUSIC Go OK";
+            return "OK";
         }
         else{
             return "MUSIC Go Failed";
@@ -222,14 +222,14 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
     case 0:
         if (branchName.is_empty()) {
             if(edit->UpdateLog<EDIT_ARG_NOTE>()){
-                return "NOTE UpdateLog OK";
+                return "OK";
             }
             else{
                 return "Note UpdateLog Failed";
             }
         } else {
             if(edit->UpdateLog<EDIT_ARG_NOTE>(GStrToCStr(branchName))){
-                return "NOTE branch UpdateLog OK";
+                return "OK";
             }
             else{
                 return "NOTE branch UpdateLog Failed";
@@ -238,14 +238,14 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
     case 1:
         if (branchName.is_empty()) {
             if(edit->UpdateLog<EDIT_ARG_KEY_VALUE>()){
-                return "KV UpdateLog OK";
+                return "OK";
             }
             else{
                 return "KV UpdateLog Failed";
             }
         } else {
             if(edit->UpdateLog<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName))){
-                return "KV branch UpdateLog OK";
+                return "OK";
             }
             else{
                 return "KV branch UpdateLog Failed";
@@ -254,14 +254,14 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
     case 2:
         if (branchName.is_empty()) {
             if(edit->UpdateLog<EDIT_ARG_MIX>()){
-                return "MIX UpdateLog OK";
+                return "OK";
             }
             else{
                 return "MIX UpdateLog Failed";
             }
         } else {
             if(edit->UpdateLog<EDIT_ARG_MIX>(GStrToCStr(branchName))){
-                return "MIX branch UpdateLog OK";
+                return "OK";
             }
             else{
                 return "MIX branch UpdateLog Failed";
@@ -270,14 +270,14 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
     case 3:
         if (branchName.is_empty()) {
             if(edit->UpdateLog<EDIT_ARG_MUSIC>()){
-                return "MUSIC UpdateLog OK";
+                return "OK";
             }
             else{
                 return "MUSIC UpdateLog Failed";
             }
         } else {
             if(edit->UpdateLog<EDIT_ARG_MUSIC>(GStrToCStr(branchName))){
-                return "MUSIC branch UpdateLog OK";
+                return "OK";
             }
             else{
                 return "MUSIC branch UpdateLog Failed";
