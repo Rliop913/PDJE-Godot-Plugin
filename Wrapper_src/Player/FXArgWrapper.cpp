@@ -12,7 +12,7 @@ FXArgWrapper::_bind_methods()
 }
 
 void
-FXArgWrapper::Init(FXControlPannel *refobj)
+FXArgWrapper::Init(FXControlPanel *refobj)
 {
     refwrap.emplace(refobj);
 }

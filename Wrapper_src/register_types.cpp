@@ -18,7 +18,7 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<EnumWrapper>();
     ClassDB::register_class<PDJE_EDITOR_ARG>();
     ClassDB::register_class<EditorWrapper>();
-    ClassDB::register_class<MusPannelWrapper>();
+    ClassDB::register_class<MusPanelWrapper>();
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();

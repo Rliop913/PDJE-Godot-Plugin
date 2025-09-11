@@ -8,10 +8,10 @@
 
 namespace godot {
 
-class MusPannelWrapper : public RefCounted {
-    GDCLASS(MusPannelWrapper, RefCounted)
+class MusPanelWrapper : public RefCounted {
+    GDCLASS(MusPanelWrapper, RefCounted)
   private:
-    MusicControlPannel *musref = nullptr;
+    MusicControlPanel *musref = nullptr;
     PDJE               *engine = nullptr;
 
   protected:
@@ -20,7 +20,7 @@ class MusPannelWrapper : public RefCounted {
 
   public:
     void
-    Init(MusicControlPannel *refobj, PDJE *refengine);
+    Init(MusicControlPanel *refobj, PDJE *refengine);
 
     int
     LoadMusic(String Title, String composer, double bpm = -1.0);
@@ -38,7 +38,7 @@ class MusPannelWrapper : public RefCounted {
     Ref<FXWrapper>
     getFXHandle(String title);
 
-    MusPannelWrapper()  = default;
-    ~MusPannelWrapper() = default;
+    MusPanelWrapper()  = default;
+    ~MusPanelWrapper() = default;
 };
 } // namespace godot

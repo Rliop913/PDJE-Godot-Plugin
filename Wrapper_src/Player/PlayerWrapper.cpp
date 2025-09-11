@@ -11,10 +11,10 @@ PlayerWrapper::_bind_methods()
     ClassDB::bind_method(D_METHOD("ChangeCursorPos", "framePos"),
                          &PlayerWrapper::ChangeCursorPos);
     ClassDB::bind_method(D_METHOD("GetStatus"), &PlayerWrapper::GetStatus);
-    ClassDB::bind_method(D_METHOD("GetFXControlPannel"),
-                         &PlayerWrapper::GetFXControlPannel);
-    ClassDB::bind_method(D_METHOD("GetMusicControlPannel"),
-                         &PlayerWrapper::GetMusicControlPannel);
+    ClassDB::bind_method(D_METHOD("GetFXControlPanel"),
+                         &PlayerWrapper::GetFXControlPanel);
+    ClassDB::bind_method(D_METHOD("GetMusicControlPanel"),
+                         &PlayerWrapper::GetMusicControlPanel);
 }
 
 void
@@ -82,25 +82,25 @@ PlayerWrapper::GetStatus()
 }
 
 Ref<FXWrapper>
-PlayerWrapper::GetFXControlPannel()
+PlayerWrapper::GetFXControlPanel()
 {
-    // auto mainFXHandle = playerobj->GetFXControlPannel();
+    // auto mainFXHandle = playerobj->GetFXControlPanel();
     auto ref = Ref<FXWrapper>(memnew(FXWrapper));
     if (playerobj == nullptr)
         return ref;
-    ref->Init(playerobj->GetFXControlPannel());
+    ref->Init(playerobj->GetFXControlPanel());
     return ref;
 }
 
-Ref<MusPannelWrapper>
-PlayerWrapper::GetMusicControlPannel()
+Ref<MusPanelWrapper>
+PlayerWrapper::GetMusicControlPanel()
 {
-    auto ref = Ref<MusPannelWrapper>(memnew(MusPannelWrapper));
+    auto ref = Ref<MusPanelWrapper>(memnew(MusPanelWrapper));
     if (playerobj == nullptr)
         return ref;
     if (engineobj == nullptr)
         return ref;
 
-    ref->Init((playerobj->GetMusicControlPannel()), engineobj);
+    ref->Init((playerobj->GetMusicControlPanel()), engineobj);
     return ref;
 }

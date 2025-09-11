@@ -3,9 +3,9 @@
 using namespace godot;
 
 void
-FXWrapper::Init(FXControlPannel *refobj)
+FXWrapper::Init(FXControlPanel *refobj)
 {
-    fxpannel = refobj;
+    fxpanel = refobj;
 }
 
 void
@@ -20,18 +20,18 @@ FXWrapper::_bind_methods()
 bool
 FXWrapper::CheckFXOn()
 {
-    if (fxpannel == nullptr)
+    if (fxpanel == nullptr)
         return false;
-    return fxpannel->checkSomethingOn();
+    return fxpanel->checkSomethingOn();
 }
 
 bool
 FXWrapper::FX_ON_OFF(int fx, bool onoff)
 {
-    if (fxpannel == nullptr)
+    if (fxpanel == nullptr)
         return false;
     FXList ofx = static_cast<FXList>(fx);
-    fxpannel->FX_ON_OFF(ofx, onoff);
+    fxpanel->FX_ON_OFF(ofx, onoff);
     return true;
 }
 
@@ -39,8 +39,8 @@ Ref<FXArgWrapper>
 FXWrapper::GetArgSetter()
 {
     auto ref = Ref<FXArgWrapper>(memnew(FXArgWrapper));
-    if (fxpannel == nullptr)
+    if (fxpanel == nullptr)
         return ref;
-    ref->Init(fxpannel);
+    ref->Init(fxpanel);
     return ref;
 }

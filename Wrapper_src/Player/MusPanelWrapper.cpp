@@ -1,39 +1,39 @@
-#include "MusPannelWrapper.hpp"
+#include "MusPanelWrapper.hpp"
 #include "PDJE_Utils.hpp"
 #include "PDJE_Wrapper.hpp"
 using namespace godot;
 
 void
-MusPannelWrapper::_bind_methods()
+MusPanelWrapper::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("LoadMusic", "Title", "composer", "bpm"),
-                         &MusPannelWrapper::LoadMusic);
+                         &MusPanelWrapper::LoadMusic);
     ClassDB::bind_method(D_METHOD("CueMusic", "title", "newPos"),
-                         &MusPannelWrapper::CueMusic);
+                         &MusPanelWrapper::CueMusic);
     ClassDB::bind_method(D_METHOD("SetMusic", "title", "onoff"),
-                         &MusPannelWrapper::SetMusic);
+                         &MusPanelWrapper::SetMusic);
     ClassDB::bind_method(D_METHOD("GetLoadedMusicList"),
-                         &MusPannelWrapper::GetLoadedMusicList);
+                         &MusPanelWrapper::GetLoadedMusicList);
     ClassDB::bind_method(D_METHOD("UnloadMusic", "title"),
-                         &MusPannelWrapper::UnloadMusic);
+                         &MusPanelWrapper::UnloadMusic);
 
     ClassDB::bind_method(D_METHOD("getFXHandle", "title"),
-                         &MusPannelWrapper::getFXHandle);
+                         &MusPanelWrapper::getFXHandle);
 
     ClassDB::bind_method(
         D_METHOD("ChangeBpm", "title", "targetBpm", "originBpm"),
-        &MusPannelWrapper::ChangeBpm);
+        &MusPanelWrapper::ChangeBpm);
 }
 
 void
-MusPannelWrapper::Init(MusicControlPannel *refobj, PDJE *refengine)
+MusPanelWrapper::Init(MusicControlPanel *refobj, PDJE *refengine)
 {
     musref = refobj;
     engine = refengine;
 }
 
 Ref<FXWrapper>
-MusPannelWrapper::getFXHandle(String title)
+MusPanelWrapper::getFXHandle(String title)
 {
     auto ref = Ref<FXWrapper>(memnew(FXWrapper));
     if (musref == nullptr)
@@ -44,7 +44,7 @@ MusPannelWrapper::getFXHandle(String title)
 }
 
 bool
-MusPannelWrapper::CueMusic(String title, String newPos)
+MusPanelWrapper::CueMusic(String title, String newPos)
 {
     if (musref == nullptr)
         return false;
@@ -58,7 +58,7 @@ MusPannelWrapper::CueMusic(String title, String newPos)
 }
 
 bool
-MusPannelWrapper::SetMusic(String title, const bool onOff)
+MusPanelWrapper::SetMusic(String title, const bool onOff)
 {
     if (musref == nullptr)
         return false;
@@ -66,7 +66,7 @@ MusPannelWrapper::SetMusic(String title, const bool onOff)
 }
 
 bool
-MusPannelWrapper::UnloadMusic(String title)
+MusPanelWrapper::UnloadMusic(String title)
 {
     if (musref == nullptr)
         return false;
@@ -74,7 +74,7 @@ MusPannelWrapper::UnloadMusic(String title)
 }
 
 Array
-MusPannelWrapper::GetLoadedMusicList()
+MusPanelWrapper::GetLoadedMusicList()
 {
     if (musref == nullptr)
         return Array();
@@ -87,7 +87,7 @@ MusPannelWrapper::GetLoadedMusicList()
 }
 
 int
-MusPannelWrapper::LoadMusic(String Title, String composer, double bpm)
+MusPanelWrapper::LoadMusic(String Title, String composer, double bpm)
 {
     if (musref == nullptr)
         return -1;
@@ -101,7 +101,7 @@ MusPannelWrapper::LoadMusic(String Title, String composer, double bpm)
 }
 
 bool
-MusPannelWrapper::ChangeBpm(String title, double targetBpm, double originBpm)
+MusPanelWrapper::ChangeBpm(String title, double targetBpm, double originBpm)
 {
     if (musref == nullptr)
         return false;

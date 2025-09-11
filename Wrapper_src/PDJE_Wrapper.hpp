@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreLine.hpp"
 #include "EditorWrapper.hpp"
-#include "MusPannelWrapper.hpp"
+#include "MusPanelWrapper.hpp"
 #include "PDJE_Utils.hpp"
 #include "PDJE_interface.hpp"
 #include "PlayerWrapper.hpp"

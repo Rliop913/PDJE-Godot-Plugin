@@ -44,7 +44,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_src/register_types.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/PlayerWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/FXWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Player/EnumWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/MusPannelWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_src/Player/MusPanelWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp

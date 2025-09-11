@@ -8,7 +8,7 @@ namespace godot {
 class FXWrapper : public RefCounted {
     GDCLASS(FXWrapper, RefCounted)
   private:
-    FXControlPannel *fxpannel = nullptr;
+    FXControlPanel *fxpanel = nullptr;
 
   protected:
     static void
@@ -17,7 +17,7 @@ class FXWrapper : public RefCounted {
   public:
     FXWrapper() = default;
     void
-    Init(FXControlPannel *refobj);
+    Init(FXControlPanel *refobj);
     bool
     CheckFXOn();
     bool

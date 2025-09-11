@@ -18,7 +18,7 @@ class FXArgWrapper : public RefCounted {
 
   public:
     void
-    Init(FXControlPannel *refobj);
+    Init(FXControlPanel *refobj);
     Array
     GetFXArgKeys(int fx);
     bool

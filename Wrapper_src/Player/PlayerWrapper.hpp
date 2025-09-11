@@ -3,7 +3,7 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include "FXWrapper.hpp"
-#include "MusPannelWrapper.hpp"
+#include "MusPanelWrapper.hpp"
 #include "PDJE_interface.hpp"
 
 namespace godot {
@@ -24,9 +24,9 @@ class PlayerWrapper : public RefCounted {
     bool
     Deactivate();
     Ref<FXWrapper>
-    GetFXControlPannel();
-    Ref<MusPannelWrapper>
-    GetMusicControlPannel();
+    GetFXControlPanel();
+    Ref<MusPanelWrapper>
+    GetMusicControlPanel();
     bool
     ChangeCursorPos(String pos);
     String
