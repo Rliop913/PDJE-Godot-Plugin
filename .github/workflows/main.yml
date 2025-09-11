@@ -104,7 +104,7 @@ jobs:
       shell: bash
       run: |
         GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/Rliop913/Project-DJ-Engine.git Project-DJ-Engine
-        ls Project-DJ-Engine/include
+        
         
     - name: set linux Requirements
       id: set_libevdev_and_ccache
