@@ -112,7 +112,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update -y
-        sudo apt-get install libevdev-dev ccache swig
+        sudo apt-get install libevdev-dev ccache swig libnuma-dev
 
     - name: set macOS Requirements
       id: set_macos_ccache_swig
@@ -126,6 +126,7 @@ jobs:
       shell: bash
       run: >
         cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}"/conan_cmakes/conan_toolchain.cmake
