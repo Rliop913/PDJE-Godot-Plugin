@@ -1,0 +1,149 @@
+name: autoBuilder
+
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            build_type: Release
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Release
+          - os: macOS-14
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Release
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            build_type: Debug
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: Debug
+          #- os: macOS-14
+            #c_compiler: clang
+            #cpp_compiler: clang++
+            #build_type: Debug
+    steps:
+    - uses: actions/checkout@v4
+      with: 
+        lfs: false
+        fetch-depth: 1
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    
+    - name: replace apple clang
+      id: replace_apple_clang
+      shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        #brew update
+        #brew install llvm
+        #echo "LLVM_PREFIX=$(brew --prefix llvm)" >> $GITHUB_ENV
+        #echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        #echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        #echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+        #echo "SDKROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
+        #echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> $GITHUB_ENV
+        #which clang && clang --version
+
+        #export CC="$(brew --prefix llvm)/bin/clang"
+        #export CXX="$(brew --prefix llvm)/bin/clang++"
+        #export SDKROOT="$(xcrun --show-sdk-path)"
+        #export MACOSX_DEPLOYMENT_TARGET=13.0
+
+        echo "SDKROOT=$SDKROOT"
+        echo "CC=$CC"
+        echo "CXX=$CXX"
+
+    - name: set conan
+      id: set_conan
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install conan
+        conan profile detect --force
+
+    - name: init conan on windows
+      id: init_conan_windows
+      shell: pwsh
+      if: runner.os == 'Windows'
+      run: |
+        cd "$env:GITHUB_WORKSPACE"
+        ./BuildInitwithConan.bat . dynamic ${{ matrix.build_type }}
+        
+        
+    - name: init conan on linux
+      id: init_conan_on_linux
+      shell: bash
+      if: runner.os != 'Windows'
+      run: |
+        cd ${{ github.workspace }}
+        bash BuildInitwithConan.sh . ${{ matrix.build_type }}
+    
+        
+            
+
+    - name: pull pdje
+      id: pull_main_pdje
+      shell: bash
+      run: |
+        GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/Rliop913/Project-DJ-Engine.git Project-DJ-Engine
+        
+        
+    - name: set linux Requirements
+      id: set_libevdev_and_ccache
+      shell: bash
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install libevdev-dev ccache swig libnuma-dev
+
+    - name: set macOS Requirements
+      id: set_macos_ccache_swig
+      shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        brew install swig ccache
+
+    
+    - name: Configure CMake
+      shell: bash
+      run: >
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}"/conan_cmakes/conan_toolchain.cmake
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S "${{ github.workspace }}"
+
+    - name: Build
+      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }}
+    - name: Upload failed artifacts
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}-${{ matrix.build_type }}-failedbuild
+        path: ${{ steps.strings.outputs.build-output-dir }}
+    
