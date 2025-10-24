@@ -130,7 +130,8 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: >
-        EXTRA_FLAGS=""
+        EXTRA_FLAGS="";
+
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           EXTRA_FLAGS="ON"
         else

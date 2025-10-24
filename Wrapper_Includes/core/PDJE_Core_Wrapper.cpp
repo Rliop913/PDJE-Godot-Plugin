@@ -1,7 +1,10 @@
-#include "PDJE_Wrapper.hpp"
+#include "PDJE_Core_Wrapper.hpp"
+#include "core/property_info.hpp"
+#include "fileNameSanitizer.hpp"
+#include "variant/variant.hpp"
+#include <cstdint>
 #include <filesystem>
 #include <godot_cpp/core/class_db.hpp>
-#include "fileNameSanitizer.hpp"
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_Wrapper::PDJE_PLAY_MODE);
@@ -27,18 +30,20 @@ PDJE_Wrapper::_bind_methods()
         &PDJE_Wrapper::InitEditor);
     ClassDB::bind_method(D_METHOD("GetEditor"), &PDJE_Wrapper::GetEditor);
     ClassDB::bind_method(D_METHOD("CloseEditor"), &PDJE_Wrapper::CloseEditor);
-    ClassDB::bind_method(D_METHOD("PullOutCoreLine"), &PDJE_Wrapper::PullOutCoreLine);
-    ClassDB::bind_method(D_METHOD("GetNoteObjects", "trackTitle"), &PDJE_Wrapper::GetNoteObjects);
-    
+    ClassDB::bind_method(D_METHOD("PullOutCoreLine"),
+                         &PDJE_Wrapper::PullOutCoreLine);
+    ClassDB::bind_method(D_METHOD("GetNoteObjects", "trackTitle"),
+                         &PDJE_Wrapper::GetNoteObjects);
+
     ADD_SIGNAL(MethodInfo("note_gen_signal",
                           PropertyInfo(Variant::STRING, "note_type"),
-                          PropertyInfo(Variant::STRING, "note_detail"),
+                          PropertyInfo(Variant::INT, "note_detail"),
                           PropertyInfo(Variant::STRING, "first_arg"),
                           PropertyInfo(Variant::STRING, "second_arg"),
                           PropertyInfo(Variant::STRING, "third_arg"),
                           PropertyInfo(Variant::STRING, "y_pos_start"),
-                          PropertyInfo(Variant::STRING, "y_pos_end")));
-                        
+                          PropertyInfo(Variant::STRING, "y_pos_end"),
+                          PropertyInfo(Variant::INT, "rail_id")));
 }
 
 PDJE_Wrapper::PDJE_Wrapper()
@@ -60,19 +65,21 @@ PDJE_Wrapper::SearchTrack(String Title)
 
     Array trackList;
     for (auto &track : res) {
-        
+
         std::stringstream before_csv(track.cachedMixList);
-        std::string sanitized_music_name;
-        std::string unsanitized_csv;
-        while(std::getline(before_csv, sanitized_music_name, ',')){
-            unsanitized_csv += PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
+        std::string       sanitized_music_name;
+        std::string       unsanitized_csv;
+        while (std::getline(before_csv, sanitized_music_name, ',')) {
+            unsanitized_csv +=
+                PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
             unsanitized_csv += ',';
         }
-        if(!unsanitized_csv.empty()){
+        if (!unsanitized_csv.empty()) {
             unsanitized_csv.pop_back();
         }
         Dictionary trackMetaData;
-        trackMetaData["title"]  = CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
+        trackMetaData["title"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
         trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
         trackList.push_back(trackMetaData);
     }
@@ -90,10 +97,11 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
     Array musicList;
     for (auto &music : res) {
         Dictionary musicMetaData;
-        
-        
-        musicMetaData["title"]     = CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
-        musicMetaData["composer"]  = CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
+
+        musicMetaData["title"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
+        musicMetaData["composer"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
         musicMetaData["bpm"]       = music.bpm;
         musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
         musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
@@ -205,21 +213,23 @@ PDJE_Wrapper::GetNoteObjects(String trackTitle)
     auto track    = searched.front();
 
     OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
-                                     std::string        note_detail,
+                                     uint16_t           note_detail,
                                      std::string        first_arg,
                                      std::string        second_arg,
                                      std::string        third_arg,
                                      unsigned long long y_pos_start,
-                                     unsigned long long y_pos_end) {
+                                     unsigned long long y_pos_end,
+                                     uint64_t           railID) {
         call_deferred("emit_signal",
                       "note_gen_signal",
                       CStrToGStr(note_type),
-                      CStrToGStr(note_detail),
+                      static_cast<int>(note_detail),
                       CStrToGStr(first_arg),
                       CStrToGStr(second_arg),
                       CStrToGStr(third_arg),
                       String::num_uint64(y_pos_start),
-                      String::num_uint64(y_pos_end));
+                      String::num_uint64(y_pos_end),
+                      static_cast<int>(railID));
     };
     return engine->GetNoteObjects(track, osc);
 }

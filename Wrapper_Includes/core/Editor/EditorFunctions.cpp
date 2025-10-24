@@ -1,5 +1,7 @@
 #include "EditorWrapper.hpp"
+#include "core/property_info.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
+#include "variant/variant.hpp"
 using namespace godot;
 
 VARIANT_ENUM_CAST(EditorWrapper::FLAG_EDITOR_OBJ);
@@ -31,7 +33,7 @@ EditorWrapper::_bind_methods()
     ClassDB::bind_method(D_METHOD("getMixDatas", "mixCallback"),
                          &EditorWrapper::getMixDatas);
     ClassDB::bind_method(D_METHOD("getMusicDatas", "musicCallback"),
-                         &EditorWrapper::getMusicDatas);
+                         &EditorWrapper::getMusicBpmDatas);
     ClassDB::bind_method(D_METHOD("getNoteDatas", "noteCallback"),
                          &EditorWrapper::getNoteDatas);
     ClassDB::bind_method(D_METHOD("getKeyValueDatas", "KVCallback"),
@@ -69,6 +71,43 @@ EditorWrapper::_bind_methods()
                                   "oldTimeNodeID",
                                   "newTimeNodeID"),
                          &EditorWrapper::GetDiff);
+    ADD_SIGNAL(MethodInfo("pdje_editor_get_mix_data",
+                          PropertyInfo(Variant::INT, "type"),
+                          PropertyInfo(Variant::INT, "ID"),
+                          PropertyInfo(Variant::INT, "details"),
+                          PropertyInfo(Variant::STRING, "first"),
+                          PropertyInfo(Variant::STRING, "second"),
+                          PropertyInfo(Variant::STRING, "third"),
+                          PropertyInfo(Variant::INT, "beat"),
+                          PropertyInfo(Variant::INT, "subbeat"),
+                          PropertyInfo(Variant::INT, "separate"),
+                          PropertyInfo(Variant::INT, "Ebeat"),
+                          PropertyInfo(Variant::INT, "Esubbeat"),
+                          PropertyInfo(Variant::INT, "Eseparate")));
+
+    ADD_SIGNAL(MethodInfo("pdje_editor_get_music_bpm_data",
+                          PropertyInfo(Variant::STRING, "music_title"),
+                          PropertyInfo(Variant::INT, "beat"),
+                          PropertyInfo(Variant::INT, "subbeat"),
+                          PropertyInfo(Variant::INT, "separate"),
+                          PropertyInfo(Variant::STRING, "bpm")));
+
+    ADD_SIGNAL(MethodInfo("pdje_editor_get_note_data",
+                          PropertyInfo(Variant::STRING, "note_type"),
+                          PropertyInfo(Variant::INT, "note_detail"),
+                          PropertyInfo(Variant::STRING, "first"),
+                          PropertyInfo(Variant::STRING, "second"),
+                          PropertyInfo(Variant::STRING, "third"),
+                          PropertyInfo(Variant::INT, "beat"),
+                          PropertyInfo(Variant::INT, "subbeat"),
+                          PropertyInfo(Variant::INT, "separate"),
+                          PropertyInfo(Variant::INT, "Ebeat"),
+                          PropertyInfo(Variant::INT, "Esubbeat"),
+                          PropertyInfo(Variant::INT, "Eseparate"),
+                          PropertyInfo(Variant::INT, "RailID")));
+    ADD_SIGNAL(MethodInfo("pdje_editor_get_key_value_data",
+                          PropertyInfo(Variant::STRING, "key"),
+                          PropertyInfo(Variant::STRING, "value")));
 }
 
 String
@@ -78,31 +117,27 @@ EditorWrapper::Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
         return "editor is null";
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
-        if(edit->Undo<EDIT_ARG_NOTE>()){
+        if (edit->Undo<EDIT_ARG_NOTE>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "NOTE Undo Failed";
         }
     case 1:
-        if(edit->Undo<EDIT_ARG_KEY_VALUE>()){
+        if (edit->Undo<EDIT_ARG_KEY_VALUE>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "KEY_VALUE Undo Failed";
         }
     case 2:
-        if(edit->Undo<EDIT_ARG_MIX>()){
+        if (edit->Undo<EDIT_ARG_MIX>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "MIX Undo Failed";
         }
     case 3:
-        if(edit->Undo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))){
+        if (edit->Undo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))) {
             return "OK";
-        }
-        else{
+        } else {
             return "MUSIC Undo Failed";
         }
     default:
@@ -117,31 +152,27 @@ EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
         return "editor is null";
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
-        if(edit->Redo<EDIT_ARG_NOTE>()){
+        if (edit->Redo<EDIT_ARG_NOTE>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "NOTE Redo Failed";
         }
     case 1:
-        if(edit->Redo<EDIT_ARG_KEY_VALUE>()){
+        if (edit->Redo<EDIT_ARG_KEY_VALUE>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "KEY_VALUE Redo Failed";
         }
     case 2:
-        if(edit->Redo<EDIT_ARG_MIX>()){
+        if (edit->Redo<EDIT_ARG_MIX>()) {
             return "OK";
-        }
-        else{
+        } else {
             return "MIX Redo Failed";
         }
     case 3:
-        if(edit->Redo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))){
+        if (edit->Redo<EDIT_ARG_MUSIC>(GStrToCStr(musicName_if_flag_music))) {
             return "OK";
-        }
-        else{
+        } else {
             return "MUSIC Redo Failed";
         }
     default:
@@ -160,31 +191,27 @@ EditorWrapper::Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID)
     auto node_id = GStrToCStr(NodeID);
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
-        if(edit->Go<EDIT_ARG_NOTE>(GStrToCStr(branchName), node_id)){
+        if (edit->Go<EDIT_ARG_NOTE>(GStrToCStr(branchName), node_id)) {
             return "OK";
-        }
-        else{
+        } else {
             return "NOTE Go Failed";
         }
     case 1:
-        if(edit->Go<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName), node_id)){
+        if (edit->Go<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName), node_id)) {
             return "OK";
-        }
-        else{
+        } else {
             return "KEY_VALUE Go Failed";
         }
     case 2:
-        if(edit->Go<EDIT_ARG_MIX>(GStrToCStr(branchName), node_id)){
+        if (edit->Go<EDIT_ARG_MIX>(GStrToCStr(branchName), node_id)) {
             return "OK";
-        }
-        else{
+        } else {
             return "MIX Go Failed";
         }
     case 3:
-        if(edit->Go<EDIT_ARG_MUSIC>(GStrToCStr(branchName), node_id)){
+        if (edit->Go<EDIT_ARG_MUSIC>(GStrToCStr(branchName), node_id)) {
             return "OK";
-        }
-        else{
+        } else {
             return "MUSIC Go Failed";
         }
     default:
@@ -221,65 +248,57 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
     switch (_FLAG_EDITOR_OBJ) {
     case 0:
         if (branchName.is_empty()) {
-            if(edit->UpdateLog<EDIT_ARG_NOTE>()){
+            if (edit->UpdateLog<EDIT_ARG_NOTE>()) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "Note UpdateLog Failed";
             }
         } else {
-            if(edit->UpdateLog<EDIT_ARG_NOTE>(GStrToCStr(branchName))){
+            if (edit->UpdateLog<EDIT_ARG_NOTE>(GStrToCStr(branchName))) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "NOTE branch UpdateLog Failed";
             }
         }
     case 1:
         if (branchName.is_empty()) {
-            if(edit->UpdateLog<EDIT_ARG_KEY_VALUE>()){
+            if (edit->UpdateLog<EDIT_ARG_KEY_VALUE>()) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "KV UpdateLog Failed";
             }
         } else {
-            if(edit->UpdateLog<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName))){
+            if (edit->UpdateLog<EDIT_ARG_KEY_VALUE>(GStrToCStr(branchName))) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "KV branch UpdateLog Failed";
             }
         }
     case 2:
         if (branchName.is_empty()) {
-            if(edit->UpdateLog<EDIT_ARG_MIX>()){
+            if (edit->UpdateLog<EDIT_ARG_MIX>()) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "MIX UpdateLog Failed";
             }
         } else {
-            if(edit->UpdateLog<EDIT_ARG_MIX>(GStrToCStr(branchName))){
+            if (edit->UpdateLog<EDIT_ARG_MIX>(GStrToCStr(branchName))) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "MIX branch UpdateLog Failed";
             }
         }
     case 3:
         if (branchName.is_empty()) {
-            if(edit->UpdateLog<EDIT_ARG_MUSIC>()){
+            if (edit->UpdateLog<EDIT_ARG_MUSIC>()) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "MUSIC UpdateLog Failed";
             }
         } else {
-            if(edit->UpdateLog<EDIT_ARG_MUSIC>(GStrToCStr(branchName))){
+            if (edit->UpdateLog<EDIT_ARG_MUSIC>(GStrToCStr(branchName))) {
                 return "OK";
-            }
-            else{
+            } else {
                 return "MUSIC branch UpdateLog Failed";
             }
         }
@@ -302,10 +321,9 @@ EditorWrapper::Open(String projectPath)
     if (edit == nullptr)
         return "editor is null";
 
-    if(edit->Open(GpathToCPath(projectPath))){
+    if (edit->Open(GpathToCPath(projectPath))) {
         return "OK";
-    }
-    else{
+    } else {
         return "Open Failed";
     }
 }

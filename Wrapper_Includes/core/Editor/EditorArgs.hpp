@@ -61,7 +61,7 @@ class PDJE_EDITOR_ARG : public RefCounted {
 
     void
     InitNoteArg(String Note_Type,
-                String Note_Detail,
+                int    Note_Detail,
                 String first,
                 String second,
                 String third,
@@ -70,7 +70,8 @@ class PDJE_EDITOR_ARG : public RefCounted {
                 int    separate,
                 int    Ebar,
                 int    Ebeat,
-                int    Eseparate);
+                int    Eseparate,
+                int    RailID);
     void
     InitMusicArg(String musicName, String bpm, int bar, int beat, int separate);
 

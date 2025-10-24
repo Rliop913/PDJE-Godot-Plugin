@@ -1,4 +1,5 @@
 #include "EditorWrapper.hpp"
+#include "jsonWrapper.hpp"
 
 using namespace godot;
 
@@ -72,10 +73,10 @@ EditorWrapper::render(String trackTitle)
     if (engine == nullptr)
         return "engine is null";
     UNSANITIZED render_msg;
-    if(edit->render(GStrToCStr(trackTitle), *engine->DBROOT.get(), render_msg)){
+    if (edit->render(
+            GStrToCStr(trackTitle), *engine->DBROOT.get(), render_msg)) {
         return "";
-    }
-    else{
+    } else {
         return CStrToGStr(render_msg);
     }
 }
@@ -119,80 +120,84 @@ EditorWrapper::pushToRootDB(String musicTitle, String musicComposer)
 }
 
 bool
-EditorWrapper::getMixDatas(Callable mixCallback)
+EditorWrapper::getMixDatas()
 {
     if (edit == nullptr)
         return false;
-    if (!mixCallback.is_valid())
-        return false;
-    edit->getAll<EDIT_ARG_MIX>([&mixCallback](const EDIT_ARG_MIX &margs) {
-        mixCallback.call(static_cast<int>(margs.type),
-                         margs.ID,
-                         static_cast<int>(margs.details),
-                         CStrToGStr(margs.first),
-                         CStrToGStr(margs.second),
-                         CStrToGStr(margs.third),
-                         static_cast<int>(margs.beat),
-                         static_cast<int>(margs.subBeat),
-                         static_cast<int>(margs.separate),
-                         static_cast<int>(margs.Ebeat),
-                         static_cast<int>(margs.EsubBeat),
-                         static_cast<int>(margs.Eseparate));
+
+    edit->getAll<EDIT_ARG_MIX>([this](const EDIT_ARG_MIX &margs) {
+        call_deferred("emit_signal",
+                      "pdje_editor_get_mix_data",
+                      static_cast<int>(margs.type),
+                      margs.ID,
+                      static_cast<int>(margs.details),
+                      CStrToGStr(margs.first),
+                      CStrToGStr(margs.second),
+                      CStrToGStr(margs.third),
+                      static_cast<int>(margs.beat),
+                      static_cast<int>(margs.subBeat),
+                      static_cast<int>(margs.separate),
+                      static_cast<int>(margs.Ebeat),
+                      static_cast<int>(margs.EsubBeat),
+                      static_cast<int>(margs.Eseparate));
     });
     return true;
 }
 
 bool
-EditorWrapper::getMusicDatas(Callable musicCallback)
+EditorWrapper::getMusicBpmDatas()
 {
     if (edit == nullptr)
         return false;
-    if (!musicCallback.is_valid())
-        return false;
-    edit->getAll<EDIT_ARG_MUSIC>([&musicCallback](const EDIT_ARG_MUSIC &margs) {
-        musicCallback.call(CStrToGStr(margs.musicName),
-                           static_cast<int>(margs.arg.beat),
-                           static_cast<int>(margs.arg.subBeat),
-                           CStrToGStr(margs.arg.bpm),
-                           static_cast<int>(margs.arg.separate));
+
+    edit->getAll<EDIT_ARG_MUSIC>([this](const EDIT_ARG_MUSIC &margs) {
+        call_deferred("emit_signal",
+                      "pdje_editor_get_music_bpm_data",
+                      CStrToGStr(margs.musicName),
+                      static_cast<int>(margs.arg.beat),
+                      static_cast<int>(margs.arg.subBeat),
+                      static_cast<int>(margs.arg.separate),
+                      CStrToGStr(margs.arg.bpm));
     });
     return true;
 }
 
 bool
-EditorWrapper::getNoteDatas(Callable noteCallback)
+EditorWrapper::getNoteDatas()
 {
     if (edit == nullptr)
         return false;
-    if (!noteCallback.is_valid())
-        return false;
-    edit->getAll<EDIT_ARG_NOTE>([&noteCallback](const EDIT_ARG_NOTE &margs) {
-        noteCallback.call(CStrToGStr(margs.Note_Type),
-                          CStrToGStr(margs.Note_Detail),
-                          CStrToGStr(margs.first),
-                          CStrToGStr(margs.second),
-                          CStrToGStr(margs.third),
-                          static_cast<int>(margs.beat),
-                          static_cast<int>(margs.subBeat),
-                          static_cast<int>(margs.separate),
-                          static_cast<int>(margs.Ebeat),
-                          static_cast<int>(margs.EsubBeat),
-                          static_cast<int>(margs.Eseparate));
+
+    edit->getAll<EDIT_ARG_NOTE>([this](const EDIT_ARG_NOTE &margs) {
+        call_deferred("emit_signal",
+                      "pdje_editor_get_note_data",
+                      CStrToGStr(margs.Note_Type),
+                      static_cast<int>(margs.Note_Detail),
+                      CStrToGStr(margs.first),
+                      CStrToGStr(margs.second),
+                      CStrToGStr(margs.third),
+                      static_cast<int>(margs.beat),
+                      static_cast<int>(margs.subBeat),
+                      static_cast<int>(margs.separate),
+                      static_cast<int>(margs.Ebeat),
+                      static_cast<int>(margs.EsubBeat),
+                      static_cast<int>(margs.Eseparate),
+                      static_cast<int>(margs.railID));
     });
     return true;
 }
 
 bool
-EditorWrapper::getKeyValueDatas(Callable KVCallback)
+EditorWrapper::getKeyValueDatas()
 {
     if (edit == nullptr)
         return false;
-    if (!KVCallback.is_valid())
-        return false;
-    edit->getAll<EDIT_ARG_KEY_VALUE>(
-        [&KVCallback](const EDIT_ARG_KEY_VALUE &margs) {
-            KVCallback.call(CStrToGStr(margs.first), CStrToGStr(margs.second));
-        });
+    edit->getAll<EDIT_ARG_KEY_VALUE>([this](const EDIT_ARG_KEY_VALUE &margs) {
+        call_deferred("emit_signal",
+                      "pdje_editor_get_key_value_data",
+                      CStrToGStr(margs.first),
+                      CStrToGStr(margs.second));
+    });
     return true;
 }
 
@@ -208,130 +213,130 @@ EditorWrapper::getAll()
         Dictionary mixline;
         switch (margs.type) {
         case TypeEnum::FILTER:
-            mixline["type"] = "FILTER";
+            mixline[PDJE_JSON_TYPE] = "FILTER";
             break;
         case TypeEnum::EQ:
-            mixline["type"] = "EQ";
+            mixline[PDJE_JSON_TYPE] = "EQ";
             break;
         case TypeEnum::DISTORTION:
-            mixline["type"] = "DISTORTION";
+            mixline[PDJE_JSON_TYPE] = "DISTORTION";
             break;
         case TypeEnum::CONTROL:
-            mixline["type"] = "CONTROL";
+            mixline[PDJE_JSON_TYPE] = "CONTROL";
             break;
         case TypeEnum::VOL:
-            mixline["type"] = "VOL";
+            mixline[PDJE_JSON_TYPE] = "VOL";
             break;
         case TypeEnum::LOAD:
-            mixline["type"] = "LOAD";
+            mixline[PDJE_JSON_TYPE] = "LOAD";
             break;
         case TypeEnum::UNLOAD:
-            mixline["type"] = "UNLOAD";
+            mixline[PDJE_JSON_TYPE] = "UNLOAD";
             break;
         case TypeEnum::BPM_CONTROL:
-            mixline["type"] = "BPM_CONTROL";
+            mixline[PDJE_JSON_TYPE] = "BPM_CONTROL";
             break;
         case TypeEnum::ECHO:
-            mixline["type"] = "ECHO";
+            mixline[PDJE_JSON_TYPE] = "ECHO";
             break;
         case TypeEnum::OSC_FILTER:
-            mixline["type"] = "OSC_FILTER";
+            mixline[PDJE_JSON_TYPE] = "OSC_FILTER";
             break;
         case TypeEnum::FLANGER:
-            mixline["type"] = "FLANGER";
+            mixline[PDJE_JSON_TYPE] = "FLANGER";
             break;
         case TypeEnum::PHASER:
-            mixline["type"] = "PHASER";
+            mixline[PDJE_JSON_TYPE] = "PHASER";
             break;
         case TypeEnum::TRANCE:
-            mixline["type"] = "TRANCE";
+            mixline[PDJE_JSON_TYPE] = "TRANCE";
             break;
         case TypeEnum::PANNER:
-            mixline["type"] = "PANNER";
+            mixline[PDJE_JSON_TYPE] = "PANNER";
             break;
         case TypeEnum::BATTLE_DJ:
-            mixline["type"] = "BATTLE_DJ";
+            mixline[PDJE_JSON_TYPE] = "BATTLE_DJ";
             break;
         case TypeEnum::ROLL:
-            mixline["type"] = "ROLL";
+            mixline[PDJE_JSON_TYPE] = "ROLL";
             break;
         case TypeEnum::COMPRESSOR:
-            mixline["type"] = "COMPRESSOR";
+            mixline[PDJE_JSON_TYPE] = "COMPRESSOR";
             break;
         case TypeEnum::ROBOT:
-            mixline["type"] = "ROBOT";
+            mixline[PDJE_JSON_TYPE] = "ROBOT";
             break;
         default:
-            mixline["type"] = "UNKNOWN";
+            mixline[PDJE_JSON_TYPE] = "UNKNOWN";
             break;
         };
 
         switch (margs.details) {
 
         case DetailEnum::HIGH:
-            mixline["detail"] = "HIGH";
+            mixline[PDJE_JSON_DETAILS] = "HIGH";
             break;
         case DetailEnum::MID:
-            mixline["detail"] = "MID";
+            mixline[PDJE_JSON_DETAILS] = "MID";
             break;
         case DetailEnum::LOW:
-            mixline["detail"] = "LOW";
+            mixline[PDJE_JSON_DETAILS] = "LOW";
             break;
         case DetailEnum::PAUSE:
-            mixline["detail"] = "PAUSE";
+            mixline[PDJE_JSON_DETAILS] = "PAUSE";
             break;
         case DetailEnum::CUE:
-            mixline["detail"] = "CUE";
+            mixline[PDJE_JSON_DETAILS] = "CUE";
             break;
         case DetailEnum::TRIM:
-            mixline["detail"] = "TRIM";
+            mixline[PDJE_JSON_DETAILS] = "TRIM";
             break;
         case DetailEnum::FADER:
-            mixline["detail"] = "FADER";
+            mixline[PDJE_JSON_DETAILS] = "FADER";
             break;
         case DetailEnum::TIME_STRETCH:
-            mixline["detail"] = "TIME_STRETCH";
+            mixline[PDJE_JSON_DETAILS] = "TIME_STRETCH";
             break;
         case DetailEnum::SPIN:
-            mixline["detail"] = "SPIN";
+            mixline[PDJE_JSON_DETAILS] = "SPIN";
             break;
         case DetailEnum::PITCH:
-            mixline["detail"] = "PITCH";
+            mixline[PDJE_JSON_DETAILS] = "PITCH";
             break;
         case DetailEnum::REV:
-            mixline["detail"] = "REV";
+            mixline[PDJE_JSON_DETAILS] = "REV";
             break;
         case DetailEnum::SCRATCH:
-            mixline["detail"] = "SCRATCH";
+            mixline[PDJE_JSON_DETAILS] = "SCRATCH";
             break;
         case DetailEnum::BSCRATCH:
-            mixline["detail"] = "BSCRATCH";
+            mixline[PDJE_JSON_DETAILS] = "BSCRATCH";
             break;
         default:
-            mixline["detail"] = "UNKNOWN";
+            mixline[PDJE_JSON_DETAILS] = "UNKNOWN";
             break;
         }
-        mixline["ID"]        = margs.ID;
-        mixline["first"]     = CStrToGStr(margs.first);
-        mixline["second"]    = CStrToGStr(margs.second);
-        mixline["third"]     = CStrToGStr(margs.third);
-        mixline["beat"]      = static_cast<int>(margs.beat);
-        mixline["subBeat"]   = static_cast<int>(margs.subBeat);
-        mixline["separate"]  = static_cast<int>(margs.separate);
-        mixline["Ebeat"]     = static_cast<int>(margs.Ebeat);
-        mixline["EsubBeat"]  = static_cast<int>(margs.EsubBeat);
-        mixline["Eseparate"] = static_cast<int>(margs.Eseparate);
+        mixline[PDJE_JSON_ID]        = margs.ID;
+        mixline[PDJE_JSON_FIRST]     = CStrToGStr(margs.first);
+        mixline[PDJE_JSON_SECOND]    = CStrToGStr(margs.second);
+        mixline[PDJE_JSON_THIRD]     = CStrToGStr(margs.third);
+        mixline[PDJE_JSON_BEAT]      = static_cast<int>(margs.beat);
+        mixline[PDJE_JSON_SUBBEAT]   = static_cast<int>(margs.subBeat);
+        mixline[PDJE_JSON_SEPARATE]  = static_cast<int>(margs.separate);
+        mixline[PDJE_JSON_EBEAT]     = static_cast<int>(margs.Ebeat);
+        mixline[PDJE_JSON_ESUBBEAT]  = static_cast<int>(margs.EsubBeat);
+        mixline[PDJE_JSON_ESEPARATE] = static_cast<int>(margs.Eseparate);
         mixs.push_back(mixline);
     });
     result["mixDatas"] = mixs;
     Array musics;
     edit->getAll<EDIT_ARG_MUSIC>([&musics](const EDIT_ARG_MUSIC &margs) {
         Dictionary musicline;
-        musicline["musicName"] = CStrToGStr(margs.musicName);
-        musicline["beat"]      = static_cast<int>(margs.arg.beat);
-        musicline["subBeat"]   = static_cast<int>(margs.arg.subBeat);
-        musicline["bpm"]       = CStrToGStr(margs.arg.bpm);
-        musicline["separate"]  = static_cast<int>(margs.arg.separate);
+        musicline[PDJE_JSON_TITLE]    = CStrToGStr(margs.musicName);
+        musicline[PDJE_JSON_BEAT]     = static_cast<int>(margs.arg.beat);
+        musicline[PDJE_JSON_SUBBEAT]  = static_cast<int>(margs.arg.subBeat);
+        musicline[PDJE_JSON_BPM]      = CStrToGStr(margs.arg.bpm);
+        musicline[PDJE_JSON_SEPARATE] = static_cast<int>(margs.arg.separate);
         musics.push_back(musicline);
     });
     result["musicDatas"] = musics;
@@ -340,17 +345,18 @@ EditorWrapper::getAll()
     edit->getAll<EDIT_ARG_NOTE>([&notes](const EDIT_ARG_NOTE &margs) {
         Dictionary noteline;
 
-        noteline["Note_Type"]   = CStrToGStr(margs.Note_Type);
-        noteline["Note_Detail"] = CStrToGStr(margs.Note_Detail);
-        noteline["first"]       = CStrToGStr(margs.first);
-        noteline["second"]      = CStrToGStr(margs.second);
-        noteline["third"]       = CStrToGStr(margs.third);
-        noteline["beat"]        = static_cast<int>(margs.beat);
-        noteline["subBeat"]     = static_cast<int>(margs.subBeat);
-        noteline["separate"]    = static_cast<int>(margs.separate);
-        noteline["Ebeat"]       = static_cast<int>(margs.Ebeat);
-        noteline["EsubBeat"]    = static_cast<int>(margs.EsubBeat);
-        noteline["Eseparate"]   = static_cast<int>(margs.Eseparate);
+        noteline[PDJE_JSON_NOTE_TYPE]   = CStrToGStr(margs.Note_Type);
+        noteline[PDJE_JSON_NOTE_DETAIL] = static_cast<int>(margs.Note_Detail);
+        noteline[PDJE_JSON_FIRST]       = CStrToGStr(margs.first);
+        noteline[PDJE_JSON_SECOND]      = CStrToGStr(margs.second);
+        noteline[PDJE_JSON_THIRD]       = CStrToGStr(margs.third);
+        noteline[PDJE_JSON_BEAT]        = static_cast<int>(margs.beat);
+        noteline[PDJE_JSON_SUBBEAT]     = static_cast<int>(margs.subBeat);
+        noteline[PDJE_JSON_SEPARATE]    = static_cast<int>(margs.separate);
+        noteline[PDJE_JSON_EBEAT]       = static_cast<int>(margs.Ebeat);
+        noteline[PDJE_JSON_ESUBBEAT]    = static_cast<int>(margs.EsubBeat);
+        noteline[PDJE_JSON_ESEPARATE]   = static_cast<int>(margs.Eseparate);
+        noteline[PDJE_JSON_RAILID]      = static_cast<int>(margs.railID);
         notes.push_back(noteline);
     });
     result["noteDatas"] = notes;
@@ -360,6 +366,6 @@ EditorWrapper::getAll()
         [&keyValues](const EDIT_ARG_KEY_VALUE &margs) {
             keyValues[CStrToGStr(margs.first)] = CStrToGStr(margs.second);
         });
-    result["musicDatas"] = keyValues;
+    result["keyValues"] = keyValues;
     return result;
 }

@@ -1,6 +1,6 @@
 #include "MusPanelWrapper.hpp"
+#include "PDJE_Core_Wrapper.hpp"
 #include "PDJE_Utils.hpp"
-#include "PDJE_Wrapper.hpp"
 using namespace godot;
 
 void

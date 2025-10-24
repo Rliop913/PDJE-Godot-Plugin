@@ -51,7 +51,8 @@ PDJE_EDITOR_ARG::_bind_methods()
                                   "separate",
                                   "Ebeat",
                                   "EsubBeat",
-                                  "Eseparate"),
+                                  "Eseparate",
+                                  "RailID"),
                          &PDJE_EDITOR_ARG::InitNoteArg);
 
     ClassDB::bind_method(
@@ -77,7 +78,7 @@ PDJE_EDITOR_ARG::_bind_methods()
 }
 void
 PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
-                             String Note_Detail,
+                             int    Note_Detail,
                              String first,
                              String second,
                              String third,
@@ -86,12 +87,13 @@ PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
                              int    separate,
                              int    Ebeat,
                              int    EsubBeat,
-                             int    Eseparate)
+                             int    Eseparate,
+                             int    RailID)
 {
     note.emplace();
 
     note->Note_Type   = GStrToCStr(Note_Type);
-    note->Note_Detail = GStrToCStr(Note_Detail);
+    note->Note_Detail = static_cast<uint16_t>(Note_Detail);
     note->first       = GStrToCStr(first);
     note->second      = GStrToCStr(second);
     note->third       = GStrToCStr(third);
@@ -101,6 +103,7 @@ PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
     note->Ebeat       = Ebeat;
     note->EsubBeat    = EsubBeat;
     note->Eseparate   = Eseparate;
+    note->railID      = RailID;
 
     useFlag = NOTE;
 }

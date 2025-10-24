@@ -42,13 +42,13 @@ class EditorWrapper : public RefCounted {
     pushToRootDB(String musicTitle, String musicComposer);
 
     bool
-    getMixDatas(Callable mixCallback);
+    getMixDatas();
     bool
-    getMusicDatas(Callable musicCallback);
+    getMusicBpmDatas();
     bool
-    getNoteDatas(Callable noteCallback);
+    getNoteDatas();
     bool
-    getKeyValueDatas(Callable KVCallback);
+    getKeyValueDatas();
     Dictionary
     getAll();
 

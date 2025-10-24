@@ -1,11 +1,14 @@
 #include "CoreLine.hpp"
+#include "variant/array.hpp"
+#include "variant/packed_int64_array.hpp"
+#include <atomic>
 
 using namespace godot;
 
 void
 CoreLine::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("GetUsedFrame"), &CoreLine::GetUsedFrame);
+    ClassDB::bind_method(D_METHOD("GetUsedFrame"), &CoreLine::GetEngineTime);
     ClassDB::bind_method(D_METHOD("GetNowCursor"), &CoreLine::GetNowCursor);
     ClassDB::bind_method(D_METHOD("GetMaxCursor"), &CoreLine::GetMaxCursor);
     ClassDB::bind_method(D_METHOD("GetPreRenderedFrames"),
@@ -18,12 +21,15 @@ CoreLine::Init(const PDJE_CORE_DATA_LINE &coreDataLine)
     core_data = coreDataLine;
 }
 
-int64_t
-CoreLine::GetUsedFrame()
+PackedInt64Array
+CoreLine::GetEngineTime()
 {
+    auto             synced = core_data.syncD->load(std::memory_order_acquire);
+    PackedInt64Array out;
 
-    return core_data.used_frame ? static_cast<int64_t>(*(core_data.used_frame))
-                                : 0;
+    out.push_back(synced.consumed_frames);
+    out.push_back(synced.microsecond);
+    return out;
 }
 
 int64_t

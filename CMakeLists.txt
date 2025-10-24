@@ -38,17 +38,17 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
 
 
 add_library(PDJE_godot_wrapper SHARED 
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/FXArgWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/PDJE_Wrapper.cpp 
-${CMAKE_SOURCE_DIR}/Wrapper_src/register_types.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/PlayerWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/FXWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/EnumWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Player/MusPanelWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorArgs.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/Editor/EditorFunctions.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_src/DataLine/CoreLine.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXArgWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/PDJE_Core_Wrapper.cpp 
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/register_types.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/PlayerWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/EnumWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/MusPanelWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorArgs.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 
 )
 
@@ -62,10 +62,16 @@ if(WIN32)
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
 endif()
 target_include_directories( PDJE_godot_wrapper PUBLIC
-    ${CMAKE_SOURCE_DIR}/Wrapper_src
-    ${CMAKE_SOURCE_DIR}/Wrapper_src/Player
-    ${CMAKE_SOURCE_DIR}/Wrapper_src/Editor
-    ${CMAKE_SOURCE_DIR}/Wrapper_src/DataLine
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/
+    
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/judge
+    
     
     
     ${binary_dir}/gen/include
