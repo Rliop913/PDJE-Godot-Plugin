@@ -136,7 +136,7 @@ jobs:
           EXTRA_FLAGS="ON"
         else
           EXTRA_FLAGS="OFF"
-        fi
+        fi;
         cmake -B "${{ steps.strings.outputs.build-output-dir }}"
         -DPDJE_BUILD_TESTS=${EXTRA_FLAGS}
         -DPDJE_DEVELOP_INPUT=OFF
