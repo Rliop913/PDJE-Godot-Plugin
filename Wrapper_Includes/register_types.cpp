@@ -1,6 +1,8 @@
 #include "register_types.h"
 
-#include "PDJE_Wrapper.hpp"
+#include "InputLine.hpp"
+#include "PDJE_Core_Wrapper.hpp"
+#include "PDJE_Input_Wrapper.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -22,6 +24,8 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();
+    ClassDB::register_class<InputLine>();
+    ClassDB::register_class<PDJE_Input_Module>();
 
     ClassDB::register_class<PlayerWrapper>();
     ClassDB::register_class<PDJE_Wrapper>();

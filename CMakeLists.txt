@@ -49,12 +49,19 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/InputLine.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
+
 
 )
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
+# if(WIN32)
+if(LINUX)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
+else()
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
-
+endif()
 add_dependencies(PDJE_godot_wrapper godotcppEx)
 
 if(WIN32)
