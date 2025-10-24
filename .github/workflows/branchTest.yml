@@ -130,7 +130,15 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: >
+        EXTRA_FLAGS=""
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          EXTRA_FLAGS="ON"
+        else
+          EXTRA_FLAGS="OFF"
+        fi
         cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+        -DPDJE_BUILD_TESTS=${EXTRA_FLAGS}
+        -DPDJE_DEVELOP_INPUT=OFF
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
