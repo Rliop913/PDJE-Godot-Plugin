@@ -1,4 +1,4 @@
-name: autoBuilder
+name: branchTester
 
 on:
   push:
