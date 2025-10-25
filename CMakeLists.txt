@@ -32,6 +32,7 @@ include(cmake/godotExternalSetter.cmake)
 
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
+set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
 
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
