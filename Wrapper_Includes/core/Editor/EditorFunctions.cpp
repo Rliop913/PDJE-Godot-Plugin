@@ -30,13 +30,13 @@ EditorWrapper::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("pushToRootDB", "musicTitle", "musicComposer"),
         &EditorWrapper::pushToRootDB);
-    ClassDB::bind_method(D_METHOD("getMixDatas", "mixCallback"),
+    ClassDB::bind_method(D_METHOD("getMixDatas"),
                          &EditorWrapper::getMixDatas);
-    ClassDB::bind_method(D_METHOD("getMusicDatas", "musicCallback"),
+    ClassDB::bind_method(D_METHOD("getMusicDatas"),
                          &EditorWrapper::getMusicBpmDatas);
-    ClassDB::bind_method(D_METHOD("getNoteDatas", "noteCallback"),
+    ClassDB::bind_method(D_METHOD("getNoteDatas"),
                          &EditorWrapper::getNoteDatas);
-    ClassDB::bind_method(D_METHOD("getKeyValueDatas", "KVCallback"),
+    ClassDB::bind_method(D_METHOD("getKeyValueDatas"),
                          &EditorWrapper::getKeyValueDatas);
     ClassDB::bind_method(D_METHOD("getAll"), &EditorWrapper::getAll);
     ClassDB::bind_method(

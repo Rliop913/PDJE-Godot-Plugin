@@ -8,7 +8,7 @@ var engine:PDJE_Wrapper
 var player:PlayerWrapper
 var FXPannel:FXWrapper
 var FXArgPannel:FXArgWrapper
-var MusPannel:MusPannelWrapper
+var MusPannel:MusPanelWrapper
 var editor:EditorWrapper
 var MusFXPannel:FXWrapper
 var MusFXArgPannel:FXArgWrapper
@@ -35,6 +35,7 @@ func find_demo_musics():
 
 
 func _init() -> void:
+	
 	engine = PDJE_Wrapper.new()
 	engine.InitEngine(\"res://demodb.db\")
 	if engine.SearchMusic(\"\",\"\",-1.0).is_empty():

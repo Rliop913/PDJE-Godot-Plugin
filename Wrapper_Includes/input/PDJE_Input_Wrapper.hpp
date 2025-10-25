@@ -51,7 +51,5 @@ class PDJE_Input_Module : public Node {
 
     void
     _ready() override;
-    void
-    _process(double delta) override;
 };
 } // namespace godot

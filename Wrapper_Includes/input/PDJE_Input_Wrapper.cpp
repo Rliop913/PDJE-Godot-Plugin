@@ -12,6 +12,7 @@
 #include "variant/dictionary.hpp"
 #include "variant/typed_array.hpp"
 #include "variant/variant.hpp"
+#include "PDJE_LOG_SETTER.hpp"
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_Input_Module::INPUT_STATE);
@@ -31,6 +32,9 @@ PDJE_Input_Module::_bind_methods()
     ClassDB::bind_method(D_METHOD("GetState"), &PDJE_Input_Module::GetState);
     ClassDB::bind_method(D_METHOD("PullOutDataLine"),
                          &PDJE_Input_Module::PullOutDataLine);
+    ClassDB::bind_method(D_METHOD("GetDevs"),
+                         &PDJE_Input_Module::GetDevs);
+    
 }
 
 PDJE_Input_Module::PDJE_Input_Module()
@@ -44,7 +48,17 @@ PDJE_Input_Module::~PDJE_Input_Module()
 Array
 PDJE_Input_Module::GetDevs()
 {
-    auto  devs = input_module.GetDevs();
+    DEV_LIST  devs;
+    try
+    {
+        devs = input_module.GetDevs();
+    }
+    catch(const std::exception& e)
+    {
+        godot::print_line(CStrToGStr( e.what()));
+        critlog("failed to get devs. Why:");
+        critlog(e.what());
+    }
     Array out;
     for (const auto &d : devs) {
         Dictionary devtemp;
@@ -70,8 +84,8 @@ PDJE_Input_Module::GetDevs()
             devtemp["type"] = "";
             break;
         }
-        if (devtemp["type"] != "" && devtemp["device_specific_id"] != "" &&
-            devtemp["name"] != "") {
+        
+        if (d.Name != "" && d.device_specific_id != "" && d.Type != PDJE_Dev_Type::UNKNOWN) {
             out.push_back(devtemp);
         }
     }
@@ -88,7 +102,7 @@ PDJE_Input_Module::Config(Array devices)
             DeviceData dd;
             dd.device_specific_id = GStrToCStr(dict["device_specific_id"]);
             dd.Name               = GStrToCStr(dict["name"]);
-            auto ttype            = dict["type"];
+            String ttype            = dict["type"];
             if (ttype == "KEYBOARD") {
                 dd.Type = PDJE_Dev_Type::KEYBOARD;
             } else if (ttype == "MOUSE") {
@@ -145,4 +159,11 @@ PDJE_Input_Module::INPUT_STATE
 PDJE_Input_Module::GetState()
 {
     return static_cast<PDJE_Input_Module::INPUT_STATE>(input_module.GetState());
+}
+
+
+void
+PDJE_Input_Module::_ready()
+{
+
 }
