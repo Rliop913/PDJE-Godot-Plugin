@@ -2,7 +2,9 @@
 
 #include "InputLine.hpp"
 #include "PDJE_Core_Wrapper.hpp"
+#ifdef WIN32
 #include "PDJE_Input_Wrapper.hpp"
+#endif
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -24,9 +26,10 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();
+#ifdef WIN32
     ClassDB::register_class<InputLine>();
     ClassDB::register_class<PDJE_Input_Module>();
-
+#endif
     ClassDB::register_class<PlayerWrapper>();
     ClassDB::register_class<PDJE_Wrapper>();
 

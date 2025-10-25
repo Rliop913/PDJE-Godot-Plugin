@@ -32,13 +32,15 @@ include(cmake/godotExternalSetter.cmake)
 
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
+set(PDJE_BUILD_TESTS OFF CACHE BOOL "Disable build pdje test")
+if(WIN32)
 set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
-
-
+else()
+set(PDJE_DEVELOP_INPUT OFF CACHE BOOL "Turn off input build")
+endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
 
-
-add_library(PDJE_godot_wrapper SHARED 
+set(WrapperSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXArgWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/PDJE_Core_Wrapper.cpp 
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/register_types.cpp
@@ -50,19 +52,30 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/InputLine.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
-
 
 )
 
+if(WIN32)
+list(APPEND WrapperSrcs
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/InputLine.cpp
+
+)
+endif()
+add_library(PDJE_godot_wrapper SHARED 
+${WrapperSrcs}
+
+)
+
+
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 # if(WIN32)
-if(LINUX)
+if(WIN32)
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
 else()
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
 endif()
+
 add_dependencies(PDJE_godot_wrapper godotcppEx)
 
 if(WIN32)
