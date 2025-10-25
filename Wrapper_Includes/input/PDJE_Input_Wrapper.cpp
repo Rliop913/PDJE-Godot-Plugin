@@ -23,6 +23,14 @@ PDJE_Input_Module::_bind_methods()
     BIND_ENUM_CONSTANT(INPUT_STATE::DEVICE_CONFIG_STATE);
     BIND_ENUM_CONSTANT(INPUT_STATE::DEAD);
     BIND_ENUM_CONSTANT(INPUT_STATE::INPUT_LOOP_RUNNING);
+    ClassDB::bind_method(D_METHOD("Init"), &PDJE_Input_Module::Init);
+    ClassDB::bind_method(D_METHOD("Config", "devices"),
+                         &PDJE_Input_Module::Config);
+    ClassDB::bind_method(D_METHOD("Kill"), &PDJE_Input_Module::Kill);
+    ClassDB::bind_method(D_METHOD("Run"), &PDJE_Input_Module::Run);
+    ClassDB::bind_method(D_METHOD("GetState"), &PDJE_Input_Module::GetState);
+    ClassDB::bind_method(D_METHOD("PullOutDataLine"),
+                         &PDJE_Input_Module::PullOutDataLine);
 }
 
 PDJE_Input_Module::PDJE_Input_Module()

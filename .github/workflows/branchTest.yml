@@ -108,7 +108,7 @@ jobs:
       id: pull_main_pdje
       shell: bash
       run: |
-        GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/Rliop913/Project-DJ-Engine.git Project-DJ-Engine
+        GIT_LFS_SKIP_SMUDGE=1 git clone --branch dev --depth 1 https://github.com/Rliop913/Project-DJ-Engine.git Project-DJ-Engine
         
         
     - name: set linux Requirements

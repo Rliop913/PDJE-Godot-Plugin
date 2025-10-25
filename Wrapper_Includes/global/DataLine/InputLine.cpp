@@ -6,6 +6,7 @@
 #include "core/class_db.hpp"
 #include "core/property_info.hpp"
 #include "variant/dictionary.hpp"
+#include "variant/string.hpp"
 #include "variant/variant.hpp"
 
 using namespace godot;
@@ -123,6 +124,25 @@ InputLine::_bind_methods()
                           PropertyInfo(Variant::STRING, "microsecond_string"),
                           PropertyInfo(Variant::INT, "keyboard_key"),
                           PropertyInfo(Variant::BOOL, "isPressed")));
+
+    ADD_SIGNAL(MethodInfo("pdje_input_mouse_signal",
+                          PropertyInfo(Variant::STRING, "device_id"),
+                          PropertyInfo(Variant::STRING, "microsecond_string"),
+                          PropertyInfo(Variant::INT, "L_btn"),
+                          PropertyInfo(Variant::INT, "R_btn"),
+                          PropertyInfo(Variant::INT, "wheel_btn"),
+                          PropertyInfo(Variant::INT, "side_btn"),
+                          PropertyInfo(Variant::INT, "ex_btn"),
+                          PropertyInfo(Variant::BOOL, "is_wheel_YAxis"),
+                          PropertyInfo(Variant::INT, "wheel_move"),
+                          PropertyInfo(Variant::STRING, "mouse_axis_type"),
+                          PropertyInfo(Variant::INT, "x"),
+                          PropertyInfo(Variant::INT, "y")));
+
+    ClassDB::bind_method(D_METHOD("get_id_name_list"),
+                         &InputLine::get_id_name_list);
+    ClassDB::bind_method(D_METHOD("emit_input_signal"),
+                         &InputLine::emit_input_signal);
 }
 
 void
@@ -142,6 +162,42 @@ InputLine::get_id_name_list()
 }
 
 void
+InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
+{
+    if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
+        mev.L_btn = -1;
+
+    } else if (bit_mask & PDJE_MOUSE_L_BTN_UP) {
+        mev.L_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_R_BTN_DOWN) {
+        mev.R_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_R_BTN_UP) {
+        mev.R_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_M_BTN_DOWN) {
+        mev.wheel_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_M_BTN_UP) {
+        mev.wheel_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_SIDE_BTN_DOWN) {
+        mev.side_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_SIDE_BTN_UP) {
+        mev.side_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_EX_BTN_DOWN) {
+        mev.ex_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_EX_BTN_UP) {
+        mev.ex_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_XWHEEL) {
+        mev.is_wheel_YAxis = false;
+    } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
+        mev.is_wheel_YAxis = true;
+    }
+}
+
+void
 InputLine::emit_input_signal()
 {
     auto got = input_data.input_arena->Get();
@@ -155,31 +211,50 @@ InputLine::emit_input_signal()
                           log.event.keyboard.k,
                           log.event.keyboard.pressed);
             break;
-        case PDJE_Dev_Type::MOUSE: // todo - impl
+        case PDJE_Dev_Type::MOUSE: {
+
+            mouse_events temp_event;
+            ParseMouse(temp_event, log.event.mouse.button_type);
+            String AxisType = "";
+            switch (log.event.mouse.axis_type) {
+            case PDJE_Mouse_Axis_Type::REL:
+                AxisType = "REL";
+                break;
+            case PDJE_Mouse_Axis_Type::ABS:
+                AxisType = "ABS";
+                break;
+            case PDJE_Mouse_Axis_Type::VIRTUAL_DESKTOP_ABS:
+                AxisType = "VIRTUAL_DESKTOP_ABS";
+                break;
+            default:
+                AxisType = "ERROR";
+                break;
+            }
+            call_deferred("emit_signal",
+                          "pdje_input_mouse_signal",
+                          CStrToGStr(log.id),
+                          String::num_uint64(log.microSecond),
+                          temp_event.L_btn,
+                          temp_event.R_btn,
+                          temp_event.wheel_btn,
+                          temp_event.side_btn,
+                          temp_event.ex_btn,
+                          temp_event.is_wheel_YAxis,
+                          log.event.mouse.wheel_move,
+                          AxisType,
+                          log.event.mouse.x,
+                          log.event.mouse.y);
             break;
+        }
         case PDJE_Dev_Type::MIDI:
             break;
         case PDJE_Dev_Type::HID:
+
             break;
         case PDJE_Dev_Type::UNKNOWN:
             break;
         default:
             break;
         }
-        log.id;
-        log.microSecond;
-        log.event;
-        log.event.keyboard;
-        log.event.keyboard.k;
-        log.event.keyboard.pressed;
-
-        log.event.mouse;
-        log.event.mouse.axis_type;
-        log.event.mouse.button_type;
-        log.event.mouse.wheel_move;
-        log.event.mouse.x;
-        log.event.mouse.y;
-
-        log.hid_event;
     }
 }

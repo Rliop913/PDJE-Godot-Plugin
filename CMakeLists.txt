@@ -60,7 +60,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
 if(LINUX)
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
 else()
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
 endif()
 add_dependencies(PDJE_godot_wrapper godotcppEx)
 
