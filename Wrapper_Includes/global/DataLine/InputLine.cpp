@@ -159,6 +159,10 @@ Dictionary
 InputLine::get_id_name_list()
 {
     try {
+        if(input_data.id_name_conv == nullptr){
+            print_line("input line is not initialized.");
+            return Dictionary();
+        }
         Dictionary out;
         for (const auto &i : (*input_data.id_name_conv)) {
             out[CStrToGStr(i.first)] = CStrToGStr(i.second);
@@ -214,10 +218,16 @@ void
 InputLine::emit_input_signal()
 {
     try {
+        if(input_data.input_arena == nullptr){
+            print_line("inputline is not initialized.");
+            return;
+        }
         auto got = input_data.input_arena->Get();
+        
         for (const auto &log : *got) {
             switch (log.type) {
             case PDJE_Dev_Type::KEYBOARD:
+                print_line("got keyboard", log.microSecond);
                 call_deferred("emit_signal",
                               "pdje_input_keyboard_signal",
                               CStrToGStr(log.id),
@@ -226,7 +236,7 @@ InputLine::emit_input_signal()
                               log.event.keyboard.pressed);
                 break;
             case PDJE_Dev_Type::MOUSE: {
-
+                print_line("got mouse", log.microSecond);
                 mouse_events temp_event;
                 ParseMouse(temp_event, log.event.mouse.button_type);
                 String AxisType = "";

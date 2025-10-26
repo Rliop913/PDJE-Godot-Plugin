@@ -43,8 +43,8 @@ class PDJE_Input_Module : public Node {
     INPUT_STATE
     GetState();
 
-    Ref<InputLine>
-    PullOutDataLine();
+    void
+    InitializeInputLine(InputLine* input_line);
 
     PDJE_Input_Module();
     ~PDJE_Input_Module();
