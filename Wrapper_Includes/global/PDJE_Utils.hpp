@@ -4,6 +4,15 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <string>
+
+#define PDJE_DEFAULT_TRY_CATCH(CODE, RETURN)                                   \
+    try {                                                                      \
+        CODE                                                                   \
+    } catch (const std::exception &e) {                                        \
+        print_line(CStrToGStr(e.what()));                                      \
+        RETURN                                                                 \
+    }
+
 using namespace godot;
 
 inline std::string

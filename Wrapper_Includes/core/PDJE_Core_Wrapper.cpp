@@ -1,6 +1,10 @@
 #include "PDJE_Core_Wrapper.hpp"
+#include "CoreLine.hpp"
+#include "EditorWrapper.hpp"
+#include "PlayerWrapper.hpp"
 #include "core/property_info.hpp"
 #include "fileNameSanitizer.hpp"
+#include "variant/array.hpp"
 #include "variant/variant.hpp"
 #include <cstdint>
 #include <filesystem>
@@ -58,56 +62,67 @@ PDJE_Wrapper::~PDJE_Wrapper()
 Array
 PDJE_Wrapper::SearchTrack(String Title)
 {
-    if (!engine.has_value()) {
+    try {
+        if (!engine.has_value()) {
+            return Array();
+        }
+        auto res = engine->SearchTrack(GStrToCStr(Title));
+
+        Array trackList;
+        for (auto &track : res) {
+
+            std::stringstream before_csv(track.cachedMixList);
+            std::string       sanitized_music_name;
+            std::string       unsanitized_csv;
+            while (std::getline(before_csv, sanitized_music_name, ',')) {
+                unsanitized_csv +=
+                    PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
+                unsanitized_csv += ',';
+            }
+            if (!unsanitized_csv.empty()) {
+                unsanitized_csv.pop_back();
+            }
+            Dictionary trackMetaData;
+            trackMetaData["title"] =
+                CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
+            trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
+            trackList.push_back(trackMetaData);
+        }
+        return trackList;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
         return Array();
     }
-    auto res = engine->SearchTrack(GStrToCStr(Title));
-
-    Array trackList;
-    for (auto &track : res) {
-
-        std::stringstream before_csv(track.cachedMixList);
-        std::string       sanitized_music_name;
-        std::string       unsanitized_csv;
-        while (std::getline(before_csv, sanitized_music_name, ',')) {
-            unsanitized_csv +=
-                PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
-            unsanitized_csv += ',';
-        }
-        if (!unsanitized_csv.empty()) {
-            unsanitized_csv.pop_back();
-        }
-        Dictionary trackMetaData;
-        trackMetaData["title"] =
-            CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
-        trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
-        trackList.push_back(trackMetaData);
-    }
-    return trackList;
 }
+
 Array
 PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
 {
-    if (!engine.has_value()) {
+    try {
+        if (!engine.has_value()) {
+            return Array();
+        }
+        auto res =
+            engine->SearchMusic(GStrToCStr(Title), GStrToCStr(composer), bpm);
+
+        Array musicList;
+        for (auto &music : res) {
+            Dictionary musicMetaData;
+
+            musicMetaData["title"] =
+                CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
+            musicMetaData["composer"] =
+                CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
+            musicMetaData["bpm"]       = music.bpm;
+            musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
+            musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
+            musicList.push_back(musicMetaData);
+        }
+        return musicList;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
         return Array();
     }
-    auto res =
-        engine->SearchMusic(GStrToCStr(Title), GStrToCStr(composer), bpm);
-
-    Array musicList;
-    for (auto &music : res) {
-        Dictionary musicMetaData;
-
-        musicMetaData["title"] =
-            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
-        musicMetaData["composer"] =
-            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
-        musicMetaData["bpm"]       = music.bpm;
-        musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
-        musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
-        musicList.push_back(musicMetaData);
-    }
-    return musicList;
 }
 
 bool
@@ -115,80 +130,108 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode,
                          String         trackTitle,
                          unsigned int   FrameBufferSize)
 {
-    if (!engine.has_value()) {
-        return false;
-    }
-    auto td = engine->SearchTrack(GStrToCStr(trackTitle));
-    if (td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER) {
-        return false;
-    }
-    PLAY_MODE pm;
-    switch (mode) {
-    case PDJE_PLAY_MODE::FULL_PRE_RENDER:
-        pm = PLAY_MODE::FULL_PRE_RENDER;
-        break;
-    case PDJE_PLAY_MODE::HYBRID_RENDER:
-        pm = PLAY_MODE::HYBRID_RENDER;
-        break;
-    case PDJE_PLAY_MODE::FULL_MANUAL_RENDER:
-        pm = PLAY_MODE::FULL_MANUAL_RENDER;
-        td.emplace_back();
-        break;
-    default:
-        return false;
-    }
+    try {
+        if (!engine.has_value()) {
+            return false;
+        }
+        auto td = engine->SearchTrack(GStrToCStr(trackTitle));
+        if (td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER) {
+            return false;
+        }
+        PLAY_MODE pm;
+        switch (mode) {
+        case PDJE_PLAY_MODE::FULL_PRE_RENDER:
+            pm = PLAY_MODE::FULL_PRE_RENDER;
+            break;
+        case PDJE_PLAY_MODE::HYBRID_RENDER:
+            pm = PLAY_MODE::HYBRID_RENDER;
+            break;
+        case PDJE_PLAY_MODE::FULL_MANUAL_RENDER:
+            pm = PLAY_MODE::FULL_MANUAL_RENDER;
+            td.emplace_back();
+            break;
+        default:
+            return false;
+        }
 
-    return engine->InitPlayer(pm, td.front(), FrameBufferSize);
+        return engine->InitPlayer(pm, td.front(), FrameBufferSize);
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return false;
+    }
 }
 
 bool
 PDJE_Wrapper::InitEngine(String DBPath)
 {
+    try {
 
-    engine.emplace(GpathToCPath(DBPath).string());
-    return engine.has_value();
+        engine.emplace(GpathToCPath(DBPath).string());
+        return engine.has_value();
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return false;
+    }
 }
 
 bool
 PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
 {
+    try {
+        if (!engine.has_value()) {
+            return false;
+        }
 
-    if (!engine.has_value()) {
+        return engine->InitEditor(GStrToCStr(authName),
+                                  GStrToCStr(authEmail),
+                                  GpathToCPath(projectRoot).string());
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
         return false;
     }
-
-    return engine->InitEditor(GStrToCStr(authName),
-                              GStrToCStr(authEmail),
-                              GpathToCPath(projectRoot).string());
 }
 
 Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
-    auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
-    if (!engine->player) {
+    try {
+        auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
+        if (!engine->player) {
+            return ref;
+        }
+        ref->Init(engine->player.get(), &engine.value());
         return ref;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return Ref<PlayerWrapper>();
     }
-    ref->Init(engine->player.get(), &engine.value());
-    return ref;
 }
 
 Ref<EditorWrapper>
 PDJE_Wrapper::GetEditor()
 {
-    auto ref = Ref<EditorWrapper>(memnew(EditorWrapper));
-    if (!engine->editor) {
-        return ref;
-    }
+    try {
+        auto ref = Ref<EditorWrapper>(memnew(EditorWrapper));
+        if (!engine->editor) {
+            return ref;
+        }
 
-    ref->Init(engine->editor.get(), &engine.value());
-    return ref;
+        ref->Init(engine->editor.get(), &engine.value());
+        return ref;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return Ref<EditorWrapper>();
+    }
 }
 
 void
 PDJE_Wrapper::ResetPlayer()
 {
-    engine->ResetPlayer();
+    try {
+        engine->ResetPlayer();
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 void
 PDJE_Wrapper::_ready()
@@ -196,52 +239,61 @@ PDJE_Wrapper::_ready()
 }
 
 void
-PDJE_Wrapper::_process(double delta)
-{
-}
-
-void
 PDJE_Wrapper::CloseEditor()
 {
-    engine->CloseEditor();
+    try {
+        engine->CloseEditor();
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 
 bool
 PDJE_Wrapper::GetNoteObjects(String trackTitle)
 {
-    auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
-    auto track    = searched.front();
+    try {
+        auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
+        auto track    = searched.front();
 
-    OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
-                                     uint16_t           note_detail,
-                                     std::string        first_arg,
-                                     std::string        second_arg,
-                                     std::string        third_arg,
-                                     unsigned long long y_pos_start,
-                                     unsigned long long y_pos_end,
-                                     uint64_t           railID) {
-        call_deferred("emit_signal",
-                      "note_gen_signal",
-                      CStrToGStr(note_type),
-                      static_cast<int>(note_detail),
-                      CStrToGStr(first_arg),
-                      CStrToGStr(second_arg),
-                      CStrToGStr(third_arg),
-                      String::num_uint64(y_pos_start),
-                      String::num_uint64(y_pos_end),
-                      static_cast<int>(railID));
-    };
-    return engine->GetNoteObjects(track, osc);
+        OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
+                                         uint16_t           note_detail,
+                                         std::string        first_arg,
+                                         std::string        second_arg,
+                                         std::string        third_arg,
+                                         unsigned long long y_pos_start,
+                                         unsigned long long y_pos_end,
+                                         uint64_t           railID) {
+            call_deferred("emit_signal",
+                          "note_gen_signal",
+                          CStrToGStr(note_type),
+                          static_cast<int>(note_detail),
+                          CStrToGStr(first_arg),
+                          CStrToGStr(second_arg),
+                          CStrToGStr(third_arg),
+                          String::num_uint64(y_pos_start),
+                          String::num_uint64(y_pos_end),
+                          static_cast<int>(railID));
+        };
+        return engine->GetNoteObjects(track, osc);
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return false;
+    }
 }
 
 Ref<CoreLine>
 PDJE_Wrapper::PullOutCoreLine()
 {
-    auto ref = Ref<CoreLine>(memnew(CoreLine));
-    if (!engine->editor) {
+    try {
+        auto ref = Ref<CoreLine>(memnew(CoreLine));
+        if (!engine->editor) {
+            return ref;
+        }
+        auto line = engine->PullOutDataLine();
+        ref->Init(line);
         return ref;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return Ref<CoreLine>();
     }
-    auto line = engine->PullOutDataLine();
-    ref->Init(line);
-    return ref;
 }

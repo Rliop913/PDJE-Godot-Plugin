@@ -65,8 +65,6 @@ class PDJE_Wrapper : public Node {
 
     void
     _ready() override;
-    void
-    _process(double delta) override;
 };
 
 } // namespace godot

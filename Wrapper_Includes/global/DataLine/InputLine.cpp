@@ -148,113 +148,130 @@ InputLine::_bind_methods()
 void
 InputLine::Init(const PDJE_INPUT_DATA_LINE &inputDataLine)
 {
-    input_data = inputDataLine;
+    try {
+        input_data = inputDataLine;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 
 Dictionary
 InputLine::get_id_name_list()
 {
-    Dictionary out;
-    for (const auto &i : (*input_data.id_name_conv)) {
-        out[CStrToGStr(i.first)] = CStrToGStr(i.second);
+    try {
+        Dictionary out;
+        for (const auto &i : (*input_data.id_name_conv)) {
+            out[CStrToGStr(i.first)] = CStrToGStr(i.second);
+        }
+        return out;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+        return Dictionary();
     }
-    return out;
 }
 
 void
 InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
 {
-    if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
-        mev.L_btn = -1;
+    try {
+        if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
+            mev.L_btn = -1;
 
-    } else if (bit_mask & PDJE_MOUSE_L_BTN_UP) {
-        mev.L_btn = 1;
-    }
-    if (bit_mask & PDJE_MOUSE_R_BTN_DOWN) {
-        mev.R_btn = -1;
-    } else if (bit_mask & PDJE_MOUSE_R_BTN_UP) {
-        mev.R_btn = 1;
-    }
-    if (bit_mask & PDJE_MOUSE_M_BTN_DOWN) {
-        mev.wheel_btn = -1;
-    } else if (bit_mask & PDJE_MOUSE_M_BTN_UP) {
-        mev.wheel_btn = 1;
-    }
-    if (bit_mask & PDJE_MOUSE_SIDE_BTN_DOWN) {
-        mev.side_btn = -1;
-    } else if (bit_mask & PDJE_MOUSE_SIDE_BTN_UP) {
-        mev.side_btn = 1;
-    }
-    if (bit_mask & PDJE_MOUSE_EX_BTN_DOWN) {
-        mev.ex_btn = -1;
-    } else if (bit_mask & PDJE_MOUSE_EX_BTN_UP) {
-        mev.ex_btn = 1;
-    }
-    if (bit_mask & PDJE_MOUSE_XWHEEL) {
-        mev.is_wheel_YAxis = false;
-    } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
-        mev.is_wheel_YAxis = true;
+        } else if (bit_mask & PDJE_MOUSE_L_BTN_UP) {
+            mev.L_btn = 1;
+        }
+        if (bit_mask & PDJE_MOUSE_R_BTN_DOWN) {
+            mev.R_btn = -1;
+        } else if (bit_mask & PDJE_MOUSE_R_BTN_UP) {
+            mev.R_btn = 1;
+        }
+        if (bit_mask & PDJE_MOUSE_M_BTN_DOWN) {
+            mev.wheel_btn = -1;
+        } else if (bit_mask & PDJE_MOUSE_M_BTN_UP) {
+            mev.wheel_btn = 1;
+        }
+        if (bit_mask & PDJE_MOUSE_SIDE_BTN_DOWN) {
+            mev.side_btn = -1;
+        } else if (bit_mask & PDJE_MOUSE_SIDE_BTN_UP) {
+            mev.side_btn = 1;
+        }
+        if (bit_mask & PDJE_MOUSE_EX_BTN_DOWN) {
+            mev.ex_btn = -1;
+        } else if (bit_mask & PDJE_MOUSE_EX_BTN_UP) {
+            mev.ex_btn = 1;
+        }
+        if (bit_mask & PDJE_MOUSE_XWHEEL) {
+            mev.is_wheel_YAxis = false;
+        } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
+            mev.is_wheel_YAxis = true;
+        }
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
     }
 }
 
 void
 InputLine::emit_input_signal()
 {
-    auto got = input_data.input_arena->Get();
-    for (const auto &log : *got) {
-        switch (log.type) {
-        case PDJE_Dev_Type::KEYBOARD:
-            call_deferred("emit_signal",
-                          "pdje_input_keyboard_signal",
-                          CStrToGStr(log.id),
-                          String::num_uint64(log.microSecond),
-                          log.event.keyboard.k,
-                          log.event.keyboard.pressed);
-            break;
-        case PDJE_Dev_Type::MOUSE: {
+    try {
+        auto got = input_data.input_arena->Get();
+        for (const auto &log : *got) {
+            switch (log.type) {
+            case PDJE_Dev_Type::KEYBOARD:
+                call_deferred("emit_signal",
+                              "pdje_input_keyboard_signal",
+                              CStrToGStr(log.id),
+                              String::num_uint64(log.microSecond),
+                              log.event.keyboard.k,
+                              log.event.keyboard.pressed);
+                break;
+            case PDJE_Dev_Type::MOUSE: {
 
-            mouse_events temp_event;
-            ParseMouse(temp_event, log.event.mouse.button_type);
-            String AxisType = "";
-            switch (log.event.mouse.axis_type) {
-            case PDJE_Mouse_Axis_Type::REL:
-                AxisType = "REL";
-                break;
-            case PDJE_Mouse_Axis_Type::ABS:
-                AxisType = "ABS";
-                break;
-            case PDJE_Mouse_Axis_Type::VIRTUAL_DESKTOP_ABS:
-                AxisType = "VIRTUAL_DESKTOP_ABS";
-                break;
-            default:
-                AxisType = "ERROR";
+                mouse_events temp_event;
+                ParseMouse(temp_event, log.event.mouse.button_type);
+                String AxisType = "";
+                switch (log.event.mouse.axis_type) {
+                case PDJE_Mouse_Axis_Type::REL:
+                    AxisType = "REL";
+                    break;
+                case PDJE_Mouse_Axis_Type::ABS:
+                    AxisType = "ABS";
+                    break;
+                case PDJE_Mouse_Axis_Type::VIRTUAL_DESKTOP_ABS:
+                    AxisType = "VIRTUAL_DESKTOP_ABS";
+                    break;
+                default:
+                    AxisType = "ERROR";
+                    break;
+                }
+                call_deferred("emit_signal",
+                              "pdje_input_mouse_signal",
+                              CStrToGStr(log.id),
+                              String::num_uint64(log.microSecond),
+                              temp_event.L_btn,
+                              temp_event.R_btn,
+                              temp_event.wheel_btn,
+                              temp_event.side_btn,
+                              temp_event.ex_btn,
+                              temp_event.is_wheel_YAxis,
+                              log.event.mouse.wheel_move,
+                              AxisType,
+                              log.event.mouse.x,
+                              log.event.mouse.y);
                 break;
             }
-            call_deferred("emit_signal",
-                          "pdje_input_mouse_signal",
-                          CStrToGStr(log.id),
-                          String::num_uint64(log.microSecond),
-                          temp_event.L_btn,
-                          temp_event.R_btn,
-                          temp_event.wheel_btn,
-                          temp_event.side_btn,
-                          temp_event.ex_btn,
-                          temp_event.is_wheel_YAxis,
-                          log.event.mouse.wheel_move,
-                          AxisType,
-                          log.event.mouse.x,
-                          log.event.mouse.y);
-            break;
-        }
-        case PDJE_Dev_Type::MIDI:
-            break;
-        case PDJE_Dev_Type::HID:
+            case PDJE_Dev_Type::MIDI:
+                break;
+            case PDJE_Dev_Type::HID:
 
-            break;
-        case PDJE_Dev_Type::UNKNOWN:
-            break;
-        default:
-            break;
+                break;
+            case PDJE_Dev_Type::UNKNOWN:
+                break;
+            default:
+                break;
+            }
         }
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
     }
 }

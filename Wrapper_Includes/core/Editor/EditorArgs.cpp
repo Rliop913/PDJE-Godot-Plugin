@@ -1,4 +1,7 @@
 #include "EditorArgs.hpp"
+#include "PDJE_Utils.hpp"
+#include "core/print_string.hpp"
+#include <exception>
 
 using namespace godot;
 
@@ -90,35 +93,46 @@ PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
                              int    Eseparate,
                              int    RailID)
 {
-    note.emplace();
+    try {
 
-    note->Note_Type   = GStrToCStr(Note_Type);
-    note->Note_Detail = static_cast<uint16_t>(Note_Detail);
-    note->first       = GStrToCStr(first);
-    note->second      = GStrToCStr(second);
-    note->third       = GStrToCStr(third);
-    note->beat        = beat;
-    note->subBeat     = subBeat;
-    note->separate    = separate;
-    note->Ebeat       = Ebeat;
-    note->EsubBeat    = EsubBeat;
-    note->Eseparate   = Eseparate;
-    note->railID      = RailID;
+        note.emplace();
 
-    useFlag = NOTE;
+        note->Note_Type   = GStrToCStr(Note_Type);
+        note->Note_Detail = static_cast<uint16_t>(Note_Detail);
+        note->first       = GStrToCStr(first);
+        note->second      = GStrToCStr(second);
+        note->third       = GStrToCStr(third);
+        note->beat        = beat;
+        note->subBeat     = subBeat;
+        note->separate    = separate;
+        note->Ebeat       = Ebeat;
+        note->EsubBeat    = EsubBeat;
+        note->Eseparate   = Eseparate;
+        note->railID      = RailID;
+
+        useFlag = NOTE;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 void
 PDJE_EDITOR_ARG::InitMusicArg(
     String musicName, String bpm, int beat, int subBeat, int separate)
 {
-    music.emplace();
-    music->musicName    = GStrToCStr(musicName);
-    music->arg.bpm      = GStrToCStr(bpm);
-    music->arg.beat     = beat;
-    music->arg.subBeat  = subBeat;
-    music->arg.separate = separate;
+    try {
 
-    useFlag = MUSIC;
+        music.emplace();
+        music->musicName    = GStrToCStr(musicName);
+        music->arg.bpm      = GStrToCStr(bpm);
+        music->arg.beat     = beat;
+        music->arg.subBeat  = subBeat;
+        music->arg.separate = separate;
+
+        useFlag = MUSIC;
+
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 
 void
@@ -135,129 +149,137 @@ PDJE_EDITOR_ARG::InitMixArg(int    type,
                             int    EsubBeat,
                             int    Eseparate)
 {
-    mix.emplace();
-    switch (type) {
-    case FILTER:
-        mix->type = TypeEnum::FILTER;
-        break;
-    case EQ:
-        mix->type = TypeEnum::EQ;
-        break;
-    case DISTORTION:
-        mix->type = TypeEnum::DISTORTION;
-        break;
-    case CONTROL:
-        mix->type = TypeEnum::CONTROL;
-        break;
-    case VOL:
-        mix->type = TypeEnum::VOL;
-        break;
-    case LOAD:
-        mix->type = TypeEnum::LOAD;
-        break;
-    case UNLOAD:
-        mix->type = TypeEnum::UNLOAD;
-        break;
-    case BPM_CONTROL:
-        mix->type = TypeEnum::BPM_CONTROL;
-        break;
-    case ECHO:
-        mix->type = TypeEnum::ECHO;
-        break;
-    case OSC_FILTER:
-        mix->type = TypeEnum::OSC_FILTER;
-        break;
-    case FLANGER:
-        mix->type = TypeEnum::FLANGER;
-        break;
-    case PHASER:
-        mix->type = TypeEnum::PHASER;
-        break;
-    case TRANCE:
-        mix->type = TypeEnum::TRANCE;
-        break;
-    case PANNER:
-        mix->type = TypeEnum::PANNER;
-        break;
-    case BATTLE_DJ:
-        mix->type = TypeEnum::BATTLE_DJ;
-        break;
-    case ROLL:
-        mix->type = TypeEnum::ROLL;
-        break;
-    case COMPRESSOR:
-        mix->type = TypeEnum::COMPRESSOR;
-        break;
-    case ROBOT:
-        mix->type = TypeEnum::ROBOT;
-        break;
-    default:
-        return;
+    try {
+        mix.emplace();
+        switch (type) {
+        case FILTER:
+            mix->type = TypeEnum::FILTER;
+            break;
+        case EQ:
+            mix->type = TypeEnum::EQ;
+            break;
+        case DISTORTION:
+            mix->type = TypeEnum::DISTORTION;
+            break;
+        case CONTROL:
+            mix->type = TypeEnum::CONTROL;
+            break;
+        case VOL:
+            mix->type = TypeEnum::VOL;
+            break;
+        case LOAD:
+            mix->type = TypeEnum::LOAD;
+            break;
+        case UNLOAD:
+            mix->type = TypeEnum::UNLOAD;
+            break;
+        case BPM_CONTROL:
+            mix->type = TypeEnum::BPM_CONTROL;
+            break;
+        case ECHO:
+            mix->type = TypeEnum::ECHO;
+            break;
+        case OSC_FILTER:
+            mix->type = TypeEnum::OSC_FILTER;
+            break;
+        case FLANGER:
+            mix->type = TypeEnum::FLANGER;
+            break;
+        case PHASER:
+            mix->type = TypeEnum::PHASER;
+            break;
+        case TRANCE:
+            mix->type = TypeEnum::TRANCE;
+            break;
+        case PANNER:
+            mix->type = TypeEnum::PANNER;
+            break;
+        case BATTLE_DJ:
+            mix->type = TypeEnum::BATTLE_DJ;
+            break;
+        case ROLL:
+            mix->type = TypeEnum::ROLL;
+            break;
+        case COMPRESSOR:
+            mix->type = TypeEnum::COMPRESSOR;
+            break;
+        case ROBOT:
+            mix->type = TypeEnum::ROBOT;
+            break;
+        default:
+            return;
+        }
+
+        switch (details) {
+        case HIGH:
+            mix->details = DetailEnum::HIGH;
+            break;
+        case MID:
+            mix->details = DetailEnum::MID;
+            break;
+        case LOW:
+            mix->details = DetailEnum::LOW;
+            break;
+        case PAUSE:
+            mix->details = DetailEnum::PAUSE;
+            break;
+        case CUE:
+            mix->details = DetailEnum::CUE;
+            break;
+        case TRIM:
+            mix->details = DetailEnum::TRIM;
+            break;
+        case FADER:
+            mix->details = DetailEnum::FADER;
+            break;
+        case TIME_STRETCH:
+            mix->details = DetailEnum::TIME_STRETCH;
+            break;
+        case SPIN:
+            mix->details = DetailEnum::SPIN;
+            break;
+        case PITCH:
+            mix->details = DetailEnum::PITCH;
+            break;
+        case REV:
+            mix->details = DetailEnum::REV;
+            break;
+        case SCRATCH:
+            mix->details = DetailEnum::SCRATCH;
+            break;
+        case BSCRATCH:
+            mix->details = DetailEnum::BSCRATCH;
+            break;
+
+        default:
+            return;
+        }
+        mix->ID        = ID;
+        mix->first     = GStrToCStr(first);
+        mix->second    = GStrToCStr(second);
+        mix->third     = GStrToCStr(third);
+        mix->beat      = beat;
+        mix->subBeat   = subBeat;
+        mix->separate  = separate;
+        mix->Ebeat     = Ebeat;
+        mix->EsubBeat  = EsubBeat;
+        mix->Eseparate = Eseparate;
+
+        useFlag = MIX;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
     }
-
-    switch (details) {
-    case HIGH:
-        mix->details = DetailEnum::HIGH;
-        break;
-    case MID:
-        mix->details = DetailEnum::MID;
-        break;
-    case LOW:
-        mix->details = DetailEnum::LOW;
-        break;
-    case PAUSE:
-        mix->details = DetailEnum::PAUSE;
-        break;
-    case CUE:
-        mix->details = DetailEnum::CUE;
-        break;
-    case TRIM:
-        mix->details = DetailEnum::TRIM;
-        break;
-    case FADER:
-        mix->details = DetailEnum::FADER;
-        break;
-    case TIME_STRETCH:
-        mix->details = DetailEnum::TIME_STRETCH;
-        break;
-    case SPIN:
-        mix->details = DetailEnum::SPIN;
-        break;
-    case PITCH:
-        mix->details = DetailEnum::PITCH;
-        break;
-    case REV:
-        mix->details = DetailEnum::REV;
-        break;
-    case SCRATCH:
-        mix->details = DetailEnum::SCRATCH;
-        break;
-    case BSCRATCH:
-        mix->details = DetailEnum::BSCRATCH;
-        break;
-
-    default:
-        return;
-    }
-    mix->ID        = ID;
-    mix->first     = GStrToCStr(first);
-    mix->second    = GStrToCStr(second);
-    mix->third     = GStrToCStr(third);
-    mix->beat      = beat;
-    mix->subBeat   = subBeat;
-    mix->separate  = separate;
-    mix->Ebeat     = Ebeat;
-    mix->EsubBeat  = EsubBeat;
-    mix->Eseparate = Eseparate;
-
-    useFlag = MIX;
 }
 
 void
 PDJE_EDITOR_ARG::InitKeyValueArg(String key, String value)
 {
-    kv.emplace();
-    kv->first  = GStrToCStr(key);
-    kv->second = GStrToCStr(value);
-    useFlag    = KV;
+    try {
+        kv.emplace();
+        kv->first  = GStrToCStr(key);
+        kv->second = GStrToCStr(value);
+        useFlag    = KV;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }

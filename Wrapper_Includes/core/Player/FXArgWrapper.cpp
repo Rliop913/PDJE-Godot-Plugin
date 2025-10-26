@@ -1,5 +1,6 @@
 #include "FXArgWrapper.hpp"
 #include "PDJE_Utils.hpp"
+#include "variant/array.hpp"
 using namespace godot;
 
 void
@@ -14,28 +15,42 @@ FXArgWrapper::_bind_methods()
 void
 FXArgWrapper::Init(FXControlPanel *refobj)
 {
-    refwrap.emplace(refobj);
+    try {
+        refwrap.emplace(refobj);
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
+    }
 }
 
 Array
 FXArgWrapper::GetFXArgKeys(int fx)
 {
-    if (!refwrap.has_value())
+    try {
+        if (!refwrap.has_value())
+            return Array();
+        FXList ofx = static_cast<FXList>(fx);
+        Array  usableKeys;
+        for (auto &key : refwrap->GetFXArgKeys(ofx)) {
+            usableKeys.push_back(CStrToGStr(key));
+        }
+        return usableKeys;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
         return Array();
-    FXList ofx = static_cast<FXList>(fx);
-    Array  usableKeys;
-    for (auto &key : refwrap->GetFXArgKeys(ofx)) {
-        usableKeys.push_back(CStrToGStr(key));
     }
-    return usableKeys;
 }
 
 bool
 FXArgWrapper::SetFXArg(int fx, String key, double arg)
 {
-    if (!refwrap.has_value())
+    try {
+        if (!refwrap.has_value())
+            return false;
+        FXList ofx = static_cast<FXList>(fx);
+        refwrap->SetFXArg(ofx, GStrToCStr(key), arg);
+        return true;
+    } catch (const std::exception &e) {
+        print_line(CStrToGStr(e.what()));
         return false;
-    FXList ofx = static_cast<FXList>(fx);
-    refwrap->SetFXArg(ofx, GStrToCStr(key), arg);
-    return true;
+    }
 }
