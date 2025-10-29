@@ -62,7 +62,7 @@ PDJE_Wrapper::~PDJE_Wrapper()
 Array
 PDJE_Wrapper::SearchTrack(String Title)
 {
-    try {
+    
         if (!engine.has_value()) {
             return Array();
         }
@@ -89,16 +89,13 @@ PDJE_Wrapper::SearchTrack(String Title)
             trackList.push_back(trackMetaData);
         }
         return trackList;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Array();
-    }
+    
 }
 
 Array
 PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
 {
-    try {
+    
         if (!engine.has_value()) {
             return Array();
         }
@@ -119,10 +116,7 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
             musicList.push_back(musicMetaData);
         }
         return musicList;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Array();
-    }
+     
 }
 
 bool
@@ -130,7 +124,7 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode,
                          String         trackTitle,
                          unsigned int   FrameBufferSize)
 {
-    try {
+    
         if (!engine.has_value()) {
             return false;
         }
@@ -155,29 +149,23 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode,
         }
 
         return engine->InitPlayer(pm, td.front(), FrameBufferSize);
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 bool
 PDJE_Wrapper::InitEngine(String DBPath)
 {
-    try {
-
+    startlog();
+    critlog("init");
         engine.emplace(GpathToCPath(DBPath).string());
         return engine.has_value();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+  
 }
 
 bool
 PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
 {
-    try {
+    
         if (!engine.has_value()) {
             return false;
         }
@@ -185,32 +173,26 @@ PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
         return engine->InitEditor(GStrToCStr(authName),
                                   GStrToCStr(authEmail),
                                   GpathToCPath(projectRoot).string());
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
-    try {
+    
         auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
         if (!engine->player) {
             return ref;
         }
         ref->Init(engine->player.get(), &engine.value());
         return ref;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Ref<PlayerWrapper>();
-    }
+   
 }
 
 Ref<EditorWrapper>
 PDJE_Wrapper::GetEditor()
 {
-    try {
+    
         auto ref = Ref<EditorWrapper>(memnew(EditorWrapper));
         if (!engine->editor) {
             return ref;
@@ -218,20 +200,15 @@ PDJE_Wrapper::GetEditor()
 
         ref->Init(engine->editor.get(), &engine.value());
         return ref;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Ref<EditorWrapper>();
-    }
+  
 }
 
 void
 PDJE_Wrapper::ResetPlayer()
 {
-    try {
+    
         engine->ResetPlayer();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+ 
 }
 void
 PDJE_Wrapper::_ready()
@@ -241,17 +218,15 @@ PDJE_Wrapper::_ready()
 void
 PDJE_Wrapper::CloseEditor()
 {
-    try {
+    
         engine->CloseEditor();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+ 
 }
 
 bool
 PDJE_Wrapper::GetNoteObjects(String trackTitle)
 {
-    try {
+    
         auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
         auto track    = searched.front();
 
@@ -275,16 +250,13 @@ PDJE_Wrapper::GetNoteObjects(String trackTitle)
                           static_cast<int>(railID));
         };
         return engine->GetNoteObjects(track, osc);
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+ 
 }
 
 Ref<CoreLine>
 PDJE_Wrapper::PullOutCoreLine()
 {
-    try {
+    
         auto ref = Ref<CoreLine>(memnew(CoreLine));
         if (!engine->editor) {
             return ref;
@@ -292,8 +264,5 @@ PDJE_Wrapper::PullOutCoreLine()
         auto line = engine->PullOutDataLine();
         ref->Init(line);
         return ref;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Ref<CoreLine>();
-    }
+ 
 }

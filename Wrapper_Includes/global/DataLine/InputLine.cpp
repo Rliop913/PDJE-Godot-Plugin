@@ -148,17 +148,15 @@ InputLine::_bind_methods()
 void
 InputLine::Init(const PDJE_INPUT_DATA_LINE &inputDataLine)
 {
-    try {
+    
         input_data = inputDataLine;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+   
 }
 
 Dictionary
 InputLine::get_id_name_list()
 {
-    try {
+    
         if(input_data.id_name_conv == nullptr){
             print_line("input line is not initialized.");
             return Dictionary();
@@ -168,16 +166,13 @@ InputLine::get_id_name_list()
             out[CStrToGStr(i.first)] = CStrToGStr(i.second);
         }
         return out;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Dictionary();
-    }
+   
 }
 
 void
 InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
 {
-    try {
+    
         if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
             mev.L_btn = -1;
 
@@ -209,15 +204,13 @@ InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
         } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
             mev.is_wheel_YAxis = true;
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+   
 }
 
 void
 InputLine::emit_input_signal()
 {
-    try {
+    
         if(input_data.input_arena == nullptr){
             print_line("inputline is not initialized.");
             return;
@@ -281,7 +274,5 @@ InputLine::emit_input_signal()
                 break;
             }
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+    
 }

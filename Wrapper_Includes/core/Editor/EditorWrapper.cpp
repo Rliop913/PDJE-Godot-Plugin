@@ -8,18 +8,16 @@ using namespace godot;
 void
 EditorWrapper::Init(editorObject *refobj, PDJE *refengine)
 {
-    try {
+    
         edit   = refobj;
         engine = refengine;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+  
 }
 
 bool
 EditorWrapper::AddLine(Ref<PDJE_EDITOR_ARG> arg)
 {
-    try {
+    
         if (edit == nullptr)
             return false;
         switch (arg->useFlag) {
@@ -37,23 +35,17 @@ EditorWrapper::AddLine(Ref<PDJE_EDITOR_ARG> arg)
             return false;
         }
         return false;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 bool
 EditorWrapper::EditMusicFirstBeat(String title, String firstBeat)
 {
-    try {
+    
         if (edit == nullptr)
             return false;
         return edit->AddLine(GStrToCStr(title), GStrToCStr(firstBeat));
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 int
@@ -61,7 +53,7 @@ EditorWrapper::deleteLine(Ref<PDJE_EDITOR_ARG> obj,
                           bool                 skipType_if_mix_obj,
                           bool                 skipDetail_if_mix_obj)
 {
-    try {
+    
         if (edit == nullptr)
             return -1;
         switch (obj->useFlag) {
@@ -80,16 +72,13 @@ EditorWrapper::deleteLine(Ref<PDJE_EDITOR_ARG> obj,
             return -2;
         }
 
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return -1;
-    }
+    
 }
 
 String
 EditorWrapper::render(String trackTitle)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         if (engine == nullptr)
@@ -97,74 +86,82 @@ EditorWrapper::render(String trackTitle)
         UNSANITIZED render_msg;
         if (edit->render(
                 GStrToCStr(trackTitle), *engine->DBROOT.get(), render_msg)) {
-            return "";
+                    Flag_is_rendered = true;
+            return "RENDER COMPLETE";
         } else {
             return CStrToGStr(render_msg);
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+    
 }
 
 bool
 EditorWrapper::demoPlayInit(unsigned int frameBufferSize, String trackTitle)
 {
-    try {
-        if (edit == nullptr)
+    
+        if (edit == nullptr){
+            critlog("failed to push to root db. editor is null");
             return false;
-        if (engine == nullptr)
+        }
+        if (engine == nullptr){
+critlog("failed to push to root db. engine is null");
             return false;
+        }
         edit->demoPlayInit(
             engine->player, frameBufferSize, GStrToCStr(trackTitle));
         return true;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 bool
 EditorWrapper::pushTrackToRootDB(String trackTitleToPush)
 {
-    try {
-        if (edit == nullptr)
+    
+        if (edit == nullptr){
+            critlog("failed to push to root db. editor is null");
             return false;
-        if (engine == nullptr)
+        }
+        if (engine == nullptr){
+critlog("failed to push to root db. engine is null");
             return false;
-        if (!Flag_is_rendered)
+        }
+        if (!Flag_is_rendered){
+critlog("failed to push to root db. it is not rendered");
             return false;
+        }
         return edit->pushToRootDB(*engine->DBROOT.get(),
                                   GStrToCStr(trackTitleToPush));
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+  
 }
 
 bool
 EditorWrapper::pushToRootDB(String musicTitle, String musicComposer)
 {
-    try {
-        if (edit == nullptr)
+    
+        if (edit == nullptr){
+
+            critlog("failed to push to root db. editor is null");
             return false;
-        if (engine == nullptr)
+        }
+        if (engine == nullptr){
+
+            critlog("failed to push to root db. engine is null");
             return false;
-        if (!Flag_is_rendered)
+        }
+        if (!Flag_is_rendered){
+
+            critlog("failed to push to root db. it is not rendered");
             return false;
+        }
         return edit->pushToRootDB(*engine->DBROOT.get(),
                                   GStrToCStr(musicTitle),
                                   GStrToCStr(musicComposer));
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 bool
 EditorWrapper::getMixDatas()
 {
-    try {
+    
         if (edit == nullptr)
             return false;
 
@@ -185,16 +182,13 @@ EditorWrapper::getMixDatas()
                           static_cast<int>(margs.Eseparate));
         });
         return true;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 bool
 EditorWrapper::getMusicBpmDatas()
 {
-    try {
+    
         if (edit == nullptr)
             return false;
 
@@ -208,16 +202,13 @@ EditorWrapper::getMusicBpmDatas()
                           CStrToGStr(margs.arg.bpm));
         });
         return true;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 bool
 EditorWrapper::getNoteDatas()
 {
-    try {
+    
         if (edit == nullptr)
             return false;
 
@@ -238,16 +229,13 @@ EditorWrapper::getNoteDatas()
                           static_cast<int>(margs.railID));
         });
         return true;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 bool
 EditorWrapper::getKeyValueDatas()
 {
-    try {
+    
         if (edit == nullptr)
             return false;
         edit->getAll<EDIT_ARG_KEY_VALUE>(
@@ -258,16 +246,13 @@ EditorWrapper::getKeyValueDatas()
                               CStrToGStr(margs.second));
             });
         return true;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+ 
 }
 
 Dictionary
 EditorWrapper::getAll()
 {
-    try {
+    
         if (edit == nullptr)
             return Dictionary();
         Dictionary result;
@@ -434,8 +419,5 @@ EditorWrapper::getAll()
             });
         result["keyValues"] = keyValues;
         return result;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Dictionary();
-    }
+
 }

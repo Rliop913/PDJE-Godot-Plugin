@@ -46,7 +46,7 @@ PDJE_Input_Module::~PDJE_Input_Module()
 Array
 PDJE_Input_Module::GetDevs()
 {
-    try {
+    
         auto  devs = input_module.GetDevs();
         Array out;
         for (const auto &d : devs) {
@@ -79,16 +79,13 @@ PDJE_Input_Module::GetDevs()
             }
         }
         return out;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Array();
-    }
+   
 }
 
 bool
 PDJE_Input_Module::Config(Array devices)
 {
-    try {
+    
         std::vector<DeviceData> devs;
         for (int i = 0; i < devices.size(); ++i) {
             if (devices[i].get_type() == Variant::DICTIONARY) {
@@ -117,65 +114,48 @@ PDJE_Input_Module::Config(Array devices)
             }
         }
         return input_module.Config(devs);
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
 void
 PDJE_Input_Module::InitializeInputLine(InputLine* input_line)
 {
-    try {
+    
         input_line->Init(input_module.PullOutDataLine());    
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+    
 }
 
 bool
 PDJE_Input_Module::Init()
 {
-    try {
+    
         return input_module.Init();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 bool
 PDJE_Input_Module::Kill()
 {
-    try {
+    
         return input_module.Kill();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+  
 }
 
 bool
 PDJE_Input_Module::Run()
 {
-    try {
+    
         return input_module.Run();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 PDJE_Input_Module::INPUT_STATE
 PDJE_Input_Module::GetState()
 {
-    try {
+    
         return static_cast<PDJE_Input_Module::INPUT_STATE>(
             input_module.GetState());
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return PDJE_Input_Module::INPUT_STATE::DEAD;
-    }
+   
 }
 
 void

@@ -22,83 +22,81 @@ PlayerWrapper::_bind_methods()
 void
 PlayerWrapper::Init(audioPlayer *refobj, PDJE *refengine)
 {
-    PDJE_DEFAULT_TRY_CATCH(playerobj = refobj; engineobj = refengine;, ;)
+    playerobj = refobj; engineobj = refengine;
 }
 
 bool
 PlayerWrapper::Activate()
 {
-    PDJE_DEFAULT_TRY_CATCH(
+    
         if (playerobj == nullptr) {
             return false;
         } return playerobj->Activate();
-        , return false;)
+        
 }
 
 bool
 PlayerWrapper::Deactivate()
 {
-    PDJE_DEFAULT_TRY_CATCH(
+    
         if (playerobj == nullptr) {
             return false;
         } return playerobj->Deactivate();
-        , return false;)
+        
 }
 
 bool
 PlayerWrapper::ChangeCursorPos(String pos)
 {
-    PDJE_DEFAULT_TRY_CATCH(
+    
         if (playerobj == nullptr) return false;
 
         auto str = GStrToCStr(pos);
-        try { playerobj->ChangeCursorPos(std::stoull(str)); } catch (...) {
-            return false;
-        } return true;
-        , return false;)
+          playerobj->ChangeCursorPos(std::stoull(str)); 
+            
+        return true;
+        
 }
 
 String
 PlayerWrapper::GetConsumedFrames()
 {
-    PDJE_DEFAULT_TRY_CATCH(
+    
         if (playerobj == nullptr) return String();
 
         auto frames = playerobj->GetConsumedFrames();
-        try {
+        
             auto frameString = std::to_string(frames);
             return CStrToGStr(frameString);
-        } catch (...) { return String(); },
-        return "Exception:" + CStrToGStr(e.what());)
 }
 
 String
 PlayerWrapper::GetStatus()
 {
-    PDJE_DEFAULT_TRY_CATCH(if (playerobj == nullptr) return String();
+    if (playerobj == nullptr) return String();
                            return CStrToGStr(playerobj->STATUS);
-                           , return CStrToGStr(e.what());)
+                           
 }
 
 Ref<FXWrapper>
 PlayerWrapper::GetFXControlPanel()
 {
-    PDJE_DEFAULT_TRY_CATCH(auto ref = Ref<FXWrapper>(memnew(FXWrapper));
+    auto ref = Ref<FXWrapper>(memnew(FXWrapper));
                            if (playerobj == nullptr) return ref;
                            ref->Init(playerobj->GetFXControlPanel());
                            return ref;
-                           , return Ref<FXWrapper>();)
+                           
 }
 
 Ref<MusPanelWrapper>
 PlayerWrapper::GetMusicControlPanel()
 {
-    PDJE_DEFAULT_TRY_CATCH(
+    
         auto ref = Ref<MusPanelWrapper>(memnew(MusPanelWrapper));
         if (playerobj == nullptr) return ref;
         if (engineobj == nullptr) return ref;
 
         ref->Init((playerobj->GetMusicControlPanel()), engineobj);
         return ref;
-        , return Ref<MusPanelWrapper>();)
+        
 }
