@@ -29,7 +29,8 @@ include(ExternalProject)
 include(cmake/godotExternalSetter.cmake)
 
 # include(cmake/pdjeExternalSetter.cmake)
-
+set(PDJE_INCLUDE_ROOT ${CMAKE_SOURCE_DIR}/Project-DJ-Engine CACHE STRING "SET pdje root")
+message(${PDJE_INCLUDE_ROOT})
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
 set(PDJE_BUILD_TESTS OFF CACHE BOOL "Disable build pdje test")
