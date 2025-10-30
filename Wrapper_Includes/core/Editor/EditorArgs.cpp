@@ -93,7 +93,7 @@ PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
                              int    Eseparate,
                              int    RailID)
 {
-    try {
+    
 
         note.emplace();
 
@@ -111,15 +111,13 @@ PDJE_EDITOR_ARG::InitNoteArg(String Note_Type,
         note->railID      = RailID;
 
         useFlag = NOTE;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+ 
 }
 void
 PDJE_EDITOR_ARG::InitMusicArg(
     String musicName, String bpm, int beat, int subBeat, int separate)
 {
-    try {
+    
 
         music.emplace();
         music->musicName    = GStrToCStr(musicName);
@@ -130,9 +128,7 @@ PDJE_EDITOR_ARG::InitMusicArg(
 
         useFlag = MUSIC;
 
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+    
 }
 
 void
@@ -149,7 +145,7 @@ PDJE_EDITOR_ARG::InitMixArg(int    type,
                             int    EsubBeat,
                             int    Eseparate)
 {
-    try {
+    
         mix.emplace();
         switch (type) {
         case FILTER:
@@ -266,20 +262,17 @@ PDJE_EDITOR_ARG::InitMixArg(int    type,
         mix->Eseparate = Eseparate;
 
         useFlag = MIX;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+   
 }
 
 void
 PDJE_EDITOR_ARG::InitKeyValueArg(String key, String value)
 {
-    try {
+    
         kv.emplace();
         kv->first  = GStrToCStr(key);
         kv->second = GStrToCStr(value);
         useFlag    = KV;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+    
+   
 }

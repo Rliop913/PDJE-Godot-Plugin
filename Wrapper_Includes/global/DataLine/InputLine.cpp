@@ -148,32 +148,31 @@ InputLine::_bind_methods()
 void
 InputLine::Init(const PDJE_INPUT_DATA_LINE &inputDataLine)
 {
-    try {
+    
         input_data = inputDataLine;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+   
 }
 
 Dictionary
 InputLine::get_id_name_list()
 {
-    try {
+    
+        if(input_data.id_name_conv == nullptr){
+            print_line("input line is not initialized.");
+            return Dictionary();
+        }
         Dictionary out;
         for (const auto &i : (*input_data.id_name_conv)) {
             out[CStrToGStr(i.first)] = CStrToGStr(i.second);
         }
         return out;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Dictionary();
-    }
+   
 }
 
 void
 InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
 {
-    try {
+    
         if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
             mev.L_btn = -1;
 
@@ -205,32 +204,36 @@ InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
         } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
             mev.is_wheel_YAxis = true;
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+   
 }
 
 void
 InputLine::emit_input_signal()
 {
-    try {
+    
+        if(input_data.input_arena == nullptr){
+            print_line("inputline is not initialized.");
+            return;
+        }
         auto got = input_data.input_arena->Get();
-        for (const auto &log : *got) {
-            switch (log.type) {
+        for(uint64_t idx=0; idx < got.second ; ++idx){
+        
+            switch (got.first[idx].type) {
             case PDJE_Dev_Type::KEYBOARD:
+                print_line("got keyboard", got.first[idx].microSecond);
                 call_deferred("emit_signal",
                               "pdje_input_keyboard_signal",
-                              CStrToGStr(log.id),
-                              String::num_uint64(log.microSecond),
-                              log.event.keyboard.k,
-                              log.event.keyboard.pressed);
+                              CStrToGStr(got.first[idx].id),
+                              String::num_uint64(got.first[idx].microSecond),
+                              got.first[idx].event.keyboard.k,
+                              got.first[idx].event.keyboard.pressed);
                 break;
             case PDJE_Dev_Type::MOUSE: {
-
+                print_line("got mouse", got.first[idx].microSecond);
                 mouse_events temp_event;
-                ParseMouse(temp_event, log.event.mouse.button_type);
+                ParseMouse(temp_event, got.first[idx].event.mouse.button_type);
                 String AxisType = "";
-                switch (log.event.mouse.axis_type) {
+                switch (got.first[idx].event.mouse.axis_type) {
                 case PDJE_Mouse_Axis_Type::REL:
                     AxisType = "REL";
                     break;
@@ -246,18 +249,18 @@ InputLine::emit_input_signal()
                 }
                 call_deferred("emit_signal",
                               "pdje_input_mouse_signal",
-                              CStrToGStr(log.id),
-                              String::num_uint64(log.microSecond),
+                              CStrToGStr(got.first[idx].id),
+                              String::num_uint64(got.first[idx].microSecond),
                               temp_event.L_btn,
                               temp_event.R_btn,
                               temp_event.wheel_btn,
                               temp_event.side_btn,
                               temp_event.ex_btn,
                               temp_event.is_wheel_YAxis,
-                              log.event.mouse.wheel_move,
+                              got.first[idx].event.mouse.wheel_move,
                               AxisType,
-                              log.event.mouse.x,
-                              log.event.mouse.y);
+                              got.first[idx].event.mouse.x,
+                              got.first[idx].event.mouse.y);
                 break;
             }
             case PDJE_Dev_Type::MIDI:
@@ -271,7 +274,5 @@ InputLine::emit_input_signal()
                 break;
             }
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-    }
+    
 }

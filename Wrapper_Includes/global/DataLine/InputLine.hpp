@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <godot_cpp/classes/ref.hpp>
+#include <godot_cpp/classes/node.hpp>
+// #include <godot_cpp/classes/ref.hpp>
 
 #include "PDJE_Input_DataLine.hpp"
 #include "classes/ref_counted.hpp"
@@ -9,8 +10,8 @@
 #include "variant/dictionary.hpp"
 
 namespace godot {
-class InputLine : public RefCounted {
-    GDCLASS(InputLine, RefCounted)
+class InputLine : public Node {
+    GDCLASS(InputLine, Node)
   private:
     PDJE_INPUT_DATA_LINE input_data;
     struct mouse_events {

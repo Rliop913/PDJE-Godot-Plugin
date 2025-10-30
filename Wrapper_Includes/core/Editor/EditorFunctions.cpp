@@ -115,7 +115,7 @@ EditorWrapper::_bind_methods()
 String
 EditorWrapper::Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         switch (_FLAG_EDITOR_OBJ) {
@@ -147,16 +147,13 @@ EditorWrapper::Undo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
         default:
             return "arg didn't matched";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+   
 }
 
 String
 EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         switch (_FLAG_EDITOR_OBJ) {
@@ -188,10 +185,7 @@ EditorWrapper::Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music)
         default:
             return "arg didn't matched";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+  
 }
 
 constexpr int GIT_OID_BUFFER_SIZE = GIT_OID_HEXSZ + 1;
@@ -199,7 +193,7 @@ constexpr int GIT_OID_BUFFER_SIZE = GIT_OID_HEXSZ + 1;
 String
 EditorWrapper::Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
 
@@ -232,17 +226,14 @@ EditorWrapper::Go(const int _FLAG_EDITOR_OBJ, String branchName, String NodeID)
         default:
             return "arg didn't matched";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+   
 }
 
 String
 EditorWrapper::GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ,
                                    String    musicName_if_flag_music)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         switch (_FLAG_EDITOR_OBJ) {
@@ -258,16 +249,13 @@ EditorWrapper::GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ,
         default:
             return "no match flag";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+   
 }
 
 String
 EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         switch (_FLAG_EDITOR_OBJ) {
@@ -331,29 +319,23 @@ EditorWrapper::UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName)
         default:
             return "no match flag";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+  
 }
 
 String
 EditorWrapper::DESTROY_PROJECT()
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
         return CStrToGStr(edit->DESTROY_PROJECT());
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+    
 }
 
 String
 EditorWrapper::Open(String projectPath)
 {
-    try {
+    
         if (edit == nullptr)
             return "editor is null";
 
@@ -362,10 +344,7 @@ EditorWrapper::Open(String projectPath)
         } else {
             return "Open Failed";
         }
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return "Exception: " + CStrToGStr(e.what());
-    }
+   
 }
 
 bool
@@ -374,23 +353,20 @@ EditorWrapper::ConfigNewMusic(String NewMusicName,
                               String musicPath,
                               String firstBar)
 {
-    try {
+    
         if (edit == nullptr)
             return false;
         return edit->ConfigNewMusic(GStrToCStr(NewMusicName),
                                     GStrToCStr(composer),
                                     GpathToCPath(musicPath),
                                     GStrToCStr(firstBar));
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 Dictionary
 DiffResultToDictionary(const DiffResult &dresult)
 {
-    try {
+    
         auto godot_dictionary = Dictionary();
         auto newArray         = Array();
         for (auto newlines : dresult.NewLines) {
@@ -409,10 +385,7 @@ DiffResultToDictionary(const DiffResult &dresult)
         }
         godot_dictionary["OldLines"] = oldArray;
         return godot_dictionary;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Dictionary();
-    }
+   
 }
 
 Dictionary
@@ -421,7 +394,7 @@ EditorWrapper::GetDiff(const int _FLAG_EDITOR_OBJ,
                        String    oldNodeID,
                        String    newNodeID)
 {
-    try {
+    
         if (edit == nullptr)
             return Dictionary();
         git_oid         old_oid;
@@ -493,8 +466,5 @@ EditorWrapper::GetDiff(const int _FLAG_EDITOR_OBJ,
         else
             return Dictionary();
 
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Dictionary();
-    }
+    
 }

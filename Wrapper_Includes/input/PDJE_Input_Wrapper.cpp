@@ -30,8 +30,8 @@ PDJE_Input_Module::_bind_methods()
     ClassDB::bind_method(D_METHOD("Kill"), &PDJE_Input_Module::Kill);
     ClassDB::bind_method(D_METHOD("Run"), &PDJE_Input_Module::Run);
     ClassDB::bind_method(D_METHOD("GetState"), &PDJE_Input_Module::GetState);
-    ClassDB::bind_method(D_METHOD("PullOutDataLine"),
-                         &PDJE_Input_Module::PullOutDataLine);
+    ClassDB::bind_method(D_METHOD("InitializeInputLine", "input_line"),
+                         &PDJE_Input_Module::InitializeInputLine);
     ClassDB::bind_method(D_METHOD("GetDevs"), &PDJE_Input_Module::GetDevs);
 }
 
@@ -46,7 +46,7 @@ PDJE_Input_Module::~PDJE_Input_Module()
 Array
 PDJE_Input_Module::GetDevs()
 {
-    try {
+    
         auto  devs = input_module.GetDevs();
         Array out;
         for (const auto &d : devs) {
@@ -73,22 +73,19 @@ PDJE_Input_Module::GetDevs()
                 devtemp["type"] = "";
                 break;
             }
-            if (devtemp["type"] != "" && devtemp["device_specific_id"] != "" &&
-                devtemp["name"] != "") {
+            if (d.Name != "" && d.device_specific_id != "" &&
+                d.Type != PDJE_Dev_Type::UNKNOWN) {
                 out.push_back(devtemp);
             }
         }
         return out;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Array();
-    }
+   
 }
 
 bool
 PDJE_Input_Module::Config(Array devices)
 {
-    try {
+    
         std::vector<DeviceData> devs;
         for (int i = 0; i < devices.size(); ++i) {
             if (devices[i].get_type() == Variant::DICTIONARY) {
@@ -96,7 +93,7 @@ PDJE_Input_Module::Config(Array devices)
                 DeviceData dd;
                 dd.device_specific_id = GStrToCStr(dict["device_specific_id"]);
                 dd.Name               = GStrToCStr(dict["name"]);
-                auto ttype            = dict["type"];
+                String ttype            = dict["type"];
                 if (ttype == "KEYBOARD") {
                     dd.Type = PDJE_Dev_Type::KEYBOARD;
                 } else if (ttype == "MOUSE") {
@@ -112,77 +109,53 @@ PDJE_Input_Module::Config(Array devices)
                     dd.Type != PDJE_Dev_Type::UNKNOWN) {
                     devs.push_back(dd);
                 } else {
-                    return false;
+                    continue;
                 }
             }
         }
         return input_module.Config(devs);
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+    
 }
 
-Ref<InputLine>
-PDJE_Input_Module::PullOutDataLine()
+void
+PDJE_Input_Module::InitializeInputLine(InputLine* input_line)
 {
-    try {
-        auto ref = Ref<InputLine>(memnew(InputLine));
-        if (input_module.GetState() == PDJE_INPUT_STATE::INPUT_LOOP_READY ||
-            input_module.GetState() == PDJE_INPUT_STATE::INPUT_LOOP_RUNNING) {
-            auto line = input_module.PullOutDataLine();
-            ref->Init(line);
-        }
-        return ref;
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return Ref<InputLine>();
-    }
+    
+        input_line->Init(input_module.PullOutDataLine());    
+    
 }
 
 bool
 PDJE_Input_Module::Init()
 {
-    try {
+    
         return input_module.Init();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 bool
 PDJE_Input_Module::Kill()
 {
-    try {
+    
         return input_module.Kill();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+  
 }
 
 bool
 PDJE_Input_Module::Run()
 {
-    try {
+    
         return input_module.Run();
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return false;
-    }
+   
 }
 
 PDJE_Input_Module::INPUT_STATE
 PDJE_Input_Module::GetState()
 {
-    try {
+    
         return static_cast<PDJE_Input_Module::INPUT_STATE>(
             input_module.GetState());
-    } catch (const std::exception &e) {
-        print_line(CStrToGStr(e.what()));
-        return PDJE_Input_Module::INPUT_STATE::DEAD;
-    }
+   
 }
 
 void

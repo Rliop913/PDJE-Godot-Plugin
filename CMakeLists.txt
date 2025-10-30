@@ -29,7 +29,8 @@ include(ExternalProject)
 include(cmake/godotExternalSetter.cmake)
 
 # include(cmake/pdjeExternalSetter.cmake)
-
+set(PDJE_INCLUDE_ROOT ${CMAKE_SOURCE_DIR}/Project-DJ-Engine CACHE STRING "SET pdje root")
+message(${PDJE_INCLUDE_ROOT})
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
 set(PDJE_BUILD_TESTS OFF CACHE BOOL "Disable build pdje test")
@@ -71,9 +72,9 @@ ${WrapperSrcs}
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 # if(WIN32)
 if(WIN32)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT PDJE_MODULE_JUDGE godotcppEx)
 else()
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx PDJE_MODULE_JUDGE)
 endif()
 
 add_dependencies(PDJE_godot_wrapper godotcppEx)
