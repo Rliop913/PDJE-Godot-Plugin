@@ -72,9 +72,9 @@ ${WrapperSrcs}
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 # if(WIN32)
 if(WIN32)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT PDJE_MODULE_JUDGE godotcppEx)
 else()
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx PDJE_MODULE_JUDGE)
 endif()
 
 add_dependencies(PDJE_godot_wrapper godotcppEx)
