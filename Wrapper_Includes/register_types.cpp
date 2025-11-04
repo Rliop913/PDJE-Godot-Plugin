@@ -1,9 +1,9 @@
 #include "register_types.h"
 
-#include "InputLine.hpp"
 #include "PDJE_Core_Wrapper.hpp"
 #ifdef WIN32
 #include "PDJE_Input_Wrapper.hpp"
+#include "InputLine.hpp"
 #endif
 
 #include <gdextension_interface.h>
