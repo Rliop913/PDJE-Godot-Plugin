@@ -34,9 +34,6 @@ class InputLine : public Node {
     void
     Init(const PDJE_INPUT_DATA_LINE &inputDataLine);
 
-    Dictionary
-    get_id_name_list();
-
     void
     emit_input_signal();
 

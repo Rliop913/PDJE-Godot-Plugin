@@ -13,6 +13,7 @@ using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_KEY);
 
+
 void
 InputLine::_bind_methods()
 {
@@ -121,12 +122,14 @@ InputLine::_bind_methods()
 
     ADD_SIGNAL(MethodInfo("pdje_input_keyboard_signal",
                           PropertyInfo(Variant::STRING, "device_id"),
+                          PropertyInfo(Variant::STRING, "device_name"),
                           PropertyInfo(Variant::STRING, "microsecond_string"),
                           PropertyInfo(Variant::INT, "keyboard_key"),
                           PropertyInfo(Variant::BOOL, "isPressed")));
 
     ADD_SIGNAL(MethodInfo("pdje_input_mouse_signal",
                           PropertyInfo(Variant::STRING, "device_id"),
+                          PropertyInfo(Variant::STRING, "device_name"),
                           PropertyInfo(Variant::STRING, "microsecond_string"),
                           PropertyInfo(Variant::INT, "L_btn"),
                           PropertyInfo(Variant::INT, "R_btn"),
@@ -139,8 +142,6 @@ InputLine::_bind_methods()
                           PropertyInfo(Variant::INT, "x"),
                           PropertyInfo(Variant::INT, "y")));
 
-    ClassDB::bind_method(D_METHOD("get_id_name_list"),
-                         &InputLine::get_id_name_list);
     ClassDB::bind_method(D_METHOD("emit_input_signal"),
                          &InputLine::emit_input_signal);
 }
@@ -153,21 +154,6 @@ InputLine::Init(const PDJE_INPUT_DATA_LINE &inputDataLine)
    
 }
 
-Dictionary
-InputLine::get_id_name_list()
-{
-    
-        if(input_data.id_name_conv == nullptr){
-            print_line("input line is not initialized.");
-            return Dictionary();
-        }
-        Dictionary out;
-        for (const auto &i : (*input_data.id_name_conv)) {
-            out[CStrToGStr(i.first)] = CStrToGStr(i.second);
-        }
-        return out;
-   
-}
 
 void
 InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
@@ -212,7 +198,6 @@ InputLine::emit_input_signal()
 {
     
         if(input_data.input_arena == nullptr){
-            print_line("inputline is not initialized.");
             return;
         }
         auto got = input_data.input_arena->Get();
@@ -220,16 +205,15 @@ InputLine::emit_input_signal()
         
             switch (got.first[idx].type) {
             case PDJE_Dev_Type::KEYBOARD:
-                print_line("got keyboard", got.first[idx].microSecond);
                 call_deferred("emit_signal",
                               "pdje_input_keyboard_signal",
-                              CStrToGStr(got.first[idx].id),
+                              CStrToGStr(std::string( got.first[idx].id, got.first[idx].id_len)),
+                              CStrToGStr(std::string( got.first[idx].name, got.first[idx].name_len)),
                               String::num_uint64(got.first[idx].microSecond),
                               got.first[idx].event.keyboard.k,
                               got.first[idx].event.keyboard.pressed);
                 break;
             case PDJE_Dev_Type::MOUSE: {
-                print_line("got mouse", got.first[idx].microSecond);
                 mouse_events temp_event;
                 ParseMouse(temp_event, got.first[idx].event.mouse.button_type);
                 String AxisType = "";
@@ -249,7 +233,8 @@ InputLine::emit_input_signal()
                 }
                 call_deferred("emit_signal",
                               "pdje_input_mouse_signal",
-                              CStrToGStr(got.first[idx].id),
+                              CStrToGStr(std::string( got.first[idx].id, got.first[idx].id_len)),
+                              CStrToGStr(std::string( got.first[idx].name, got.first[idx].name_len)),
                               String::num_uint64(got.first[idx].microSecond),
                               temp_event.L_btn,
                               temp_event.R_btn,

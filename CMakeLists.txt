@@ -74,7 +74,7 @@ ${WrapperSrcs}
 if(WIN32)
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT PDJE_MODULE_JUDGE godotcppEx)
 else()
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx PDJE_MODULE_JUDGE)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
 endif()
 
 add_dependencies(PDJE_godot_wrapper godotcppEx)
