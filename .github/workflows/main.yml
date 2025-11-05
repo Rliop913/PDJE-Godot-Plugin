@@ -151,7 +151,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p staged_bins
-        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib|exe)$" | while read -r file; do
           echo "found: $file"
           cp -v "$file" ./staged_bins
         done
@@ -252,7 +252,7 @@ jobs:
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macOS/debug
 
-          find Project_DJ_Godot/addons -type f | grep -E "\.(so|dll|dylib)$" | while read -r file; do
+          find Project_DJ_Godot/addons -type f | grep -E "\.(so|dll|dylib|exe)$" | while read -r file; do
             echo "found: $file"
             outfile="${file}.7z"
           
