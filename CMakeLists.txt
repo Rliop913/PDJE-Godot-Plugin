@@ -50,7 +50,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/EnumWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/MusPanelWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorArgs.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/WrappedEditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 

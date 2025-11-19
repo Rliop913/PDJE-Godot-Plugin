@@ -2,8 +2,8 @@
 
 #include <godot_cpp/classes/ref.hpp>
 
-#include "EditorArgs.hpp"
 #include "PDJE_interface.hpp"
+#include "WrappedEditorArgs.hpp"
 namespace godot {
 
 class EditorWrapper : public RefCounted {
@@ -59,19 +59,17 @@ class EditorWrapper : public RefCounted {
     Redo(const int _FLAG_EDITOR_OBJ, String musicName_if_flag_music = "");
 
     String
-    Go(const int _FLAG_EDITOR_OBJ, String branchName, String TimeNodeID);
+    Go(const int _FLAG_EDITOR_OBJ, String OID);
 
     String
     GetLogWithJSONGraph(const int _FLAG_EDITOR_OBJ, String musicName);
 
     String
-    UpdateLog(const int _FLAG_EDITOR_OBJ, String branchName = "");
+    UpdateLog();
 
     /// WARNING!!! THERE IS NO TURNING BACK
     String
     DESTROY_PROJECT();
-    String
-    Open(String projectPath);
 
     void
     Init(editorObject *refobj, PDJE *refengine);
@@ -85,8 +83,8 @@ class EditorWrapper : public RefCounted {
     Dictionary
     GetDiff(const int _FLAG_EDITOR_OBJ,
             String    musicName_if_flag_music,
-            String    oldTimeNodeID,
-            String    newTimeNodeID);
+            String    from_OID,
+            String    to_OID);
     EditorWrapper()  = default;
     ~EditorWrapper() = default;
 };
