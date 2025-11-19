@@ -62,61 +62,59 @@ PDJE_Wrapper::~PDJE_Wrapper()
 Array
 PDJE_Wrapper::SearchTrack(String Title)
 {
-    
-        if (!engine.has_value()) {
-            return Array();
-        }
-        auto res = engine->SearchTrack(GStrToCStr(Title));
 
-        Array trackList;
-        for (auto &track : res) {
+    if (!engine.has_value()) {
+        return Array();
+    }
+    auto res = engine->SearchTrack(GStrToCStr(Title));
 
-            std::stringstream before_csv(track.cachedMixList);
-            std::string       sanitized_music_name;
-            std::string       unsanitized_csv;
-            while (std::getline(before_csv, sanitized_music_name, ',')) {
-                unsanitized_csv +=
-                    PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
-                unsanitized_csv += ',';
-            }
-            if (!unsanitized_csv.empty()) {
-                unsanitized_csv.pop_back();
-            }
-            Dictionary trackMetaData;
-            trackMetaData["title"] =
-                CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
-            trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
-            trackList.push_back(trackMetaData);
+    Array trackList;
+    for (auto &track : res) {
+
+        std::stringstream before_csv(track.cachedMixList);
+        std::string       sanitized_music_name;
+        std::string       unsanitized_csv;
+        while (std::getline(before_csv, sanitized_music_name, ',')) {
+            unsanitized_csv +=
+                PDJE_Name_Sanitizer::getFileName(sanitized_music_name);
+            unsanitized_csv += ',';
         }
-        return trackList;
-    
+        if (!unsanitized_csv.empty()) {
+            unsanitized_csv.pop_back();
+        }
+        Dictionary trackMetaData;
+        trackMetaData["title"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(track.trackTitle));
+        trackMetaData["mixSet"] = CStrToGStr(unsanitized_csv);
+        trackList.push_back(trackMetaData);
+    }
+    return trackList;
 }
 
 Array
 PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
 {
-    
-        if (!engine.has_value()) {
-            return Array();
-        }
-        auto res =
-            engine->SearchMusic(GStrToCStr(Title), GStrToCStr(composer), bpm);
 
-        Array musicList;
-        for (auto &music : res) {
-            Dictionary musicMetaData;
+    if (!engine.has_value()) {
+        return Array();
+    }
+    auto res =
+        engine->SearchMusic(GStrToCStr(Title), GStrToCStr(composer), bpm);
 
-            musicMetaData["title"] =
-                CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
-            musicMetaData["composer"] =
-                CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
-            musicMetaData["bpm"]       = music.bpm;
-            musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
-            musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
-            musicList.push_back(musicMetaData);
-        }
-        return musicList;
-     
+    Array musicList;
+    for (auto &music : res) {
+        Dictionary musicMetaData;
+
+        musicMetaData["title"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.title));
+        musicMetaData["composer"] =
+            CStrToGStr(PDJE_Name_Sanitizer::getFileName(music.composer));
+        musicMetaData["bpm"]       = music.bpm;
+        musicMetaData["firstBar"]  = CStrToGStr(music.firstBeat);
+        musicMetaData["musicPath"] = CStrToGStr(music.musicPath);
+        musicList.push_back(musicMetaData);
+    }
+    return musicList;
 }
 
 bool
@@ -124,32 +122,31 @@ PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode,
                          String         trackTitle,
                          unsigned int   FrameBufferSize)
 {
-    
-        if (!engine.has_value()) {
-            return false;
-        }
-        auto td = engine->SearchTrack(GStrToCStr(trackTitle));
-        if (td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER) {
-            return false;
-        }
-        PLAY_MODE pm;
-        switch (mode) {
-        case PDJE_PLAY_MODE::FULL_PRE_RENDER:
-            pm = PLAY_MODE::FULL_PRE_RENDER;
-            break;
-        case PDJE_PLAY_MODE::HYBRID_RENDER:
-            pm = PLAY_MODE::HYBRID_RENDER;
-            break;
-        case PDJE_PLAY_MODE::FULL_MANUAL_RENDER:
-            pm = PLAY_MODE::FULL_MANUAL_RENDER;
-            td.emplace_back();
-            break;
-        default:
-            return false;
-        }
 
-        return engine->InitPlayer(pm, td.front(), FrameBufferSize);
-    
+    if (!engine.has_value()) {
+        return false;
+    }
+    auto td = engine->SearchTrack(GStrToCStr(trackTitle));
+    if (td.empty() && mode != PDJE_PLAY_MODE::FULL_MANUAL_RENDER) {
+        return false;
+    }
+    PLAY_MODE pm;
+    switch (mode) {
+    case PDJE_PLAY_MODE::FULL_PRE_RENDER:
+        pm = PLAY_MODE::FULL_PRE_RENDER;
+        break;
+    case PDJE_PLAY_MODE::HYBRID_RENDER:
+        pm = PLAY_MODE::HYBRID_RENDER;
+        break;
+    case PDJE_PLAY_MODE::FULL_MANUAL_RENDER:
+        pm = PLAY_MODE::FULL_MANUAL_RENDER;
+        td.emplace_back();
+        break;
+    default:
+        return false;
+    }
+
+    return engine->InitPlayer(pm, td.front(), FrameBufferSize);
 }
 
 bool
@@ -157,58 +154,53 @@ PDJE_Wrapper::InitEngine(String DBPath)
 {
     startlog();
     critlog("init");
-        engine.emplace(GpathToCPath(DBPath).string());
-        return engine.has_value();
-  
+    engine.emplace(GpathToCPath(DBPath).string());
+    return engine.has_value();
 }
 
 bool
 PDJE_Wrapper::InitEditor(String authName, String authEmail, String projectRoot)
 {
-    
-        if (!engine.has_value()) {
-            return false;
-        }
 
-        return engine->InitEditor(GStrToCStr(authName),
-                                  GStrToCStr(authEmail),
-                                  GpathToCPath(projectRoot).string());
-    
+    if (!engine.has_value()) {
+        return false;
+    }
+
+    return engine->InitEditor(GStrToCStr(authName),
+                              GStrToCStr(authEmail),
+                              GpathToCPath(projectRoot).string());
 }
 
 Ref<PlayerWrapper>
 PDJE_Wrapper::GetPlayer()
 {
-    
-        auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
-        if (!engine->player) {
-            return ref;
-        }
-        ref->Init(engine->player.get(), &engine.value());
+
+    auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
+    if (!engine->player) {
         return ref;
-   
+    }
+    ref->Init(engine->player.get(), &engine.value());
+    return ref;
 }
 
 Ref<EditorWrapper>
 PDJE_Wrapper::GetEditor()
 {
-    
-        auto ref = Ref<EditorWrapper>(memnew(EditorWrapper));
-        if (!engine->editor) {
-            return ref;
-        }
 
-        ref->Init(engine->editor.get(), &engine.value());
+    auto ref = Ref<EditorWrapper>(memnew(EditorWrapper));
+    if (!engine->editor) {
         return ref;
-  
+    }
+
+    ref->Init(engine->editor.get(), &engine.value());
+    return ref;
 }
 
 void
 PDJE_Wrapper::ResetPlayer()
 {
-    
-        engine->ResetPlayer();
- 
+
+    engine->ResetPlayer();
 }
 void
 PDJE_Wrapper::_ready()
@@ -218,51 +210,48 @@ PDJE_Wrapper::_ready()
 void
 PDJE_Wrapper::CloseEditor()
 {
-    
-        engine->CloseEditor();
- 
+
+    engine->CloseEditor();
 }
 
 bool
 PDJE_Wrapper::GetNoteObjects(String trackTitle)
 {
-    
-        auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
-        auto track    = searched.front();
 
-        OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
-                                         uint16_t           note_detail,
-                                         std::string        first_arg,
-                                         std::string        second_arg,
-                                         std::string        third_arg,
-                                         unsigned long long y_pos_start,
-                                         unsigned long long y_pos_end,
-                                         uint64_t           railID) {
-            call_deferred("emit_signal",
-                          "note_gen_signal",
-                          CStrToGStr(note_type),
-                          static_cast<int>(note_detail),
-                          CStrToGStr(first_arg),
-                          CStrToGStr(second_arg),
-                          CStrToGStr(third_arg),
-                          String::num_uint64(y_pos_start),
-                          String::num_uint64(y_pos_end),
-                          static_cast<int>(railID));
-        };
-        return engine->GetNoteObjects(track, osc);
- 
+    auto searched = engine->SearchTrack(GStrToCStr(trackTitle));
+    auto track    = searched.front();
+
+    OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
+                                     uint16_t           note_detail,
+                                     std::string        first_arg,
+                                     std::string        second_arg,
+                                     std::string        third_arg,
+                                     unsigned long long y_pos_start,
+                                     unsigned long long y_pos_end,
+                                     uint64_t           railID) {
+        call_deferred("emit_signal",
+                      "note_gen_signal",
+                      CStrToGStr(note_type),
+                      static_cast<int>(note_detail),
+                      CStrToGStr(first_arg),
+                      CStrToGStr(second_arg),
+                      CStrToGStr(third_arg),
+                      String::num_uint64(y_pos_start),
+                      String::num_uint64(y_pos_end),
+                      static_cast<int>(railID));
+    };
+    return engine->GetNoteObjects(track, osc);
 }
 
 Ref<CoreLine>
 PDJE_Wrapper::PullOutCoreLine()
 {
-    
-        auto ref = Ref<CoreLine>(memnew(CoreLine));
-        if (!engine->editor) {
-            return ref;
-        }
-        auto line = engine->PullOutDataLine();
-        ref->Init(line);
+
+    auto ref = Ref<CoreLine>(memnew(CoreLine));
+    if (!engine->editor) {
         return ref;
- 
+    }
+    auto line = engine->PullOutDataLine();
+    ref->Init(line);
+    return ref;
 }
