@@ -59,6 +59,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 if(WIN32)
 list(APPEND WrapperSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/judge/PDJE_Judge_Wrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/InputLine.cpp
 
 )
