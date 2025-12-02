@@ -248,10 +248,21 @@ PDJE_Wrapper::PullOutCoreLine()
 {
 
     auto ref = Ref<CoreLine>(memnew(CoreLine));
-    if (!engine->editor) {
+    if (!engine) {
+        print_error("pullout core line failed. engine is not initialized.");
         return ref;
     }
     auto line = engine->PullOutDataLine();
     ref->Init(line);
     return ref;
+}
+
+PDJE_CORE_DATA_LINE
+PDJE_Wrapper::PullOutRawCoreLine()
+{
+    if (!engine) {
+        print_error("pullout raw core line failed. engine is not initialized.");
+        return {};
+    }
+    return engine->PullOutDataLine();
 }

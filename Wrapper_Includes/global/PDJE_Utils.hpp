@@ -5,8 +5,6 @@
 #include <godot_cpp/variant/string.hpp>
 #include <string>
 
-
-
 using namespace godot;
 
 inline std::string

@@ -94,21 +94,24 @@ EditorWrapper::render(String trackTitle)
     
 }
 
-bool
+Ref<PlayerWrapper>
 EditorWrapper::demoPlayInit(unsigned int frameBufferSize, String trackTitle)
 {
     
         if (edit == nullptr){
             critlog("failed to push to root db. editor is null");
-            return false;
+            return {};
         }
         if (engine == nullptr){
-critlog("failed to push to root db. engine is null");
-            return false;
+            critlog("failed to push to root db. engine is null");
+            return {};
         }
+        auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
+        std::shared_ptr<audioPlayer> player;
         edit->demoPlayInit(
-            engine->player, frameBufferSize, GStrToCStr(trackTitle));
-        return true;
+            player, frameBufferSize, GStrToCStr(trackTitle));
+        ref->Init(player.get(), engine);
+        return ref;
     
 }
 

@@ -51,6 +51,9 @@ class PDJE_Wrapper : public Node {
     Ref<CoreLine>
     PullOutCoreLine();
 
+    PDJE_CORE_DATA_LINE
+    PullOutRawCoreLine();
+
     bool
     GetNoteObjects(String trackTitle);
 

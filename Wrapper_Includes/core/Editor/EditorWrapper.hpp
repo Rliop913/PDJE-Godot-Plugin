@@ -4,6 +4,7 @@
 
 #include "PDJE_interface.hpp"
 #include "WrappedEditorArgs.hpp"
+#include "PlayerWrapper.hpp"
 namespace godot {
 
 class EditorWrapper : public RefCounted {
@@ -32,7 +33,7 @@ class EditorWrapper : public RefCounted {
     String
     render(String trackTitle);
 
-    bool
+    Ref<PlayerWrapper>
     demoPlayInit(unsigned int frameBufferSize, String trackTitle);
 
     bool
