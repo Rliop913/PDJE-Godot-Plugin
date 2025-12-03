@@ -18,13 +18,12 @@ class PDJE_Wrapper : public Node {
     GDCLASS(PDJE_Wrapper, Node)
 
   private:
-    std::optional<PDJE> engine;
-
   protected:
     static void
     _bind_methods();
 
   public:
+    std::optional<PDJE> engine;
     enum PDJE_PLAY_MODE {
         FULL_PRE_RENDER = 0,
         HYBRID_RENDER,

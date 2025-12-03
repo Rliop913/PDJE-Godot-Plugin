@@ -11,31 +11,19 @@ class PDJE_Judge_Module : public Node {
   private:
     PDJE_JUDGE::JUDGE judge_module;
 
-    // device init
-    void
-    SetRail(const DeviceData &devData,
-            const BITMASK     DeviceKey,
-            const int64_t     offset_microsecond,
-            const uint64_t    MatchRail);
-    // set judge rule
-    void
-    SetSignal();
-    void
-    SetEventRule();
-
   protected:
     static void
     _bind_methods();
 
   public:
     bool
-    AddDataLines(Ref<PDJE_Input_Module> input, Ref<PDJE_Wrapper> core);
+    AddDataLines(PDJE_Input_Module *input, PDJE_Wrapper *core);
 
-    void
-    DeviceAdd(Array device_list,
-              int   PDJE_KEY_CODE,
-              int   offset_microsecond,
-              int   MatchRail_id);
+    bool
+    DeviceAdd(Dictionary device_list,
+              int        PDJE_KEY_CODE,
+              int        offset_microsecond,
+              int        MatchRail_id);
 
     void
     SetRule(int  use_range_half_us,
@@ -46,10 +34,9 @@ class PDJE_Judge_Module : public Node {
             bool enable_mouse_signal,
             bool enable_custom_mouse_signal);
 
-    void
-    SetNotes(String track_title);
-
-    void
+    bool
+    SetNotes(PDJE_Wrapper *core, String track_title);
+    bool
     StartJudge();
     void
     EndJudge();
@@ -57,7 +44,7 @@ class PDJE_Judge_Module : public Node {
     PDJE_Judge_Module();
     ~PDJE_Judge_Module();
 
-    void
-    _ready() override;
+    // void
+    // _ready() override;
 };
 } // namespace godot

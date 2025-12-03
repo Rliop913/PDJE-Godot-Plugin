@@ -16,19 +16,41 @@ PDJE_Judge_Module::_bind_methods()
 
     ADD_SIGNAL(MethodInfo("pdje_judge_custom_mouse_parse_signal",
                           PropertyInfo(Variant::STRING, "microsecond"),
-                        PropertyInfo(Variant::ARRAY, "found_events"),
-                        PropertyInfo(Variant::STRING, "rail_id"),
-                        PropertyInfo(Variant::INT, "X"),
-                        PropertyInfo(Variant::INT, "Y"),
-                        PropertyInfo(Variant::INT, "AXIS_ENUM")
-                        
-                    ));
+                          PropertyInfo(Variant::ARRAY, "found_events"),
+                          PropertyInfo(Variant::STRING, "rail_id"),
+                          PropertyInfo(Variant::INT, "X"),
+                          PropertyInfo(Variant::INT, "Y"),
+                          PropertyInfo(Variant::INT, "AXIS_ENUM")
+
+                              ));
+    ClassDB::bind_method(D_METHOD("AddDataLines", "input", "core"),
+                         &PDJE_Judge_Module::AddDataLines);
+    ClassDB::bind_method(D_METHOD("DeviceAdd",
+                                  "device_list",
+                                  "PDJE_KEY_CODE",
+                                  "offset_microsecond",
+                                  "MatchRail_id"),
+                         &PDJE_Judge_Module::DeviceAdd);
+    ClassDB::bind_method(D_METHOD("SetRule",
+                                  "use_range_half_us",
+                                  "miss_range_half_us",
+                                  "useloop_sleep_time_ms",
+                                  "missloop_sleep_time_ms",
+                                  "enable_keyboard_signal",
+                                  "enable_mouse_signal",
+                                  "enable_custom_mouse_signal"),
+                         &PDJE_Judge_Module::SetRule);
+    ClassDB::bind_method(D_METHOD("SetNotes", "core", "track_title"),
+                         &PDJE_Judge_Module::SetNotes);
+    ClassDB::bind_method(D_METHOD("StartJudge"),
+                         &PDJE_Judge_Module::StartJudge);
+    ClassDB::bind_method(D_METHOD("EndJudge"), &PDJE_Judge_Module::EndJudge);
 }
 bool
-PDJE_Judge_Module::AddDataLines(Ref<PDJE_Input_Module> input,
-                                Ref<PDJE_Wrapper>      core)
+PDJE_Judge_Module::AddDataLines(PDJE_Input_Module *input, PDJE_Wrapper *core)
 {
-    if (input.is_valid() && core.is_valid()) {
+
+    if (input != nullptr && core != nullptr) {
         judge_module.inits.coreline  = core->PullOutRawCoreLine();
         judge_module.inits.inputline = input->PullOutRawDataLine();
         if (judge_module.inits.coreline->maxCursor &&
@@ -152,6 +174,116 @@ PDJE_Judge_Module::SetRule(int  use_range_half_us,
           .miss_event_sleep_time =
               std::chrono::milliseconds(missloop_sleep_time_ms) });
 }
+
+bool
+PDJE_Judge_Module::SetNotes(PDJE_Wrapper *core, String track_title)
+{
+    if (core == nullptr) {
+        print_error("core is not valid.");
+        return false;
+    }
+    auto searched = core->engine->SearchTrack(GStrToCStr(track_title));
+    auto track    = searched.front();
+    OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
+                                     uint16_t           note_detail,
+                                     std::string        first_arg,
+                                     std::string        second_arg,
+                                     std::string        third_arg,
+                                     unsigned long long y_pos_start,
+                                     unsigned long long y_pos_end,
+                                     uint64_t           railID) {
+        judge_module.inits.NoteObjectCollector(note_type,
+                                               note_detail,
+                                               first_arg,
+                                               second_arg,
+                                               third_arg,
+                                               y_pos_start,
+                                               y_pos_end,
+                                               railID);
+    };
+    if (!core->engine->GetNoteObjects(track, osc)) {
+        print_error("failed to add note objects.");
+        return false;
+    }
+    return core->GetNoteObjects(track_title);
+}
+
+bool
+PDJE_Judge_Module::DeviceAdd(Dictionary devData,
+                             int        PDJE_KEY_CODE,
+                             int        offset_microsecond,
+                             int        MatchRail_id)
+{
+    DeviceData dev;
+    if (devData.has("device_specific_id") && devData.has("name") &&
+        devData.has("type")) {
+        dev.device_specific_id = GStrToCStr(devData["device_specific_id"]);
+        dev.Name               = GStrToCStr(devData["name"]);
+        String ttype           = devData["type"];
+        if (ttype == "KEYBOARD") {
+            dev.Type = PDJE_Dev_Type::KEYBOARD;
+        } else if (ttype == "MOUSE") {
+            dev.Type = PDJE_Dev_Type::MOUSE;
+        } else if (ttype == "MIDI") {
+            dev.Type = PDJE_Dev_Type::MIDI;
+        } else if (ttype == "HID") {
+            dev.Type = PDJE_Dev_Type::HID;
+        } else {
+            dev.Type = PDJE_Dev_Type::UNKNOWN;
+        }
+        if (dev.device_specific_id != "" && dev.Name != "" &&
+            dev.Type != PDJE_Dev_Type::UNKNOWN) {
+            judge_module.inits.SetRail(dev,
+                                       static_cast<BITMASK>(PDJE_KEY_CODE),
+                                       static_cast<int64_t>(offset_microsecond),
+                                       static_cast<uint64_t>(MatchRail_id));
+
+            return true;
+        } else {
+            print_error(
+                "device specific, name is empty or device type is invalid.");
+        }
+    } else {
+        print_error("devData must have [device_specific_id], [name], [type] as "
+                    "a Dictionary Key.");
+    }
+    return false;
+}
+
+bool
+PDJE_Judge_Module::StartJudge()
+{
+    switch (judge_module.Start()) {
+    case PDJE_JUDGE::JUDGE_STATUS::CORE_LINE_IS_MISSING:
+        print_error("core data line is missing.");
+        return false;
+    case PDJE_JUDGE::JUDGE_STATUS::EVENT_RULE_IS_EMPTY:
+        print_error("pdje rule(Event Side) is empty");
+        return false;
+    case PDJE_JUDGE::JUDGE_STATUS::INPUT_LINE_IS_MISSING:
+        print_error("input date line is missing.");
+        return false;
+    case PDJE_JUDGE::JUDGE_STATUS::INPUT_RULE_IS_EMPTY:
+        print_error("pdje rule(Input Side) is empty");
+        return false;
+    case PDJE_JUDGE::JUDGE_STATUS::NOTE_OBJECT_IS_MISSING:
+        print_error("note object is missing. please set note datas.");
+        return false;
+    case PDJE_JUDGE::JUDGE_STATUS::OK:
+        return true;
+    default:
+        print_error(
+            "RUNTIME LOGIC ERROR ON START JUDGE. PLEASE REPORT TO DEV.");
+        return false;
+    }
+}
+
+void
+PDJE_Judge_Module::EndJudge()
+{
+    judge_module.End();
+}
+
 PDJE_Judge_Module::PDJE_Judge_Module()
 {
 }
