@@ -167,6 +167,10 @@ PDJE_Judge_Module::SetNotes(PDJE_Wrapper *core, String track_title)
         return false;
     }
     auto searched = core->engine->SearchTrack(GStrToCStr(track_title));
+    if(searched.empty()){
+        print_error(track_title, "doesn't have any tracks.");
+        return false;
+    }
     auto track    = searched.front();
     OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
                                      uint16_t           note_detail,
