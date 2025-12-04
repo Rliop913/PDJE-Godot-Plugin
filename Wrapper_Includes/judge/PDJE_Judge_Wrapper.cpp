@@ -36,8 +36,6 @@ PDJE_Judge_Module::_bind_methods()
                                   "miss_range_half_us",
                                   "useloop_sleep_time_ms",
                                   "missloop_sleep_time_ms",
-                                  "enable_keyboard_signal",
-                                  "enable_mouse_signal",
                                   "enable_custom_mouse_signal"),
                          &PDJE_Judge_Module::SetRule);
     ClassDB::bind_method(D_METHOD("SetNotes", "core", "track_title"),
@@ -72,8 +70,6 @@ PDJE_Judge_Module::SetRule(int  use_range_half_us,
                            int  miss_range_half_us,
                            int  useloop_sleep_time_ms,
                            int  missloop_sleep_time_ms,
-                           bool enable_keyboard_signal,
-                           bool enable_mouse_signal,
                            bool enable_custom_mouse_signal)
 {
     judge_module.inits.SetEventRule(
@@ -83,49 +79,37 @@ PDJE_Judge_Module::SetRule(int  use_range_half_us,
     PDJE_JUDGE::MISS_CALLBACK               missed;
     PDJE_JUDGE::USE_CALLBACK                used;
     PDJE_JUDGE::MOUSE_CUSTOM_PARSE_CALLBACK mouse_parse;
-    if (!enable_keyboard_signal) {
-        missed = [](std::unordered_map<uint64_t, PDJE_JUDGE::NOTE_VEC> misses) {
-            return;
-        };
-    } else {
-        missed =
-            [&](std::unordered_map<uint64_t, PDJE_JUDGE::NOTE_VEC> misses) {
-                Dictionary missed_list;
-                for (const auto &obj : misses) {
-                    Array datas;
-                    for (const auto &obj_meta : obj.second) {
-                        Dictionary meta;
-                        meta["TYPE"]   = CStrToGStr(obj_meta.type);
-                        meta["DETAIL"] = obj_meta.detail;
-                        meta["ISDOWN"] = obj_meta.isDown;
-                        meta["MICROSECOND"] =
-                            String::num_uint64(obj_meta.microsecond);
-                        meta["FIRST"]  = CStrToGStr(obj_meta.first);
-                        meta["SECOND"] = CStrToGStr(obj_meta.second);
-                        meta["THIRD"]  = CStrToGStr(obj_meta.third);
-                        datas.push_back(meta);
-                    }
 
-                    missed_list[String::num_uint64(obj.first)] = datas;
-                }
-                call_deferred(
-                    "emit_signal", "pdje_judge_miss_signal", missed_list);
-            };
-    }
-    if (!enable_mouse_signal) {
-        used = [](uint64_t railid, bool Pressed, bool IsLate, uint64_t diff) {
-            return;
-        };
-    } else {
-        used = [&](uint64_t railid, bool Pressed, bool IsLate, uint64_t diff) {
-            call_deferred("emit_signal",
-                          "pdje_judge_use_signal",
-                          String::num_uint64(railid),
-                          Pressed,
-                          IsLate,
-                          String::num_uint64(diff));
-        };
-    }
+    missed = [&](std::unordered_map<uint64_t, PDJE_JUDGE::NOTE_VEC> misses) {
+        Dictionary missed_list;
+        for (const auto &obj : misses) {
+            Array datas;
+            for (const auto &obj_meta : obj.second) {
+                Dictionary meta;
+                meta["TYPE"]        = CStrToGStr(obj_meta.type);
+                meta["DETAIL"]      = obj_meta.detail;
+                meta["ISDOWN"]      = obj_meta.isDown;
+                meta["MICROSECOND"] = String::num_uint64(obj_meta.microsecond);
+                meta["FIRST"]       = CStrToGStr(obj_meta.first);
+                meta["SECOND"]      = CStrToGStr(obj_meta.second);
+                meta["THIRD"]       = CStrToGStr(obj_meta.third);
+                datas.push_back(meta);
+            }
+
+            missed_list[String::num_uint64(obj.first)] = datas;
+        }
+        call_deferred("emit_signal", "pdje_judge_miss_signal", missed_list);
+    };
+
+    used = [&](uint64_t railid, bool Pressed, bool IsLate, uint64_t diff) {
+        call_deferred("emit_signal",
+                      "pdje_judge_use_signal",
+                      String::num_uint64(railid),
+                      Pressed,
+                      IsLate,
+                      String::num_uint64(diff));
+    };
+
     if (!enable_custom_mouse_signal) {
         mouse_parse = [](uint64_t                      microSecond,
                          const PDJE_JUDGE::P_NOTE_VEC &found_events,

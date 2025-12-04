@@ -30,8 +30,6 @@ class PDJE_Judge_Module : public Node {
             int  miss_range_half_us,
             int  useloop_sleep_time_ms,
             int  missloop_sleep_time_ms,
-            bool enable_keyboard_signal,
-            bool enable_mouse_signal,
             bool enable_custom_mouse_signal);
 
     bool
