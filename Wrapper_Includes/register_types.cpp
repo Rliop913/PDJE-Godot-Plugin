@@ -4,6 +4,7 @@
 #ifdef WIN32
 #include "PDJE_Input_Wrapper.hpp"
 #include "InputLine.hpp"
+#include "PDJE_Judge_Wrapper.hpp"
 #endif
 
 #include <gdextension_interface.h>
@@ -29,6 +30,7 @@ initialize_example_module(ModuleInitializationLevel p_level)
 #ifdef WIN32
     ClassDB::register_class<InputLine>();
     ClassDB::register_class<PDJE_Input_Module>();
+    ClassDB::register_class<PDJE_Judge_Module>();
 #endif
     ClassDB::register_class<PlayerWrapper>();
     ClassDB::register_class<PDJE_Wrapper>();

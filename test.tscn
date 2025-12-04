@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3y67icngrwjc"]
+
+[sub_resource type="GDScript" id="GDScript_mf4mk"]
+script/source = "extends Node
+var engine:PDJE_Wrapper
+var player:PlayerWrapper
+var muspanel:MusPanelWrapper
+
+func _ready() -> void:
+	engine = PDJE_Wrapper.new()
+	engine.InitEngine(\"res://rootdb\")
+	if engine.SearchMusic(\"title\", \"composer\").is_empty():
+		engine.InitEditor(\"name\", \"none\", \"res://sandbox\")
+		var editor = engine.GetEditor()
+		print(editor.ConfigNewMusic(\"title\", \"composer\", \"C:/Users/rrop/Desktop/projects/Project_DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))#change path here
+		var edit_args = PDJE_EDITOR_ARG.new()
+		edit_args.InitMusicArg(\"title\", \"120\", 0,0,4)
+		
+		editor.AddLine(edit_args)
+		var mix_arg = PDJE_EDITOR_ARG.new()
+		mix_arg.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.LOAD, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.CUE, 0 ,\"title\", \"composer\", \"120\", 0,0,0,0,0,0)
+		editor.AddLine(mix_arg)
+		var second_mix_arg = PDJE_EDITOR_ARG.new()
+		second_mix_arg.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.LOAD, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.CUE, 0 ,\"title\", \"composer\", \"120\", 10,0,0,0,0,0)
+		editor.AddLine(second_mix_arg)
+		var mix_bpm = PDJE_EDITOR_ARG.new()
+		mix_bpm.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.BPM_CONTROL, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.TIME_STRETCH, 0, \"120\",\"\", \"\", 0,0,0,0,0,0)
+		editor.AddLine(mix_bpm)
+		print(editor.render(\"sample_track\"))
+		print(\"init demo player init\")
+		print(editor.demoPlayInit(48, \"sample_track\"))
+		var pp = engine.GetPlayer()
+		print(pp.Activate())
+		print(pp.Deactivate())
+		print(editor.pushTrackToRootDB(\"sample_track\"))
+		#print(editor.pushToRootDB(\"title\", \"composer\"))
+	
+	engine.InitPlayer(PDJE_Wrapper.FULL_MANUAL_RENDER, \"void\", 48)
+	player = engine.GetPlayer()
+	print(player.Activate())
+	muspanel = player.GetMusicControlPanel()
+	print(muspanel.GetLoadedMusicList())
+	print(muspanel.LoadMusic(\"title\", \"composer\", 120))
+		
+
+var turn_on = false
+func _process(delta: float) -> void:
+	if Input.is_action_just_pressed(\"ui_accept\"):
+		if turn_on:
+			print(\"stopped\")
+			muspanel.SetMusic(\"title\", false)
+			turn_on = false
+		else:
+			print(\"playback\")
+			print(muspanel.SetMusic(\"title\", true))
+			print(muspanel.GetLoadedMusicList())
+			turn_on = true
+"
+
+[node name="PDJE_Wrapper" type="Node"]
+script = SubResource("GDScript_mf4mk")

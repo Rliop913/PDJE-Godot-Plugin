@@ -2,6 +2,7 @@
 #include "Input_State.hpp"
 #include "PDJE_Input_Wrapper.hpp"
 #include "PDJE_Utils.hpp"
+#include "PDJE_Rule.hpp"
 #include "core/binder_common.hpp"
 #include "core/class_db.hpp"
 #include "core/property_info.hpp"
@@ -12,12 +13,16 @@
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_KEY);
-
+using namespace PDJE_JUDGE;
+VARIANT_ENUM_CAST(DEVICE_MOUSE_EVENT);
 
 void
 InputLine::_bind_methods()
 {
     using enum PDJE_KEY;
+    using enum DEVICE_MOUSE_EVENT;
+
+    //keyboard enum bind
     BIND_ENUM_CONSTANT(F_1);
     BIND_ENUM_CONSTANT(F_2);
     BIND_ENUM_CONSTANT(F_3);
@@ -120,6 +125,17 @@ InputLine::_bind_methods()
     BIND_ENUM_CONSTANT(SP_PAGE_UP);
     BIND_ENUM_CONSTANT(SP_PAGE_DOWN);
     BIND_ENUM_CONSTANT(UNKNOWN);
+    
+    //mouse enum bind
+    BIND_ENUM_CONSTANT(BTN_EX);
+    BIND_ENUM_CONSTANT(BTN_SIDE);
+    BIND_ENUM_CONSTANT(BTN_M);
+    BIND_ENUM_CONSTANT(BTN_R);
+    BIND_ENUM_CONSTANT(BTN_L);
+    BIND_ENUM_CONSTANT(WHEEL_X);
+    BIND_ENUM_CONSTANT(WHEEL_Y);
+    BIND_ENUM_CONSTANT(AXIS_MOVE);
+
 
     ADD_SIGNAL(MethodInfo("pdje_input_keyboard_signal",
                           PropertyInfo(Variant::STRING, "device_id"),

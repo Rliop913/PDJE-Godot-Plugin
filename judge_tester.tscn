@@ -1,0 +1,169 @@
+[gd_scene load_steps=3 format=3 uid="uid://co4qhcidtt8g8"]
+
+[sub_resource type="GDScript" id="GDScript_ru0r3"]
+script/source = "extends PDJE_Wrapper
+var engine:PDJE_Wrapper
+var player:PlayerWrapper
+
+func _ready() -> void:
+	engine = $\".\"
+	engine.InitEngine(\"res://rootdb\")
+	if engine.SearchMusic(\"miku\", \"camellia\").is_empty():
+		#aditor phase
+		engine.InitEditor(\"name\", \"none@none\", \"res://sandbox\")
+		var editor = engine.GetEditor()
+		print(editor.ConfigNewMusic(\"miku\", \"camellia\", \"C:/Users/rrop/Desktop/projects/Project_DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\", \"41280\"))#change path here
+		var edit_args = PDJE_EDITOR_ARG.new()
+		edit_args.InitMusicArg(\"miku\", \"138\", 0,0,4)
+		
+		editor.AddLine(edit_args)
+		var mix_arg = PDJE_EDITOR_ARG.new()
+		mix_arg.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.LOAD, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.CUE, 0 ,\"miku\", \"camellia\", \"138\", 0,0,0,0,0,0)
+		editor.AddLine(mix_arg)
+		var second_mix_arg = PDJE_EDITOR_ARG.new()
+		second_mix_arg.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.UNLOAD, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.CUE, 0 ,\"miku\", \"camellia\", \"138\", 300,0,0,0,0,0)
+		editor.AddLine(second_mix_arg)
+		var mix_bpm = PDJE_EDITOR_ARG.new()
+		mix_bpm.InitMixArg(PDJE_EDITOR_ARG.EDITOR_TYPE_LIST.BPM_CONTROL, PDJE_EDITOR_ARG.EDITOR_DETAIL_LIST.TIME_STRETCH,0, \"138\",\"\", \"\", 0,0,0,0,0,0)
+		editor.AddLine(mix_bpm)
+		for i in range(100):
+			var note_arg = PDJE_EDITOR_ARG.new()
+			note_arg.InitNoteArg(\"PUSH type\", 163,#type and detail. string and int (163 is just random value)
+			\"first\", \"second\", \"third\", #your note's meta data
+			10+i, 0,0, #event start point
+			0,0,0, #event end point
+			5) # rail id. 
+			editor.AddLine(note_arg)
+			#RESULT: added 100 notes in rail ID - 5
+		print(editor.render(\"sample_track\"))
+		print(editor.pushTrackToRootDB(\"sample_track\"))
+	
+	#input module init phase
+	$PDJE_Input_Module.Init()
+	var device_list:Array = $PDJE_Input_Module.GetDevs()
+	
+	var selected_devices:Array
+	for device in device_list:
+		if device[\"type\"] == \"MOUSE\":
+			selected_devices.push_back(device)
+	print(selected_devices)
+	$PDJE_Input_Module.Config(selected_devices)
+	
+	$PDJE_Input_Module.InitializeInputLine($InputLine)
+	
+	#core module init phase
+	var track_list = engine.SearchTrack(\"sample_track\")
+	engine.InitPlayer(PDJE_Wrapper.FULL_PRE_RENDER, \"sample_track\", 480)
+	player = engine.GetPlayer()
+	
+	#judge module init phase
+	$PDJE_Judge_Module.AddDataLines($PDJE_Input_Module, engine)
+	for dev in selected_devices:
+		$PDJE_Judge_Module.DeviceAdd(dev, 4, 0, InputLine.BTN_L, 0, 5)#link mouse left button into rail id 5
+		#if dev's type is keyboard
+		#$PDJE_Judge_Module.DeviceAdd(dev, InputLine.PDJE_KEY.A, 0, 5)
+		#$PDJE_Judge_Module.DeviceAdd(dev, InputLine.PDJE_KEY.S, 0, 5)
+		#$PDJE_Judge_Module.DeviceAdd(dev, InputLine.PDJE_KEY.D, 0, 5)
+		#$PDJE_Judge_Module.DeviceAdd(dev, InputLine.PDJE_KEY.F, 0, 5)
+		#link all keyboard's \"ASDF\" into rail id 5
+	var use_range= 60 * 1000 # use range +- 40ms
+	var miss_range= 61 * 1000 # miss range +-41ms
+	var use_sleep=1 #use evnet thread sleeps 1ms on every loop
+	var miss_sleep=3 #miss event thread sleeps 3ms on every loop
+	var custom_mouse_event=false #deactivate mouse custom event. you can use axis data with this.
+	
+	$PDJE_Judge_Module.SetRule(
+		use_range,
+		miss_range,
+		use_sleep,
+		miss_sleep,
+		custom_mouse_event
+	)# set judge rules
+	
+	print($PDJE_Judge_Module.SetNotes(engine, \"sample_track\"))
+	
+	#Start Game
+	$PDJE_Judge_Module.StartJudge()
+	$PDJE_Input_Module.Run()
+	player.Activate()
+	
+	
+
+var is_already_end = false
+#Ends Game
+func end_game():
+	if not is_already_end:
+		player.Deactivate()
+		$PDJE_Input_Module.Kill()
+		$PDJE_Judge_Module.EndJudge()
+		is_already_end = true
+
+func _process(delta: float) -> void:
+	#$InputLine.emit_input_signal()
+	if Input.is_action_just_pressed(\"ui_accept\"):
+		end_game()
+		
+	pass
+
+
+func _on_note_gen_signal(note_type: String, note_detail: int, first_arg: String, second_arg: String, third_arg: String, y_pos_start: String, y_pos_end: String, rail_id: int) -> void:
+	print(\"Generate Notes with Signal!!! Change Here!!! Y pos: \", y_pos_start)
+
+
+func _on_input_line_pdje_input_keyboard_signal(device_id: String, device_name: String, microsecond_string: String, keyboard_key: int, isPressed: bool) -> void:
+	print(\"pressed\")
+	pass # Replace with function body.
+
+
+func _on_input_line_pdje_input_mouse_signal(device_id: String, device_name: String, microsecond_string: String, L_btn: int, R_btn: int, wheel_btn: int, side_btn: int, ex_btn: int, is_wheel_YAxis: bool, wheel_move: int, mouse_axis_type: String, x: int, y: int) -> void:
+	print(\"mouse pressed\")
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_ti162"]
+script/source = "extends PDJE_Judge_Module
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+
+
+func _on_pdje_judge_custom_mouse_parse_signal(microsecond: String, found_events: Array, rail_id: String, X: int, Y: int, AXIS_ENUM: int) -> void:
+	pass # Replace with function body.
+
+
+func _on_pdje_judge_miss_signal(missed_list: Dictionary) -> void:
+	print(\"MISSED\", missed_list)
+	
+
+
+func _on_pdje_judge_use_signal(rail_id: String, is_pressed: bool, is_late: bool, time_diff: String) -> void:
+	print(\"note used!!!\")
+	var microSecond = int(time_diff)
+	var diffmsg:String
+	if is_late:
+		diffmsg = \"LATE-\"+str(microSecond/1000.0) + \"ms\"
+	else:
+		diffmsg = \"EARLY-\"+str(microSecond/1000.0) + \"ms\"
+	if microSecond < 20000:
+		print(\"GREAT! \", diffmsg)
+	else:
+		print(\"GOOD \", diffmsg)
+	
+"
+
+[node name="PDJE_Wrapper" type="Node"]
+script = SubResource("GDScript_ru0r3")
+
+[node name="PDJE_Input_Module" type="Node" parent="."]
+
+[node name="PDJE_Judge_Module" type="Node" parent="."]
+script = SubResource("GDScript_ti162")
+
+[node name="InputLine" type="Node" parent="."]
