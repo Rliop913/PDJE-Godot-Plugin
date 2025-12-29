@@ -215,26 +215,29 @@ InputLine::emit_input_signal()
 {
     
         if(input_data.input_arena == nullptr){
+            godot::print_line("failed to emit input signal. input line is not initialized.");
             return;
         }
-        auto got = input_data.input_arena->Get();
-        for(uint64_t idx=0; idx < got.second ; ++idx){
+        input_data.input_arena->Receive();
+        auto got = input_data.input_arena->datas;
         
-            switch (got.first[idx].type) {
+        for(auto& i : got){
+            
+            switch (i.type) {
             case PDJE_Dev_Type::KEYBOARD:
                 call_deferred("emit_signal",
                               "pdje_input_keyboard_signal",
-                              CStrToGStr(std::string( got.first[idx].id, got.first[idx].id_len)),
-                              CStrToGStr(std::string( got.first[idx].name, got.first[idx].name_len)),
-                              String::num_uint64(got.first[idx].microSecond),
-                              got.first[idx].event.keyboard.k,
-                              got.first[idx].event.keyboard.pressed);
+                              CStrToGStr(std::string( i.id, i.id_len)),
+                              CStrToGStr(std::string( i.name, i.name_len)),
+                              String::num_uint64(i.microSecond),
+                              i.event.keyboard.k,
+                              i.event.keyboard.pressed);
                 break;
             case PDJE_Dev_Type::MOUSE: {
                 mouse_events temp_event;
-                ParseMouse(temp_event, got.first[idx].event.mouse.button_type);
+                ParseMouse(temp_event, i.event.mouse.button_type);
                 String AxisType = "";
-                switch (got.first[idx].event.mouse.axis_type) {
+                switch (i.event.mouse.axis_type) {
                 case PDJE_Mouse_Axis_Type::REL:
                     AxisType = "REL";
                     break;
@@ -250,19 +253,19 @@ InputLine::emit_input_signal()
                 }
                 call_deferred("emit_signal",
                               "pdje_input_mouse_signal",
-                              CStrToGStr(std::string( got.first[idx].id, got.first[idx].id_len)),
-                              CStrToGStr(std::string( got.first[idx].name, got.first[idx].name_len)),
-                              String::num_uint64(got.first[idx].microSecond),
+                              CStrToGStr(std::string( i.id, i.id_len)),
+                              CStrToGStr(std::string( i.name, i.name_len)),
+                              String::num_uint64(i.microSecond),
                               temp_event.L_btn,
                               temp_event.R_btn,
                               temp_event.wheel_btn,
                               temp_event.side_btn,
                               temp_event.ex_btn,
                               temp_event.is_wheel_YAxis,
-                              got.first[idx].event.mouse.wheel_move,
+                              i.event.mouse.wheel_move,
                               AxisType,
-                              got.first[idx].event.mouse.x,
-                              got.first[idx].event.mouse.y);
+                              i.event.mouse.x,
+                              i.event.mouse.y);
                 break;
             }
             case PDJE_Dev_Type::MIDI:
