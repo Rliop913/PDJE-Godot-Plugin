@@ -2,8 +2,8 @@
 
 #include "PDJE_Core_Wrapper.hpp"
 #ifdef WIN32
-#include "PDJE_Input_Wrapper.hpp"
 #include "InputLine.hpp"
+#include "PDJE_Input_Wrapper.hpp"
 #include "PDJE_Judge_Wrapper.hpp"
 #endif
 

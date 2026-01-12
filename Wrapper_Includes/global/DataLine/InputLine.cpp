@@ -1,8 +1,8 @@
 #include "InputLine.hpp"
 #include "Input_State.hpp"
 #include "PDJE_Input_Wrapper.hpp"
-#include "PDJE_Utils.hpp"
 #include "PDJE_Rule.hpp"
+#include "PDJE_Utils.hpp"
 #include "core/binder_common.hpp"
 #include "core/class_db.hpp"
 #include "core/property_info.hpp"
@@ -22,7 +22,7 @@ InputLine::_bind_methods()
     using enum PDJE_KEY;
     using enum DEVICE_MOUSE_EVENT;
 
-    //keyboard enum bind
+    // keyboard enum bind
     BIND_ENUM_CONSTANT(F_1);
     BIND_ENUM_CONSTANT(F_2);
     BIND_ENUM_CONSTANT(F_3);
@@ -125,8 +125,8 @@ InputLine::_bind_methods()
     BIND_ENUM_CONSTANT(SP_PAGE_UP);
     BIND_ENUM_CONSTANT(SP_PAGE_DOWN);
     BIND_ENUM_CONSTANT(UNKNOWN);
-    
-    //mouse enum bind
+
+    // mouse enum bind
     BIND_ENUM_CONSTANT(BTN_EX);
     BIND_ENUM_CONSTANT(BTN_SIDE);
     BIND_ENUM_CONSTANT(BTN_M);
@@ -135,7 +135,6 @@ InputLine::_bind_methods()
     BIND_ENUM_CONSTANT(WHEEL_X);
     BIND_ENUM_CONSTANT(WHEEL_Y);
     BIND_ENUM_CONSTANT(AXIS_MOVE);
-
 
     ADD_SIGNAL(MethodInfo("pdje_input_keyboard_signal",
                           PropertyInfo(Variant::STRING, "device_id"),
@@ -159,7 +158,7 @@ InputLine::_bind_methods()
                           PropertyInfo(Variant::INT, "x"),
                           PropertyInfo(Variant::INT, "y")));
 
-ADD_SIGNAL(MethodInfo("pdje_midi_input_signal",
+    ADD_SIGNAL(MethodInfo("pdje_midi_input_signal",
                           PropertyInfo(Variant::STRING, "port_name"),
                           PropertyInfo(Variant::STRING, "input_type"),
                           PropertyInfo(Variant::INT, "channel"),
@@ -174,163 +173,160 @@ ADD_SIGNAL(MethodInfo("pdje_midi_input_signal",
 void
 InputLine::Init(const PDJE_INPUT_DATA_LINE &inputDataLine)
 {
-    
-        input_data = inputDataLine;
-   
-}
 
+    input_data = inputDataLine;
+}
 
 void
 InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
 {
-    
-        if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
-            mev.L_btn = -1;
 
-        } else if (bit_mask & PDJE_MOUSE_L_BTN_UP) {
-            mev.L_btn = 1;
-        }
-        if (bit_mask & PDJE_MOUSE_R_BTN_DOWN) {
-            mev.R_btn = -1;
-        } else if (bit_mask & PDJE_MOUSE_R_BTN_UP) {
-            mev.R_btn = 1;
-        }
-        if (bit_mask & PDJE_MOUSE_M_BTN_DOWN) {
-            mev.wheel_btn = -1;
-        } else if (bit_mask & PDJE_MOUSE_M_BTN_UP) {
-            mev.wheel_btn = 1;
-        }
-        if (bit_mask & PDJE_MOUSE_SIDE_BTN_DOWN) {
-            mev.side_btn = -1;
-        } else if (bit_mask & PDJE_MOUSE_SIDE_BTN_UP) {
-            mev.side_btn = 1;
-        }
-        if (bit_mask & PDJE_MOUSE_EX_BTN_DOWN) {
-            mev.ex_btn = -1;
-        } else if (bit_mask & PDJE_MOUSE_EX_BTN_UP) {
-            mev.ex_btn = 1;
-        }
-        if (bit_mask & PDJE_MOUSE_XWHEEL) {
-            mev.is_wheel_YAxis = false;
-        } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
-            mev.is_wheel_YAxis = true;
-        }
-   
+    if (bit_mask & PDJE_MOUSE_L_BTN_DOWN) {
+        mev.L_btn = -1;
+
+    } else if (bit_mask & PDJE_MOUSE_L_BTN_UP) {
+        mev.L_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_R_BTN_DOWN) {
+        mev.R_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_R_BTN_UP) {
+        mev.R_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_M_BTN_DOWN) {
+        mev.wheel_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_M_BTN_UP) {
+        mev.wheel_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_SIDE_BTN_DOWN) {
+        mev.side_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_SIDE_BTN_UP) {
+        mev.side_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_EX_BTN_DOWN) {
+        mev.ex_btn = -1;
+    } else if (bit_mask & PDJE_MOUSE_EX_BTN_UP) {
+        mev.ex_btn = 1;
+    }
+    if (bit_mask & PDJE_MOUSE_XWHEEL) {
+        mev.is_wheel_YAxis = false;
+    } else if (bit_mask & PDJE_MOUSE_YWHEEL) {
+        mev.is_wheel_YAxis = true;
+    }
 }
 
 void
-InputLine::ParseInputSignal(const PDJE_Input_Log& log){
-    
-            switch (log.type) {
-            case PDJE_Dev_Type::KEYBOARD:
-                call_deferred("emit_signal",
-                              "pdje_input_keyboard_signal",
-                              CStrToGStr(std::string( log.id, log.id_len)),
-                              CStrToGStr(std::string( log.name, log.name_len)),
-                              String::num_uint64(log.microSecond),
-                              log.event.keyboard.k,
-                              log.event.keyboard.pressed);
-                break;
-            case PDJE_Dev_Type::MOUSE: {
-                mouse_events temp_event;
-                ParseMouse(temp_event, log.event.mouse.button_type);
-                String AxisType = "";
-                switch (log.event.mouse.axis_type) {
-                case PDJE_Mouse_Axis_Type::REL:
-                    AxisType = "REL";
-                    break;
-                case PDJE_Mouse_Axis_Type::ABS:
-                    AxisType = "ABS";
-                    break;
-                case PDJE_Mouse_Axis_Type::VIRTUAL_DESKTOP_ABS:
-                    AxisType = "VIRTUAL_DESKTOP_ABS";
-                    break;
-                default:
-                    AxisType = "ERROR";
-                    break;
-                }
-                call_deferred("emit_signal",
-                              "pdje_input_mouse_signal",
-                              CStrToGStr(std::string( log.id, log.id_len)),
-                              CStrToGStr(std::string( log.name, log.name_len)),
-                              String::num_uint64(log.microSecond),
-                              temp_event.L_btn,
-                              temp_event.R_btn,
-                              temp_event.wheel_btn,
-                              temp_event.side_btn,
-                              temp_event.ex_btn,
-                              temp_event.is_wheel_YAxis,
-                              log.event.mouse.wheel_move,
-                              AxisType,
-                              log.event.mouse.x,
-                              log.event.mouse.y);
-                break;
-            }
-            case PDJE_Dev_Type::UNKNOWN:
-                break;
-            default:
-                break;
-            }
+InputLine::ParseInputSignal(const PDJE_Input_Log &log)
+{
+
+    switch (log.type) {
+    case PDJE_Dev_Type::KEYBOARD:
+        call_deferred("emit_signal",
+                      "pdje_input_keyboard_signal",
+                      CStrToGStr(std::string(log.id, log.id_len)),
+                      CStrToGStr(std::string(log.name, log.name_len)),
+                      String::num_uint64(log.microSecond),
+                      log.event.keyboard.k,
+                      log.event.keyboard.pressed);
+        break;
+    case PDJE_Dev_Type::MOUSE: {
+        mouse_events temp_event;
+        ParseMouse(temp_event, log.event.mouse.button_type);
+        String AxisType = "";
+        switch (log.event.mouse.axis_type) {
+        case PDJE_Mouse_Axis_Type::REL:
+            AxisType = "REL";
+            break;
+        case PDJE_Mouse_Axis_Type::ABS:
+            AxisType = "ABS";
+            break;
+        case PDJE_Mouse_Axis_Type::VIRTUAL_DESKTOP_ABS:
+            AxisType = "VIRTUAL_DESKTOP_ABS";
+            break;
+        default:
+            AxisType = "ERROR";
+            break;
+        }
+        call_deferred("emit_signal",
+                      "pdje_input_mouse_signal",
+                      CStrToGStr(std::string(log.id, log.id_len)),
+                      CStrToGStr(std::string(log.name, log.name_len)),
+                      String::num_uint64(log.microSecond),
+                      temp_event.L_btn,
+                      temp_event.R_btn,
+                      temp_event.wheel_btn,
+                      temp_event.side_btn,
+                      temp_event.ex_btn,
+                      temp_event.is_wheel_YAxis,
+                      log.event.mouse.wheel_move,
+                      AxisType,
+                      log.event.mouse.x,
+                      log.event.mouse.y);
+        break;
+    }
+    case PDJE_Dev_Type::UNKNOWN:
+        break;
+    default:
+        break;
+    }
 }
 
 void
-InputLine::ParseMIDIInputSignal(const PDJE_MIDI::MIDI_EV& midilog)
+InputLine::ParseMIDIInputSignal(const PDJE_MIDI::MIDI_EV &midilog)
 {
     String midi_type_string;
-    switch(midilog.type){
-        case static_cast<uint8_t>(libremidi::message_type::NOTE_ON):
+    switch (midilog.type) {
+    case static_cast<uint8_t>(libremidi::message_type::NOTE_ON):
         midi_type_string = "NOTE_ON";
         break;
-        case static_cast<uint8_t>(libremidi::message_type::NOTE_OFF):
+    case static_cast<uint8_t>(libremidi::message_type::NOTE_OFF):
         midi_type_string = "NOTE_OFF";
         break;
-        case static_cast<uint8_t>(libremidi::message_type::PITCH_BEND):
+    case static_cast<uint8_t>(libremidi::message_type::PITCH_BEND):
         midi_type_string = "PITCH_BEND";
         break;
-        case static_cast<uint8_t>(libremidi::message_type::CONTROL_CHANGE):
+    case static_cast<uint8_t>(libremidi::message_type::CONTROL_CHANGE):
         midi_type_string = "CONTROL_CHANGE";
         break;
-        case static_cast<uint8_t>(libremidi::message_type::AFTERTOUCH):
+    case static_cast<uint8_t>(libremidi::message_type::AFTERTOUCH):
         midi_type_string = "AFTERTOUCH";
         break;
-        case static_cast<uint8_t>(libremidi::message_type::POLY_PRESSURE):
+    case static_cast<uint8_t>(libremidi::message_type::POLY_PRESSURE):
         midi_type_string = "POLY_PRESSURE";
         break;
-        default:
+    default:
         return;
     }
-    call_deferred("emit_signal",
-                              "pdje_midi_input_signal",
-                              CStrToGStr(std::string(midilog.port_name, midilog.port_name_len)),
-                              midi_type_string,
-                              static_cast<int>(midilog.ch),
-                              static_cast<int>(midilog.pos),
-                              static_cast<int>(midilog.value),
-                              String::num_uint64(midilog.highres_time)
-                              );
+    call_deferred(
+        "emit_signal",
+        "pdje_midi_input_signal",
+        CStrToGStr(std::string(midilog.port_name, midilog.port_name_len)),
+        midi_type_string,
+        static_cast<int>(midilog.ch),
+        static_cast<int>(midilog.pos),
+        static_cast<int>(midilog.value),
+        String::num_uint64(midilog.highres_time));
 }
-
 
 void
 InputLine::emit_input_signal()
 {
-        if(input_data.input_arena){
-            input_data.input_arena->Receive();
-            auto got = input_data.input_arena->datas;
-            
-            for(auto& i : got){
-                ParseInputSignal(i);
-            }
+    if (input_data.input_arena) {
+        input_data.input_arena->Receive();
+        auto got = input_data.input_arena->datas;
+
+        for (auto &i : got) {
+            ParseInputSignal(i);
         }
-        if(input_data.midi_datas){
-            auto got = input_data.midi_datas->Get();
-            for(const auto& i : *got){
-                ParseMIDIInputSignal(i);
-            }
+    }
+    if (input_data.midi_datas) {
+        auto got = input_data.midi_datas->Get();
+        for (const auto &i : *got) {
+            ParseMIDIInputSignal(i);
         }
-        if(input_data.input_arena == nullptr && input_data.midi_datas == nullptr){
-            godot::print_line("failed to emit input signal. input line is not initialized.");
-            return;
-        }
-    
+    }
+    if (input_data.input_arena == nullptr && input_data.midi_datas == nullptr) {
+        godot::print_line(
+            "failed to emit input signal. input line is not initialized.");
+        return;
+    }
 }

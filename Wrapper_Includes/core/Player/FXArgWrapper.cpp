@@ -15,34 +15,31 @@ FXArgWrapper::_bind_methods()
 void
 FXArgWrapper::Init(FXControlPanel *refobj)
 {
-    
-        refwrap.emplace(refobj);
-  
+
+    refwrap.emplace(refobj);
 }
 
 Array
 FXArgWrapper::GetFXArgKeys(int fx)
 {
-    
-        if (!refwrap.has_value())
-            return Array();
-        FXList ofx = static_cast<FXList>(fx);
-        Array  usableKeys;
-        for (auto &key : refwrap->GetFXArgKeys(ofx)) {
-            usableKeys.push_back(CStrToGStr(key));
-        }
-        return usableKeys;
-   
+
+    if (!refwrap.has_value())
+        return Array();
+    FXList ofx = static_cast<FXList>(fx);
+    Array  usableKeys;
+    for (auto &key : refwrap->GetFXArgKeys(ofx)) {
+        usableKeys.push_back(CStrToGStr(key));
+    }
+    return usableKeys;
 }
 
 bool
 FXArgWrapper::SetFXArg(int fx, String key, double arg)
 {
-    
-        if (!refwrap.has_value())
-            return false;
-        FXList ofx = static_cast<FXList>(fx);
-        refwrap->SetFXArg(ofx, GStrToCStr(key), arg);
-        return true;
-   
+
+    if (!refwrap.has_value())
+        return false;
+    FXList ofx = static_cast<FXList>(fx);
+    refwrap->SetFXArg(ofx, GStrToCStr(key), arg);
+    return true;
 }

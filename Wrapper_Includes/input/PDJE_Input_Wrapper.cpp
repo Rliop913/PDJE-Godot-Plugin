@@ -33,7 +33,8 @@ PDJE_Input_Module::_bind_methods()
     ClassDB::bind_method(D_METHOD("InitializeInputLine", "input_line"),
                          &PDJE_Input_Module::InitializeInputLine);
     ClassDB::bind_method(D_METHOD("GetDevs"), &PDJE_Input_Module::GetDevs);
-    ClassDB::bind_method(D_METHOD("GetMIDIDevs"), &PDJE_Input_Module::GetMIDIDevs);
+    ClassDB::bind_method(D_METHOD("GetMIDIDevs"),
+                         &PDJE_Input_Module::GetMIDIDevs);
 }
 
 PDJE_Input_Module::PDJE_Input_Module()
@@ -79,9 +80,9 @@ PDJE_Input_Module::GetDevs()
 Array
 PDJE_Input_Module::GetMIDIDevs()
 {
-    auto devs = input_module.GetMIDIDevs();
+    auto  devs = input_module.GetMIDIDevs();
     Array devlist;
-    for(const auto& i : devs){
+    for (const auto &i : devs) {
         devlist.append(CStrToGStr(i.port_name));
     }
     return devlist;
@@ -114,18 +115,18 @@ PDJE_Input_Module::Config(Array devices, Array MIDIdevices)
             }
         }
     }
-    auto midis = input_module.GetMIDIDevs();
+    auto                               midis = input_module.GetMIDIDevs();
     std::vector<libremidi::input_port> target_midis;
-    if(!MIDIdevices.is_empty() && !midis.empty()){
-        for(auto& midi : midis){
+    if (!MIDIdevices.is_empty() && !midis.empty()) {
+        for (auto &midi : midis) {
             bool is_matched = false;
-            for(int i=0; i< MIDIdevices.size(); ++i){
-                if(midi.port_name == GStrToCStr(MIDIdevices[i])){
+            for (int i = 0; i < MIDIdevices.size(); ++i) {
+                if (midi.port_name == GStrToCStr(MIDIdevices[i])) {
                     is_matched = true;
                     break;
                 }
             }
-            if(is_matched){
+            if (is_matched) {
                 target_midis.push_back(midi);
             }
         }

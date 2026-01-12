@@ -43,6 +43,15 @@ PDJE_Judge_Module::_bind_methods()
     ClassDB::bind_method(D_METHOD("StartJudge"),
                          &PDJE_Judge_Module::StartJudge);
     ClassDB::bind_method(D_METHOD("EndJudge"), &PDJE_Judge_Module::EndJudge);
+
+    ClassDB::bind_method(D_METHOD("MIDI_DeviceAdd",
+                                  "midi_device_name",
+                                  "match_rail_id",
+                                  "input_type",
+                                  "ch",
+                                  "pos",
+                                  "offset_microsecond"),
+                         &PDJE_Judge_Module::MIDI_DeviceAdd);
 }
 bool
 PDJE_Judge_Module::AddDataLines(PDJE_Input_Module *input, PDJE_Wrapper *core)
@@ -167,12 +176,12 @@ PDJE_Judge_Module::SetNotes(PDJE_Wrapper *core, String track_title)
         return false;
     }
     auto searched = core->engine->SearchTrack(GStrToCStr(track_title));
-    if(searched.empty()){
+    if (searched.empty()) {
         print_error(track_title, "doesn't have any tracks.");
         return false;
     }
-    auto track    = searched.front();
-    OBJ_SETTER_CALLBACK osc = [this](std::string        note_type,
+    auto                track = searched.front();
+    OBJ_SETTER_CALLBACK osc   = [this](std::string        note_type,
                                      uint16_t           note_detail,
                                      std::string        first_arg,
                                      std::string        second_arg,
@@ -196,6 +205,33 @@ PDJE_Judge_Module::SetNotes(PDJE_Wrapper *core, String track_title)
     return core->GetNoteObjects(track_title);
 }
 
+bool
+PDJE_Judge_Module::MIDI_DeviceAdd(String midi_device_name,
+                                  int    MatchRail_id,
+                                  String input_type,
+                                  int    ch,
+                                  int    pos,
+                                  int    offset_microsecond)
+{
+    uint8_t midi_type = 0;
+    if (input_type == "NOTE_ON") {
+        midi_type = static_cast<uint8_t>(libremidi::message_type::NOTE_ON);
+    } else if (input_type == "CONTROL_CHANGE") {
+        midi_type =
+            static_cast<uint8_t>(libremidi::message_type::CONTROL_CHANGE);
+    } else if (input_type == "PITCH_BEND") {
+        midi_type = static_cast<uint8_t>(libremidi::message_type::PITCH_BEND);
+    } else {
+        return false;
+    }
+
+    judge_module.inits.SetRail(GStrToCStr(midi_device_name),
+                               MatchRail_id,
+                               midi_type,
+                               ch,
+                               pos,
+                               offset_microsecond);
+}
 bool
 PDJE_Judge_Module::DeviceAdd(Dictionary devData,
                              int        PDJE_KEY_CODE,

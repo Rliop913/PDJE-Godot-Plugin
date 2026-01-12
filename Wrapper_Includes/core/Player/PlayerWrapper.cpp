@@ -22,81 +22,84 @@ PlayerWrapper::_bind_methods()
 void
 PlayerWrapper::Init(audioPlayer *refobj, PDJE *refengine)
 {
-    playerobj = refobj; engineobj = refengine;
+    playerobj = refobj;
+    engineobj = refengine;
 }
 
 bool
 PlayerWrapper::Activate()
 {
-    
-        if (playerobj == nullptr) {
-            return false;
-        } return playerobj->Activate();
-        
+
+    if (playerobj == nullptr) {
+        return false;
+    }
+    return playerobj->Activate();
 }
 
 bool
 PlayerWrapper::Deactivate()
 {
-    
-        if (playerobj == nullptr) {
-            return false;
-        } return playerobj->Deactivate();
-        
+
+    if (playerobj == nullptr) {
+        return false;
+    }
+    return playerobj->Deactivate();
 }
 
 bool
 PlayerWrapper::ChangeCursorPos(String pos)
 {
-    
-        if (playerobj == nullptr) return false;
 
-        auto str = GStrToCStr(pos);
-          playerobj->ChangeCursorPos(std::stoull(str)); 
-            
-        return true;
-        
+    if (playerobj == nullptr)
+        return false;
+
+    auto str = GStrToCStr(pos);
+    playerobj->ChangeCursorPos(std::stoull(str));
+
+    return true;
 }
 
 String
 PlayerWrapper::GetConsumedFrames()
 {
-    
-        if (playerobj == nullptr) return String();
 
-        auto frames = playerobj->GetConsumedFrames();
-        
-            auto frameString = std::to_string(frames);
-            return CStrToGStr(frameString);
+    if (playerobj == nullptr)
+        return String();
+
+    auto frames = playerobj->GetConsumedFrames();
+
+    auto frameString = std::to_string(frames);
+    return CStrToGStr(frameString);
 }
 
 String
 PlayerWrapper::GetStatus()
 {
-    if (playerobj == nullptr) return String();
-                           return CStrToGStr(playerobj->STATUS);
-                           
+    if (playerobj == nullptr)
+        return String();
+    return CStrToGStr(playerobj->STATUS);
 }
 
 Ref<FXWrapper>
 PlayerWrapper::GetFXControlPanel()
 {
     auto ref = Ref<FXWrapper>(memnew(FXWrapper));
-                           if (playerobj == nullptr) return ref;
-                           ref->Init(playerobj->GetFXControlPanel());
-                           return ref;
-                           
+    if (playerobj == nullptr)
+        return ref;
+    ref->Init(playerobj->GetFXControlPanel());
+    return ref;
 }
 
 Ref<MusPanelWrapper>
 PlayerWrapper::GetMusicControlPanel()
 {
-    
-        auto ref = Ref<MusPanelWrapper>(memnew(MusPanelWrapper));
-        if (playerobj == nullptr) return ref;
-        if (engineobj == nullptr) return ref;
 
-        ref->Init((playerobj->GetMusicControlPanel()), engineobj);
+    auto ref = Ref<MusPanelWrapper>(memnew(MusPanelWrapper));
+    if (playerobj == nullptr)
         return ref;
-        
+    if (engineobj == nullptr)
+        return ref;
+
+    ref->Init((playerobj->GetMusicControlPanel()), engineobj);
+    return ref;
 }

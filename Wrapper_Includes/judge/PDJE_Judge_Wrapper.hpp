@@ -25,6 +25,13 @@ class PDJE_Judge_Module : public Node {
               int        offset_microsecond,
               int        MatchRail_id);
 
+    bool
+    MIDI_DeviceAdd(String midi_device_name,
+                   int    MatchRail_id,
+                   String input_type,
+                   int    ch,
+                   int    pos,
+                   int    offset_microsecond);
     void
     SetRule(int  use_range_half_us,
             int  miss_range_half_us,

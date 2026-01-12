@@ -26,8 +26,11 @@ class InputLine : public Node {
     void
     ParseMouse(mouse_events &mev, const uint16_t bit_mask);
 
-    void ParseInputSignal(const PDJE_Input_Log& log);
-    void ParseMIDIInputSignal(const PDJE_MIDI::MIDI_EV& midilog);
+    void
+    ParseInputSignal(const PDJE_Input_Log &log);
+    void
+    ParseMIDIInputSignal(const PDJE_MIDI::MIDI_EV &midilog);
+
   protected:
     static void
     _bind_methods();

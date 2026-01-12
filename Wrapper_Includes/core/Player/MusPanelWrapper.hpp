@@ -12,7 +12,7 @@ class MusPanelWrapper : public RefCounted {
     GDCLASS(MusPanelWrapper, RefCounted)
   private:
     MusicControlPanel *musref = nullptr;
-    PDJE               *engine = nullptr;
+    PDJE              *engine = nullptr;
 
   protected:
     static void
