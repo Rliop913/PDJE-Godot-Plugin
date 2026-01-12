@@ -212,10 +212,6 @@ PDJE_Judge_Module::DeviceAdd(Dictionary devData,
             dev.Type = PDJE_Dev_Type::KEYBOARD;
         } else if (ttype == "MOUSE") {
             dev.Type = PDJE_Dev_Type::MOUSE;
-        } else if (ttype == "MIDI") {
-            dev.Type = PDJE_Dev_Type::MIDI;
-        } else if (ttype == "HID") {
-            dev.Type = PDJE_Dev_Type::HID;
         } else {
             dev.Type = PDJE_Dev_Type::UNKNOWN;
         }

@@ -159,6 +159,14 @@ InputLine::_bind_methods()
                           PropertyInfo(Variant::INT, "x"),
                           PropertyInfo(Variant::INT, "y")));
 
+ADD_SIGNAL(MethodInfo("pdje_midi_input_signal",
+                          PropertyInfo(Variant::STRING, "port_name"),
+                          PropertyInfo(Variant::STRING, "input_type"),
+                          PropertyInfo(Variant::INT, "channel"),
+                          PropertyInfo(Variant::INT, "position"),
+                          PropertyInfo(Variant::INT, "value"),
+                          PropertyInfo(Variant::STRING, "microsecond_string")));
+
     ClassDB::bind_method(D_METHOD("emit_input_signal"),
                          &InputLine::emit_input_signal);
 }
@@ -211,33 +219,23 @@ InputLine::ParseMouse(mouse_events &mev, const uint16_t bit_mask)
 }
 
 void
-InputLine::emit_input_signal()
-{
+InputLine::ParseInputSignal(const PDJE_Input_Log& log){
     
-        if(input_data.input_arena == nullptr){
-            godot::print_line("failed to emit input signal. input line is not initialized.");
-            return;
-        }
-        input_data.input_arena->Receive();
-        auto got = input_data.input_arena->datas;
-        
-        for(auto& i : got){
-            
-            switch (i.type) {
+            switch (log.type) {
             case PDJE_Dev_Type::KEYBOARD:
                 call_deferred("emit_signal",
                               "pdje_input_keyboard_signal",
-                              CStrToGStr(std::string( i.id, i.id_len)),
-                              CStrToGStr(std::string( i.name, i.name_len)),
-                              String::num_uint64(i.microSecond),
-                              i.event.keyboard.k,
-                              i.event.keyboard.pressed);
+                              CStrToGStr(std::string( log.id, log.id_len)),
+                              CStrToGStr(std::string( log.name, log.name_len)),
+                              String::num_uint64(log.microSecond),
+                              log.event.keyboard.k,
+                              log.event.keyboard.pressed);
                 break;
             case PDJE_Dev_Type::MOUSE: {
                 mouse_events temp_event;
-                ParseMouse(temp_event, i.event.mouse.button_type);
+                ParseMouse(temp_event, log.event.mouse.button_type);
                 String AxisType = "";
-                switch (i.event.mouse.axis_type) {
+                switch (log.event.mouse.axis_type) {
                 case PDJE_Mouse_Axis_Type::REL:
                     AxisType = "REL";
                     break;
@@ -253,31 +251,86 @@ InputLine::emit_input_signal()
                 }
                 call_deferred("emit_signal",
                               "pdje_input_mouse_signal",
-                              CStrToGStr(std::string( i.id, i.id_len)),
-                              CStrToGStr(std::string( i.name, i.name_len)),
-                              String::num_uint64(i.microSecond),
+                              CStrToGStr(std::string( log.id, log.id_len)),
+                              CStrToGStr(std::string( log.name, log.name_len)),
+                              String::num_uint64(log.microSecond),
                               temp_event.L_btn,
                               temp_event.R_btn,
                               temp_event.wheel_btn,
                               temp_event.side_btn,
                               temp_event.ex_btn,
                               temp_event.is_wheel_YAxis,
-                              i.event.mouse.wheel_move,
+                              log.event.mouse.wheel_move,
                               AxisType,
-                              i.event.mouse.x,
-                              i.event.mouse.y);
+                              log.event.mouse.x,
+                              log.event.mouse.y);
                 break;
             }
-            case PDJE_Dev_Type::MIDI:
-                break;
-            case PDJE_Dev_Type::HID:
-
-                break;
             case PDJE_Dev_Type::UNKNOWN:
                 break;
             default:
                 break;
             }
+}
+
+void
+InputLine::ParseMIDIInputSignal(const PDJE_MIDI::MIDI_EV& midilog)
+{
+    String midi_type_string;
+    switch(midilog.type){
+        case static_cast<uint8_t>(libremidi::message_type::NOTE_ON):
+        midi_type_string = "NOTE_ON";
+        break;
+        case static_cast<uint8_t>(libremidi::message_type::NOTE_OFF):
+        midi_type_string = "NOTE_OFF";
+        break;
+        case static_cast<uint8_t>(libremidi::message_type::PITCH_BEND):
+        midi_type_string = "PITCH_BEND";
+        break;
+        case static_cast<uint8_t>(libremidi::message_type::CONTROL_CHANGE):
+        midi_type_string = "CONTROL_CHANGE";
+        break;
+        case static_cast<uint8_t>(libremidi::message_type::AFTERTOUCH):
+        midi_type_string = "AFTERTOUCH";
+        break;
+        case static_cast<uint8_t>(libremidi::message_type::POLY_PRESSURE):
+        midi_type_string = "POLY_PRESSURE";
+        break;
+        default:
+        return;
+    }
+    call_deferred("emit_signal",
+                              "pdje_midi_input_signal",
+                              CStrToGStr(std::string(midilog.port_name, midilog.port_name_len)),
+                              midi_type_string,
+                              static_cast<int>(midilog.ch),
+                              static_cast<int>(midilog.pos),
+                              static_cast<int>(midilog.value),
+                              String::num_uint64(midilog.highres_time)
+                              );
+}
+
+
+void
+InputLine::emit_input_signal()
+{
+        if(input_data.input_arena){
+            input_data.input_arena->Receive();
+            auto got = input_data.input_arena->datas;
+            
+            for(auto& i : got){
+                ParseInputSignal(i);
+            }
+        }
+        if(input_data.midi_datas){
+            auto got = input_data.midi_datas->Get();
+            for(const auto& i : *got){
+                ParseMIDIInputSignal(i);
+            }
+        }
+        if(input_data.input_arena == nullptr && input_data.midi_datas == nullptr){
+            godot::print_line("failed to emit input signal. input line is not initialized.");
+            return;
         }
     
 }

@@ -25,7 +25,7 @@ PDJE_Input_Module::_bind_methods()
     BIND_ENUM_CONSTANT(INPUT_STATE::DEAD);
     BIND_ENUM_CONSTANT(INPUT_STATE::INPUT_LOOP_RUNNING);
     ClassDB::bind_method(D_METHOD("Init"), &PDJE_Input_Module::Init);
-    ClassDB::bind_method(D_METHOD("Config", "devices"),
+    ClassDB::bind_method(D_METHOD("Config", "devices", "MIDIdevices"),
                          &PDJE_Input_Module::Config);
     ClassDB::bind_method(D_METHOD("Kill"), &PDJE_Input_Module::Kill);
     ClassDB::bind_method(D_METHOD("Run"), &PDJE_Input_Module::Run);
@@ -33,6 +33,7 @@ PDJE_Input_Module::_bind_methods()
     ClassDB::bind_method(D_METHOD("InitializeInputLine", "input_line"),
                          &PDJE_Input_Module::InitializeInputLine);
     ClassDB::bind_method(D_METHOD("GetDevs"), &PDJE_Input_Module::GetDevs);
+    ClassDB::bind_method(D_METHOD("GetMIDIDevs"), &PDJE_Input_Module::GetMIDIDevs);
 }
 
 PDJE_Input_Module::PDJE_Input_Module()
@@ -60,12 +61,6 @@ PDJE_Input_Module::GetDevs()
         case PDJE_Dev_Type::MOUSE:
             devtemp["type"] = "MOUSE";
             break;
-        case PDJE_Dev_Type::MIDI:
-            devtemp["type"] = "MIDI";
-            break;
-        case PDJE_Dev_Type::HID:
-            devtemp["type"] = "HID";
-            break;
         case PDJE_Dev_Type::UNKNOWN:
             devtemp["type"] = "";
             break;
@@ -81,8 +76,19 @@ PDJE_Input_Module::GetDevs()
     return out;
 }
 
+Array
+PDJE_Input_Module::GetMIDIDevs()
+{
+    auto devs = input_module.GetMIDIDevs();
+    Array devlist;
+    for(const auto& i : devs){
+        devlist.append(CStrToGStr(i.port_name));
+    }
+    return devlist;
+}
+
 bool
-PDJE_Input_Module::Config(Array devices)
+PDJE_Input_Module::Config(Array devices, Array MIDIdevices)
 {
 
     std::vector<DeviceData> devs;
@@ -97,10 +103,6 @@ PDJE_Input_Module::Config(Array devices)
                 dd.Type = PDJE_Dev_Type::KEYBOARD;
             } else if (ttype == "MOUSE") {
                 dd.Type = PDJE_Dev_Type::MOUSE;
-            } else if (ttype == "MIDI") {
-                dd.Type = PDJE_Dev_Type::MIDI;
-            } else if (ttype == "HID") {
-                dd.Type = PDJE_Dev_Type::HID;
             } else {
                 dd.Type = PDJE_Dev_Type::UNKNOWN;
             }
@@ -112,7 +114,23 @@ PDJE_Input_Module::Config(Array devices)
             }
         }
     }
-    return input_module.Config(devs);
+    auto midis = input_module.GetMIDIDevs();
+    std::vector<libremidi::input_port> target_midis;
+    if(!MIDIdevices.is_empty() && !midis.empty()){
+        for(auto& midi : midis){
+            bool is_matched = false;
+            for(int i=0; i< MIDIdevices.size(); ++i){
+                if(midi.port_name == GStrToCStr(MIDIdevices[i])){
+                    is_matched = true;
+                    break;
+                }
+            }
+            if(is_matched){
+                target_midis.push_back(midi);
+            }
+        }
+    }
+    return input_module.Config(devs, target_midis);
 }
 
 void
