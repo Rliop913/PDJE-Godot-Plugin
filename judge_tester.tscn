@@ -41,13 +41,15 @@ func _ready() -> void:
 	#input module init phase
 	$PDJE_Input_Module.Init()
 	var device_list:Array = $PDJE_Input_Module.GetDevs()
+	var midi_list:Array = $PDJE_Input_Module.GetMIDIDevs()
 	
 	var selected_devices:Array
 	for device in device_list:
 		if device[\"type\"] == \"MOUSE\":
 			selected_devices.push_back(device)
 	print(selected_devices)
-	$PDJE_Input_Module.Config(selected_devices)
+	print(midi_list)
+	$PDJE_Input_Module.Config(selected_devices, midi_list)
 	
 	$PDJE_Input_Module.InitializeInputLine($InputLine)
 	
@@ -58,6 +60,7 @@ func _ready() -> void:
 	
 	#judge module init phase
 	$PDJE_Judge_Module.AddDataLines($PDJE_Input_Module, engine)
+	
 	for dev in selected_devices:
 		$PDJE_Judge_Module.DeviceAdd(dev, 4, 0, InputLine.BTN_L, 0, 5)#link mouse left button into rail id 5
 		#if dev's type is keyboard
@@ -71,7 +74,7 @@ func _ready() -> void:
 	var use_sleep=1 #use evnet thread sleeps 1ms on every loop
 	var miss_sleep=3 #miss event thread sleeps 3ms on every loop
 	var custom_mouse_event=false #deactivate mouse custom event. you can use axis data with this.
-	
+	$PDJE_Judge_Module.MIDI_DeviceAdd(midi_list[0], 5, \"NOTE_ON\", 1, 48, 0)
 	$PDJE_Judge_Module.SetRule(
 		use_range,
 		miss_range,
@@ -118,6 +121,16 @@ func _on_input_line_pdje_input_keyboard_signal(device_id: String, device_name: S
 func _on_input_line_pdje_input_mouse_signal(device_id: String, device_name: String, microsecond_string: String, L_btn: int, R_btn: int, wheel_btn: int, side_btn: int, ex_btn: int, is_wheel_YAxis: bool, wheel_move: int, mouse_axis_type: String, x: int, y: int) -> void:
 	print(\"mouse pressed\")
 	pass # Replace with function body.
+
+
+func _on_input_line_pdje_midi_input_signal(port_name: String, input_type: String, channel: int, position: int, value: int, microsecond_string: String) -> void:
+	print(\"midi pressed. \", port_name, channel, position)
+	pass # Replace with function body.
+
+
+func _on_pdje_judge_module_pdje_judge_use_signal(rail_id: String, is_pressed: bool, is_late: bool, time_diff: String) -> void:
+	print(\"ok \", time_diff)
+	pass # Replace with function body.
 "
 
 [sub_resource type="GDScript" id="GDScript_ti162"]
@@ -158,12 +171,18 @@ func _on_pdje_judge_use_signal(rail_id: String, is_pressed: bool, is_late: bool,
 	
 "
 
-[node name="PDJE_Wrapper" type="Node"]
+[node name="PDJE_Wrapper" type="PDJE_Wrapper"]
 script = SubResource("GDScript_ru0r3")
 
-[node name="PDJE_Input_Module" type="Node" parent="."]
+[node name="PDJE_Input_Module" type="PDJE_Input_Module" parent="."]
 
-[node name="PDJE_Judge_Module" type="Node" parent="."]
+[node name="PDJE_Judge_Module" type="PDJE_Judge_Module" parent="."]
 script = SubResource("GDScript_ti162")
 
-[node name="InputLine" type="Node" parent="."]
+[node name="InputLine" type="InputLine" parent="."]
+
+[connection signal="note_gen_signal" from="." to="." method="_on_note_gen_signal"]
+[connection signal="pdje_judge_use_signal" from="PDJE_Judge_Module" to="." method="_on_pdje_judge_module_pdje_judge_use_signal"]
+[connection signal="pdje_input_keyboard_signal" from="InputLine" to="." method="_on_input_line_pdje_input_keyboard_signal"]
+[connection signal="pdje_input_mouse_signal" from="InputLine" to="." method="_on_input_line_pdje_input_mouse_signal"]
+[connection signal="pdje_midi_input_signal" from="InputLine" to="." method="_on_input_line_pdje_midi_input_signal"]

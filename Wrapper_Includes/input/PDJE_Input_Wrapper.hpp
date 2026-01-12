@@ -29,10 +29,13 @@ class PDJE_Input_Module : public Node {
     Init();
 
     bool
-    Config(Array devices);
+    Config(Array devices, Array MIDIdevices);
 
     Array
     GetDevs();
+
+    Array
+    GetMIDIDevs();
 
     bool
     Kill();

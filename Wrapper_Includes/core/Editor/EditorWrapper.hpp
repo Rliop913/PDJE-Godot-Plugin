@@ -3,8 +3,8 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include "PDJE_interface.hpp"
-#include "WrappedEditorArgs.hpp"
 #include "PlayerWrapper.hpp"
+#include "WrappedEditorArgs.hpp"
 namespace godot {
 
 class EditorWrapper : public RefCounted {

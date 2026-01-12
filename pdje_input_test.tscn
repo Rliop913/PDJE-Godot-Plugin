@@ -3,29 +3,41 @@
 [sub_resource type="GDScript" id="GDScript_hlc6v"]
 script/source = "extends Node
 
-var IM:PDJE_Input_Module
+#var IM:PDJE_Input_Module
 var line:InputLine
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	
-	IM = PDJE_Input_Module.new()
-	IM.Init()
-	var dev = (IM.GetDevs())
-	IM.Config(dev)
-	print(IM.GetState())
-	IM.Run()
-	#line = IM.PullOutDataLine()
+	$PDJE_Input_Module.Init()
+	
+	var dev = ($PDJE_Input_Module.GetDevs())
+	var mididevs = $PDJE_Input_Module.GetMIDIDevs()
+	print(mididevs)
+	$PDJE_Input_Module.Config(dev, mididevs)
+	print($PDJE_Input_Module.GetState())
+	$PDJE_Input_Module.Run()
+	$PDJE_Input_Module.InitializeInputLine($InputLine)
 	pass # Replace with function body.
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	#line.emit_input_signal()
+	$InputLine.emit_input_signal()
 	
 	pass
+
+
+
+func _on_input_line_pdje_midi_input_signal(port_name: String, input_type: String, channel: int, position: int, value: int, microsecond_string: String) -> void:
+	print(port_name, input_type, position, microsecond_string)
+	pass # Replace with function body.
 "
 
 [node name="PDJE_Wrapper" type="Node"]
 script = SubResource("GDScript_hlc6v")
 
 [node name="PDJE_Input_Module" type="PDJE_Input_Module" parent="."]
+
+[node name="InputLine" type="InputLine" parent="."]
+
+[connection signal="pdje_midi_input_signal" from="InputLine" to="." method="_on_input_line_pdje_midi_input_signal"]

@@ -49,10 +49,8 @@ MusPanelWrapper::CueMusic(String title, String newPos)
     if (musref == nullptr)
         return false;
 
-    
     const unsigned long long posull = std::stoull(GStrToCStr(newPos));
     return musref->CueMusic(GStrToCStr(title), posull);
-    
 }
 
 bool
