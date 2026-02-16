@@ -13,8 +13,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CACHE_SCHEMA: v1
-      CCACHE_DIR: ${{ github.workspace }}/.gha-cache/ccache/${{ runner.os }}/${{ matrix.build_type }}
-      CONAN_HOME: ${{ github.workspace }}/.gha-cache/conan/${{ runner.os }}/${{ matrix.build_type }}
+      CCACHE_DIR: ${{ github.workspace }}/.gha-cache/ccache/${{ matrix.os }}/${{ matrix.build_type }}
+      CONAN_HOME: ${{ github.workspace }}/.gha-cache/conan/${{ matrix.os }}/${{ matrix.build_type }}
 
     strategy:
       fail-fast: false
