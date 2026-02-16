@@ -75,9 +75,7 @@ PlayerWrapper::GetConsumedFrames()
 String
 PlayerWrapper::GetStatus()
 {
-    if (playerobj == nullptr)
-        return String();
-    return CStrToGStr(playerobj->STATUS);
+    return "This is Deprecated Function."; // Function Deprecated.
 }
 
 Ref<FXWrapper>
