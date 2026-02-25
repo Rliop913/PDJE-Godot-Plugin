@@ -25,6 +25,11 @@ PDJE_Input_Module::_bind_methods()
     BIND_ENUM_CONSTANT(INPUT_STATE::DEAD);
     BIND_ENUM_CONSTANT(INPUT_STATE::INPUT_LOOP_RUNNING);
     ClassDB::bind_method(D_METHOD("Init"), &PDJE_Input_Module::Init);
+    ClassDB::bind_method(D_METHOD("InitWithOptions", "use_internal_window"),
+                         &PDJE_Input_Module::InitWithOptions,
+                         DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("GetCurrentInputBackend"),
+                         &PDJE_Input_Module::GetCurrentInputBackend);
     ClassDB::bind_method(D_METHOD("Config", "devices", "MIDIdevices"),
                          &PDJE_Input_Module::Config);
     ClassDB::bind_method(D_METHOD("Kill"), &PDJE_Input_Module::Kill);
@@ -146,6 +151,20 @@ PDJE_Input_Module::Init()
 {
 
     return input_module.Init();
+}
+
+bool
+PDJE_Input_Module::InitWithOptions(bool use_internal_window)
+{
+
+    return input_module.Init(nullptr, nullptr, use_internal_window);
+}
+
+String
+PDJE_Input_Module::GetCurrentInputBackend()
+{
+
+    return CStrToGStr(input_module.GetCurrentInputBackend());
 }
 
 bool
