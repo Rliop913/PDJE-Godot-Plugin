@@ -43,6 +43,11 @@ set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
 endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
 
+if(WIN32 AND PDJE_DYNAMIC AND TARGET PDJE_MODULE_INPUT_PROCESS)
+# Prevent PDJE_API from resolving to dllimport inside the input subprocess EXE.
+target_compile_definitions(PDJE_MODULE_INPUT_PROCESS PRIVATE PDJE_BUILDING)
+endif()
+
 set(WrapperSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXArgWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/PDJE_Core_Wrapper.cpp 
