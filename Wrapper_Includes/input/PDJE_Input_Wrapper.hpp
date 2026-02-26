@@ -29,6 +29,12 @@ class PDJE_Input_Module : public Node {
     Init();
 
     bool
+    InitWithOptions(bool use_internal_window = false);
+
+    String
+    GetCurrentInputBackend();
+
+    bool
     Config(Array devices, Array MIDIdevices);
 
     Array

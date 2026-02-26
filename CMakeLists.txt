@@ -34,13 +34,19 @@ set(PDJE_INCLUDE_ROOT ${CMAKE_SOURCE_DIR}/Project-DJ-Engine CACHE STRING "SET pd
 message(${PDJE_INCLUDE_ROOT})
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
-set(PDJE_BUILD_TESTS OFF CACHE BOOL "Disable build pdje test")
-if(WIN32)
-set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
-else()
+set(PDJE_TEST OFF CACHE BOOL "Disable PDJE unit tests in wrapper build" FORCE)
+set(PDJE_DEV_TEST OFF CACHE BOOL "Disable PDJE dev/manual tests in wrapper build" FORCE)
+if(APPLE)
 set(PDJE_DEVELOP_INPUT OFF CACHE BOOL "Turn off input build")
+else()
+set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
 endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
+
+if(WIN32 AND PDJE_DYNAMIC AND TARGET PDJE_MODULE_INPUT_PROCESS)
+# Prevent PDJE_API from resolving to dllimport inside the input subprocess EXE.
+target_compile_definitions(PDJE_MODULE_INPUT_PROCESS PRIVATE PDJE_BUILDING)
+endif()
 
 set(WrapperSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Player/FXArgWrapper.cpp
@@ -57,7 +63,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 
 )
 
-if(WIN32)
+if(PDJE_DEVELOP_INPUT)
 list(APPEND WrapperSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/PDJE_Input_Wrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/judge/PDJE_Judge_Wrapper.cpp
@@ -73,10 +79,14 @@ ${WrapperSrcs}
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 # if(WIN32)
-if(WIN32)
+if(PDJE_DEVELOP_INPUT)
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT PDJE_MODULE_JUDGE godotcppEx)
 else()
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
+endif()
+
+if(PDJE_DEVELOP_INPUT)
+target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_GODOT_ENABLE_INPUT_WRAPPER)
 endif()
 
 add_dependencies(PDJE_godot_wrapper godotcppEx)

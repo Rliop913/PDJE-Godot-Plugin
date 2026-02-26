@@ -1,7 +1,7 @@
 #include "register_types.h"
 
 #include "PDJE_Core_Wrapper.hpp"
-#ifdef WIN32
+#ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
 #include "InputLine.hpp"
 #include "PDJE_Input_Wrapper.hpp"
 #include "PDJE_Judge_Wrapper.hpp"
@@ -27,7 +27,7 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();
-#ifdef WIN32
+#ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
     ClassDB::register_class<InputLine>();
     ClassDB::register_class<PDJE_Input_Module>();
     ClassDB::register_class<PDJE_Judge_Module>();

@@ -147,7 +147,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update -y
-        sudo apt-get install libevdev-dev ccache swig libnuma-dev libasound2-dev pkg-config
+        sudo apt-get install libevdev-dev ccache swig libsystemd-dev libnuma-dev libasound2-dev libwayland-dev pkg-config
 
     - name: set macOS Requirements
       id: set_macos_ccache_swig

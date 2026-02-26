@@ -2,8 +2,10 @@
 
 entry_symbol = "pdje_wrapper_init"
 compatibility_minimum = "4.4"
-reloadable = true
+reloadable = false
 
 [libraries]
 windows.debug.x86_64 = "res://build/Debug/PDJE_godot_wrapper.dll"
 windows.release.x86_64 = "res://build/Release/PDJE_godot_wrapper.dll"
+linux.debug.x86_64 = "res://build/libPDJE_godot_wrapper.so"
+linux.release.x86_64 = "res://build/libPDJE_godot_wrapper.so"
