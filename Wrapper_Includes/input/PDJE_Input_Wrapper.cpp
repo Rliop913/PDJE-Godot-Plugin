@@ -13,6 +13,8 @@
 #include "variant/dictionary.hpp"
 #include "variant/typed_array.hpp"
 #include "variant/variant.hpp"
+#include <cstdint>
+#include <godot_cpp/classes/display_server.hpp>
 using namespace godot;
 
 VARIANT_ENUM_CAST(PDJE_Input_Module::INPUT_STATE);
@@ -149,15 +151,33 @@ PDJE_Input_Module::InitializeInputLine(InputLine *input_line)
 bool
 PDJE_Input_Module::Init()
 {
-
-    return input_module.Init();
+    return InitWithOptions(false);
 }
 
 bool
 PDJE_Input_Module::InitWithOptions(bool use_internal_window)
 {
+    auto single = godot::DisplayServer::get_singleton();
+    void *platform_ctx0 = nullptr;
+    void *platform_ctx1 = nullptr;
 
-    return input_module.Init(nullptr, nullptr, use_internal_window);
+    if (single && single->get_name() == "wayland") {
+        const int64_t raw_display = single->window_get_native_handle(
+            godot::DisplayServer::DISPLAY_HANDLE, 0);
+        const int64_t raw_window = single->window_get_native_handle(
+            godot::DisplayServer::WINDOW_HANDLE, 0);
+
+        if (raw_display != 0) {
+            platform_ctx0 =
+                reinterpret_cast<void *>(static_cast<intptr_t>(raw_display));
+        }
+        if (raw_window != 0) {
+            platform_ctx1 =
+                reinterpret_cast<void *>(static_cast<intptr_t>(raw_window));
+        }
+    }
+
+    return input_module.Init(platform_ctx0, platform_ctx1, use_internal_window);
 }
 
 String
