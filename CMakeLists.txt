@@ -60,6 +60,13 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/WrappedEditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_HighLevelUtilAPI.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_LowLevelUtilAPI.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/adapter/LowLevelKeyValueAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/adapter/LowLevelNearestAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/adapter/LowLevelRelationalAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/adapter/LowLevelWaveformAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.cpp
 
 )
 
@@ -79,13 +86,15 @@ ${WrapperSrcs}
 
 # target_compile_options(PDJE PUBLIC -fexceptions -funwind-tables)
 # if(WIN32)
-if(PDJE_DEVELOP_INPUT)
-target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE PDJE_MODULE_INPUT PDJE_MODULE_JUDGE godotcppEx)
-else()
 target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE godotcppEx)
-endif()
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_UTIL)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_UTIL_IMAGE_WEBP)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_UTIL_IMAGE_WAVEFORM)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_UTIL_DB)
 
 if(PDJE_DEVELOP_INPUT)
+target_link_libraries(PDJE_godot_wrapper PUBLIC PDJE_MODULE_INPUT PDJE_MODULE_JUDGE)
+
 target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_GODOT_ENABLE_INPUT_WRAPPER)
 endif()
 
@@ -93,7 +102,7 @@ add_dependencies(PDJE_godot_wrapper godotcppEx)
 
 if(WIN32)
 
-target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)
+target_compile_definitions(PDJE_godot_wrapper PUBLIC PDJE_WINDOWS_DLL)#check dll macro is valid.
 endif()
 target_include_directories( PDJE_godot_wrapper PUBLIC
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes
@@ -105,15 +114,19 @@ target_include_directories( PDJE_godot_wrapper PUBLIC
     
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/judge
-    
-    
-    
+    ${CMAKE_SOURCE_DIR}/Project-DJ-Engine/include
+    ${CMAKE_SOURCE_DIR}/conan_cmakes/direct_deploy/annoy/include
+
+
+
     ${binary_dir}/gen/include
     ${binary_dir}/gen/include/godot_cpp
     ${source_dir}/include
     ${source_dir}/include/godot_cpp
     ${source_dir}/gdextension 
 )
+
+target_compile_definitions(PDJE_godot_wrapper PRIVATE SPDLOG_FMT_EXTERNAL)
 
 
 if(APPLE)

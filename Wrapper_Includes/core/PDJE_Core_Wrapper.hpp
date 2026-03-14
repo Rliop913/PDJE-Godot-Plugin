@@ -10,6 +10,8 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/ref.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
 // #include "PDJE_interface.hpp"
 
 namespace godot {
@@ -35,6 +37,8 @@ class PDJE_Wrapper : public Node {
     InitEditor(String authName, String authEmail, String projectRoot);
     Array
     SearchMusic(String Title, String composer, double bpm = -1.0);
+    Dictionary
+    GetPCMFromMusicData(Dictionary musicData);
     Array
     SearchTrack(String Title);
     bool
