@@ -1,7 +1,7 @@
 #include "PlayerWrapper.hpp"
 #include "FXWrapper.hpp"
 #include "MusPanelWrapper.hpp"
-#include "PDJE_Utils.hpp"
+#include "pdje_util_common.hpp"
 using namespace godot;
 void
 PlayerWrapper::_bind_methods()

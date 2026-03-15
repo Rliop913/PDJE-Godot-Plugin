@@ -1,4 +1,5 @@
 #include "util/db/keyvalue/adapter/LowLevelKeyValueAdapter.hpp"
+#include "util/db/keyvalue/adapter/LowLevelKeyValueAdapterInternal.hpp"
 
 #include "util/common/bridge/LowLevelUtilCommon.hpp"
 

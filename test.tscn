@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3y67icngrwjc"]
+[gd_scene format=3 uid="uid://b3y67icngrwjc"]
 
 [sub_resource type="GDScript" id="GDScript_mf4mk"]
 script/source = "extends Node
@@ -12,7 +12,7 @@ func _ready() -> void:
 	if engine.SearchMusic(\"title\", \"composer\").is_empty():
 		engine.InitEditor(\"name\", \"none\", \"res://sandbox\")
 		var editor = engine.GetEditor()
-		print(editor.ConfigNewMusic(\"title\", \"composer\", \"C:/Users/rrop/Desktop/projects/Project_DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))#change path here
+		print(editor.ConfigNewMusic(\"title\", \"composer\", \"res://Project_DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))#change path here
 		var edit_args = PDJE_EDITOR_ARG.new()
 		edit_args.InitMusicArg(\"title\", \"120\", 0,0,4)
 		
@@ -57,5 +57,5 @@ func _process(delta: float) -> void:
 			turn_on = true
 "
 
-[node name="PDJE_Wrapper" type="Node"]
+[node name="PDJE_Wrapper" type="Node" unique_id=664507286]
 script = SubResource("GDScript_mf4mk")

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/db/backends/RocksDbBackend.hpp"
-
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -10,14 +8,7 @@
 
 namespace godot {
 namespace pdje_low_level_util_internal {
-using NativeKeyValueBackend = PDJE_UTIL::db::backends::RocksDbBackend;
-
-struct KeyValueState {
-    NativeKeyValueBackend backend;
-    Dictionary            config;
-    String                path;
-    bool                  is_open = false;
-};
+struct KeyValueState;
 } // namespace pdje_low_level_util_internal
 } // namespace godot
 

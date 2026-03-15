@@ -2,9 +2,9 @@
 #include "CoreLine.hpp"
 #include "EditorWrapper.hpp"
 #include "MusPanelWrapper.hpp"
-#include "PDJE_Utils.hpp"
 #include "PDJE_interface.hpp"
 #include "PlayerWrapper.hpp"
+#include "pdje_util_common.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/os.hpp>

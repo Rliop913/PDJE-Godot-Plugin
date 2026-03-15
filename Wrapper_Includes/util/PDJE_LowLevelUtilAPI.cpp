@@ -1,6 +1,6 @@
 #include "PDJE_LowLevelUtilAPI.hpp"
 
-#include "util/db/keyvalue/adapter/LowLevelKeyValueAdapter.hpp"
+#include "util/db/keyvalue/adapter/LowLevelKeyValueAdapterInternal.hpp"
 #include "util/db/nearest/adapter/LowLevelNearestAdapter.hpp"
 #include "util/db/relational/adapter/LowLevelRelationalAdapter.hpp"
 #include "util/function/image/waveform/adapter/LowLevelWaveformAdapter.hpp"

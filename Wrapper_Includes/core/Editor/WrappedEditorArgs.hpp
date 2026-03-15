@@ -2,8 +2,8 @@
 
 #include <godot_cpp/classes/ref.hpp>
 
-#include "PDJE_Utils.hpp"
 #include "PDJE_interface.hpp"
+#include "pdje_util_common.hpp"
 namespace godot {
 
 class PDJE_EDITOR_ARG : public RefCounted {
