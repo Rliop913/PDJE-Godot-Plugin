@@ -115,6 +115,12 @@ add_library(PDJE_godot_wrapper SHARED
 ${WrapperSrcs}
 # ${UtilBundleSrcs}
 )
+set_target_properties(PDJE_godot_wrapper PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(PDJE_godot_wrapper PROPERTIES VISIBILITY_INLINES_HIDDEN ON)
+if(UNIX AND NOT APPLE)
+  target_link_options(PDJE_godot_wrapper PRIVATE "-Wl,--exclude-libs,ALL")
+  target_link_libraries(PDJE_godot_wrapper PRIVATE -static-libstdc++ -static-libgcc)
+endif()
 
 
 
