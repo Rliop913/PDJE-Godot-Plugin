@@ -253,7 +253,7 @@ PDJE_Wrapper::GetPlayer()
     if (!engine->player) {
         return ref;
     }
-    ref->Init(engine->player.get(), &engine.value());
+    ref->Init(engine->player, &engine.value());
     return ref;
 }
 
@@ -266,7 +266,7 @@ PDJE_Wrapper::GetEditor()
         return ref;
     }
 
-    ref->Init(engine->editor.get(), &engine.value());
+    ref->Init(engine->editor, &engine.value());
     return ref;
 }
 

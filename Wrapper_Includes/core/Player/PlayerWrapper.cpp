@@ -20,7 +20,7 @@ PlayerWrapper::_bind_methods()
 }
 
 void
-PlayerWrapper::Init(audioPlayer *refobj, PDJE *refengine)
+PlayerWrapper::Init(std::shared_ptr<audioPlayer> refobj, PDJE *refengine)
 {
     playerobj = refobj;
     engineobj = refengine;
