@@ -1,5 +1,6 @@
 #include "PDJE_HighLevelUtilAPI.hpp"
 
+#include "PDJE_Core_Wrapper.hpp"
 #include "util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
@@ -19,21 +20,21 @@ PDJE_HighLevelUtilAPI::_bind_methods()
                                   "start_index",
                                   "end_index"),
                          &PDJE_HighLevelUtilAPI::SoundToWaveform,
-                         DEFVAL(256),
                          DEFVAL(4096),
+                         DEFVAL(256),
                          DEFVAL(0),
                          DEFVAL(-1));
 }
 
 Array
-PDJE_HighLevelUtilAPI::SoundToWaveform(Object    *core_api,
-                                       String     keyvalue_db_path,
-                                       Dictionary music_item,
-                                       int        pcm_per_pixel,
-                                       int        width,
-                                       int        height,
-                                       int        start_index,
-                                       int        end_index)
+PDJE_HighLevelUtilAPI::SoundToWaveform(PDJE_Wrapper *core_api,
+                                       String        keyvalue_db_path,
+                                       Dictionary    music_item,
+                                       int           pcm_per_pixel,
+                                       int           width,
+                                       int           height,
+                                       int           start_index,
+                                       int           end_index)
 {
     return pdje_high_level_util::waveform::SoundToWaveform(core_api,
                                                            keyvalue_db_path,

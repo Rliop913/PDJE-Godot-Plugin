@@ -68,6 +68,8 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_HighLevelUtilAPI.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.cpp
 )
 
+# Low-level util implementation lives in the wrapper layer, so the wrapper
+# target owns these sources directly instead of relying on Project-DJ-Engine.
 set(UtilBundleSrcs
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_LowLevelUtilAPI.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/adapter/LowLevelKeyValueAdapter.cpp
@@ -164,6 +166,8 @@ JUDGE_INCLUDE
 godotcppEx 
 PDJE_LOG_RUNTIME
 PDJE_UTIL
+PDJE_UTIL_DB
+PDJE_UTIL_IMAGE_WAVEFORM
 # PDJE_UTIL_BUNDLE
 )
 

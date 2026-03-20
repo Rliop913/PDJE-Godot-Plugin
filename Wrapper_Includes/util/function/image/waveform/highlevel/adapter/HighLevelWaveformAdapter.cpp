@@ -1,4 +1,3 @@
-#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
@@ -7,25 +6,37 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "PDJE_Core_Wrapper.hpp"
+#include "util/db/keyvalue/adapter/LowLevelKeyValueAdapter.hpp"
+#include "util/db/keyvalue/adapter/LowLevelKeyValueAdapterInternal.hpp"
+#include "util/function/image/waveform/adapter/LowLevelWaveformAdapter.hpp"
 #include "util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.hpp"
 
-#include "util/PDJE_LowLevelUtilAPI.hpp"
-
+#include <memory>
 #include <mutex>
 
 namespace {
 
 using godot::Array;
 using godot::Dictionary;
-using godot::Object;
 using godot::PackedByteArray;
 using godot::PackedFloat32Array;
-using godot::PDJE_LowLevelUtilAPI;
+using godot::PDJE_Wrapper;
 using godot::String;
 using godot::UtilityFunctions;
 using godot::Variant;
+using KeyValueState = godot::pdje_low_level_util_internal::KeyValueState;
 
 std::mutex s_high_level_waveform_cache_write_mutex;
+
+struct CacheStateHolder {
+    std::unique_ptr<KeyValueState> state;
+
+    ~CacheStateHolder()
+    {
+        godot::pdje_low_level_util::keyvalue::Shutdown(state);
+    }
+};
 
 bool
 EnvelopeOk(const Dictionary &result)
@@ -191,13 +202,14 @@ ReadWaveformImages(const Dictionary &waveform_result, Array &images)
 }
 
 bool
-OpenCache(PDJE_LowLevelUtilAPI &low_level, const String &path)
+OpenCache(std::unique_ptr<KeyValueState> &state, const String &path)
 {
     Dictionary config;
     config["path"]              = path;
     config["create_if_missing"] = true;
 
-    const Dictionary open_result = low_level.KeyValueOpen(config);
+    const Dictionary open_result = godot::pdje_low_level_util::keyvalue::Open(
+        state, config);
     if (EnvelopeOk(open_result)) {
         return true;
     }
@@ -213,7 +225,7 @@ OpenCache(PDJE_LowLevelUtilAPI &low_level, const String &path)
 namespace godot::pdje_high_level_util::waveform {
 
 Array
-SoundToWaveform(Object           *core_api,
+SoundToWaveform(PDJE_Wrapper     *core_api,
                 const String     &keyvalue_db_path,
                 const Dictionary &music_item,
                 int               pcm_per_pixel,
@@ -226,12 +238,6 @@ SoundToWaveform(Object           *core_api,
 
     if (core_api == nullptr) {
         PrintHighLevelError("SoundToWaveform failed. core_api is null.");
-        return out;
-    }
-
-    if (!core_api->has_method("GetPCMFromMusicData")) {
-        PrintHighLevelError("SoundToWaveform failed. core_api must expose "
-                            "GetPCMFromMusicData.");
         return out;
     }
 
@@ -253,14 +259,15 @@ SoundToWaveform(Object           *core_api,
         return out;
     }
 
-    PDJE_LowLevelUtilAPI low_level;
-    if (!OpenCache(low_level, keyvalue_db_path)) {
+    CacheStateHolder cache;
+    if (!OpenCache(cache.state, keyvalue_db_path)) {
         return out;
     }
 
     const String cache_key =
         BuildCacheKey(music_path, width, height, pcm_per_pixel);
-    const Dictionary cache_result = low_level.KeyValueGetBytes(cache_key);
+    const Dictionary cache_result =
+        godot::pdje_low_level_util::keyvalue::GetBytes(cache.state, cache_key);
     if (EnvelopeOk(cache_result)) {
         Array            cached_images;
         const Dictionary cache_data = EnvelopeData(cache_result);
@@ -277,15 +284,7 @@ SoundToWaveform(Object           *core_api,
         return out;
     }
 
-    const Variant pcm_result_variant =
-        core_api->call("GetPCMFromMusicData", music_item);
-    if (pcm_result_variant.get_type() != Variant::DICTIONARY) {
-        PrintHighLevelError("SoundToWaveform failed. GetPCMFromMusicData did "
-                            "not return a Dictionary.");
-        return out;
-    }
-
-    const Dictionary   pcm_result = static_cast<Dictionary>(pcm_result_variant);
+    const Dictionary   pcm_result = core_api->GetPCMFromMusicData(music_item);
     PackedFloat32Array pcm;
     int                channel_count = 0;
     if (!ReadPcmResult(pcm_result, pcm, channel_count)) {
@@ -295,13 +294,14 @@ SoundToWaveform(Object           *core_api,
     }
 
     const Dictionary waveform_result =
-        low_level.EncodeWaveformWebps(PackedFloat32ArrayToArray(pcm),
-                                      channel_count,
-                                      height,
-                                      pcm_per_pixel,
-                                      width,
-                                      -1,
-                                      0);
+        godot::pdje_low_level_util::waveform::EncodeWaveformWebps(
+            PackedFloat32ArrayToArray(pcm),
+            channel_count,
+            height,
+            pcm_per_pixel,
+            width,
+            -1,
+            0);
     Array images;
     if (!ReadWaveformImages(waveform_result, images)) {
         PrintHighLevelError(String("SoundToWaveform encode failed. ") +
@@ -315,7 +315,8 @@ SoundToWaveform(Object           *core_api,
         const std::lock_guard<std::mutex> lock(
             s_high_level_waveform_cache_write_mutex);
         const Dictionary put_result =
-            low_level.KeyValuePutBytes(cache_key, blob);
+            godot::pdje_low_level_util::keyvalue::PutBytes(
+                cache.state, cache_key, blob);
         if (!EnvelopeOk(put_result)) {
             PrintHighLevelError(String("SoundToWaveform cache write failed. ") +
                                 EnvelopeCode(put_result) + String(" ") +

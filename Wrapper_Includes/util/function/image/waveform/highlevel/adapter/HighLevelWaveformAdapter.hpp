@@ -4,13 +4,13 @@ namespace godot {
 
 class Array;
 class Dictionary;
-class Object;
+class PDJE_Wrapper;
 class String;
 
 namespace pdje_high_level_util::waveform {
 
 Array
-SoundToWaveform(Object           *core_api,
+SoundToWaveform(PDJE_Wrapper     *core_api,
                 const String     &keyvalue_db_path,
                 const Dictionary &music_item,
                 int               pcm_per_pixel,
