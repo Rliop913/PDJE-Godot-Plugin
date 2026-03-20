@@ -36,7 +36,7 @@ message(${PDJE_INCLUDE_ROOT})
 set(PDJE_DYNAMIC ON CACHE BOOL "Make Shared Library")
 set(PDJE_SWIG_BUILD OFF CACHE BOOL "Turn off swig build")
 set(PDJE_TEST OFF CACHE BOOL "Disable PDJE unit tests in wrapper build" FORCE)
-set(PDJE_DEV_TEST ON CACHE BOOL "Disable PDJE dev/manual tests in wrapper build" FORCE)
+set(PDJE_DEV_TEST OFF CACHE BOOL "Disable PDJE dev/manual tests in wrapper build" FORCE)
 set(PDJE_RTTI_FORCE_OFF OFF CACHE BOOL "Disable frtti" FORCE)
 
 if(APPLE)
@@ -64,8 +64,8 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/WrappedEditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
-# ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_HighLevelUtilAPI.cpp
-# ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_HighLevelUtilAPI.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.cpp
 )
 
 set(UtilBundleSrcs
@@ -113,7 +113,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/InputLine.cpp
 endif()
 add_library(PDJE_godot_wrapper SHARED 
 ${WrapperSrcs}
-# ${UtilBundleSrcs}
+${UtilBundleSrcs}
 )
 set_target_properties(PDJE_godot_wrapper PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(PDJE_godot_wrapper PROPERTIES VISIBILITY_INLINES_HIDDEN ON)
@@ -141,7 +141,13 @@ endif()
 target_compile_definitions(PDJE_godot_wrapper PRIVATE SPDLOG_FMT_EXTERNAL)
 target_compile_definitions(PDJE PRIVATE SPDLOG_FMT_EXTERNAL)
 # target_link_options(PDJE_godot_wrapper PRIVATE -Wl,-z,defs)
+
+DynamicOuterFlag(PDJE_godot_wrapper)
+DynamicOuterFlag(PDJE)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 target_compile_options(PDJE_godot_wrapper PRIVATE -frtti)
+endif()
 # target_link_options(PDJE_godot_wrapper PRIVATE  -frtti)
 # target_compile_options(PDJE PRIVATE -fsanitize=address)
 # target_link_options(PDJE PRIVATE -fsanitize=address )
@@ -157,6 +163,7 @@ CRYPTO_INCLUDE
 JUDGE_INCLUDE
 godotcppEx 
 PDJE_LOG_RUNTIME
+PDJE_UTIL
 # PDJE_UTIL_BUNDLE
 )
 
@@ -173,14 +180,18 @@ setBotanReqLib(PDJE_godot_wrapper)#botan req -- dept 3
 
 setLibreMIDIReqLib(PDJE_godot_wrapper) #libremidi req -- dept 4
 
+if(LINUX)
+  
 
 find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
-    pkg_check_modules(LIBWAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
-    pkg_check_modules(LIBNUMA REQUIRED IMPORTED_TARGET numa)
-    pkg_check_modules(LIBSYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
+pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
+pkg_check_modules(LIBWAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
+pkg_check_modules(LIBNUMA REQUIRED IMPORTED_TARGET numa)
+pkg_check_modules(LIBSYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
+endif(LINUX)
+if(NOT APPLE)
 PDJE_INPUT_LINK_LIB(PDJE_godot_wrapper) # input link req -- dept 5
-
+endif()
 
 find_package(spdlog CONFIG REQUIRED)
 setSpdlogReqLib(PDJE_godot_wrapper) # spdlog req -- dept 6

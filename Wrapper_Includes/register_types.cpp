@@ -1,8 +1,8 @@
 #include "register_types.h"
 
 #include "PDJE_Core_Wrapper.hpp"
-// #include "util/PDJE_HighLevelUtilAPI.hpp"
-// #include "util/PDJE_LowLevelUtilAPI.hpp"
+#include "util/PDJE_HighLevelUtilAPI.hpp"
+#include "util/PDJE_LowLevelUtilAPI.hpp"
 #ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
 #include "InputLine.hpp"
 #include "PDJE_Input_Wrapper.hpp"
@@ -29,8 +29,8 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<FXArgWrapper>();
     ClassDB::register_class<FXWrapper>();
     ClassDB::register_class<CoreLine>();
-    // ClassDB::register_class<PDJE_HighLevelUtilAPI>();
-    // ClassDB::register_class<PDJE_LowLevelUtilAPI>();
+    ClassDB::register_class<PDJE_HighLevelUtilAPI>();
+    ClassDB::register_class<PDJE_LowLevelUtilAPI>();
 #ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
     ClassDB::register_class<InputLine>();
     ClassDB::register_class<PDJE_Input_Module>();
