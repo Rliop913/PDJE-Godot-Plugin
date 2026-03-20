@@ -4,11 +4,11 @@
 #include "PDJE_Input.hpp"
 #include "PDJE_Input_Device_Data.hpp"
 #include "PDJE_LOG_SETTER.hpp"
-#include "PDJE_Utils.hpp"
 #include "classes/ref.hpp"
 #include "core/binder_common.hpp"
 #include "core/class_db.hpp"
 #include "core/memory.hpp"
+#include "pdje_util_common.hpp"
 #include "variant/array.hpp"
 #include "variant/dictionary.hpp"
 #include "variant/typed_array.hpp"
@@ -157,7 +157,7 @@ PDJE_Input_Module::Init()
 bool
 PDJE_Input_Module::InitWithOptions(bool use_internal_window)
 {
-    auto single = godot::DisplayServer::get_singleton();
+    auto  single        = godot::DisplayServer::get_singleton();
     void *platform_ctx0 = nullptr;
     void *platform_ctx1 = nullptr;
 

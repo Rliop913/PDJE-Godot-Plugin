@@ -1,14 +1,13 @@
 #include "EditorWrapper.hpp"
-#include "PDJE_Utils.hpp"
 #include "jsonWrapper.hpp"
+#include "pdje_util_common.hpp"
 #include "variant/dictionary.hpp"
 
 using namespace godot;
 
 void
-EditorWrapper::Init(editorObject *refobj, PDJE *refengine)
+EditorWrapper::Init(std::shared_ptr<editorObject> refobj, PDJE *refengine)
 {
-
     edit   = refobj;
     engine = refengine;
 }
@@ -103,7 +102,7 @@ EditorWrapper::demoPlayInit(unsigned int frameBufferSize, String trackTitle)
     auto ref = Ref<PlayerWrapper>(memnew(PlayerWrapper));
     std::shared_ptr<audioPlayer> player;
     edit->demoPlayInit(player, frameBufferSize, GStrToCStr(trackTitle));
-    ref->Init(player.get(), engine);
+    ref->Init(player, engine);
     return ref;
 }
 

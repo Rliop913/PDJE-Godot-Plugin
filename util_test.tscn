@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://cs6m31jyv4mwr"]
+
+[sub_resource type="GDScript" id="GDScript_mxi0h"]
+script/source = "extends PDJE_HighLevelUtilAPI
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	var temp = PDJE_Wrapper.new()
+	temp.InitEngine(\"res://rootdb\")
+	print(temp.SearchMusic(\"\",\"\"))
+	var pngs = SoundToWaveform(temp, \"res://imgdb\", temp.SearchMusic(\"\",\"\")[0], 48, 4096, 256, 0, -1)
+	#print(pngs)
+	var img := Image.new()
+	print(img.load_webp_from_buffer(pngs[10]))
+	#ImageTexture.create_from_image(img)
+	var tempimg = ImageTexture.create_from_image(img)
+	
+	$TextureRect.texture = tempimg
+	#var temp = PDJE_HighLevelUtilAPI.new()
+	#temp.SoundToWaveform()
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+"
+
+[node name="PDJE_HighLevelUtilAPI" type="PDJE_HighLevelUtilAPI" unique_id=798182897]
+script = SubResource("GDScript_mxi0h")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1190240979]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

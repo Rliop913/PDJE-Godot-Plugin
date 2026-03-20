@@ -5,8 +5,11 @@
 #include "core/property_info.hpp"
 #include "fileNameSanitizer.hpp"
 #include "variant/array.hpp"
+#include "variant/dictionary.hpp"
+#include "variant/packed_float32_array.hpp"
 #include "variant/variant.hpp"
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <godot_cpp/core/class_db.hpp>
 using namespace godot;
@@ -24,6 +27,8 @@ PDJE_Wrapper::_bind_methods()
     ClassDB::bind_method(D_METHOD("SearchMusic", "Title", "composer", "bpm"),
                          &PDJE_Wrapper::SearchMusic,
                          DEFVAL(-1.0));
+    ClassDB::bind_method(D_METHOD("GetPCMFromMusicData", "music_data"),
+                         &PDJE_Wrapper::GetPCMFromMusicData);
     ClassDB::bind_method(D_METHOD("SearchTrack", "Title"),
                          &PDJE_Wrapper::SearchTrack);
     ClassDB::bind_method(D_METHOD("InitEngine", "DBPath"),
@@ -117,6 +122,75 @@ PDJE_Wrapper::SearchMusic(String Title, String composer, double bpm)
     return musicList;
 }
 
+Dictionary
+PDJE_Wrapper::GetPCMFromMusicData(Dictionary musicData)
+{
+    Dictionary result;
+    result["pcm"]           = PackedFloat32Array();
+    result["channel_count"] = static_cast<int64_t>(0);
+
+    if (!engine.has_value()) {
+        print_error("GetPCMFromMusicData failed. engine is not initialized.");
+        return result;
+    }
+
+    String title;
+    String composer;
+    String musicPath;
+    double bpm = -1.0;
+
+    if (musicData.has("title") &&
+        musicData["title"].get_type() == Variant::STRING) {
+        title = static_cast<String>(musicData["title"]);
+    }
+    if (musicData.has("composer") &&
+        musicData["composer"].get_type() == Variant::STRING) {
+        composer = static_cast<String>(musicData["composer"]);
+    }
+    if (musicData.has("musicPath") &&
+        musicData["musicPath"].get_type() == Variant::STRING) {
+        musicPath = static_cast<String>(musicData["musicPath"]);
+    }
+    if (musicData.has("bpm")) {
+        switch (musicData["bpm"].get_type()) {
+        case Variant::INT:
+            bpm = static_cast<double>(static_cast<int64_t>(musicData["bpm"]));
+            break;
+        case Variant::FLOAT:
+            bpm = static_cast<double>(musicData["bpm"]);
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (title.is_empty() && composer.is_empty() && musicPath.is_empty() &&
+        bpm < 0.0) {
+        print_error("GetPCMFromMusicData failed. music_data must include at "
+                    "least musicPath or search clues.");
+        return result;
+    }
+
+    musdata query(
+        GStrToCStr(title), GStrToCStr(composer), GStrToCStr(musicPath), bpm);
+    auto pcm = engine->GetPCMFromMusData(query);
+    if (pcm.empty()) {
+        print_error("GetPCMFromMusicData failed. PDJE returned empty PCM.");
+        return result;
+    }
+
+    PackedFloat32Array packed_pcm;
+    packed_pcm.resize(static_cast<int64_t>(pcm.size()));
+    float *dst = packed_pcm.ptrw();
+    std::memcpy(dst, pcm.data(), pcm.size() * sizeof(float));
+
+    result["pcm"]           = packed_pcm;
+    result["channel_count"] = static_cast<int64_t>(2);
+    result["musicPath"]     = musicPath;
+    result["pcm_length"]    = static_cast<int64_t>(pcm.size());
+    return result;
+}
+
 bool
 PDJE_Wrapper::InitPlayer(PDJE_PLAY_MODE mode,
                          String         trackTitle,
@@ -179,7 +253,7 @@ PDJE_Wrapper::GetPlayer()
     if (!engine->player) {
         return ref;
     }
-    ref->Init(engine->player.get(), &engine.value());
+    ref->Init(engine->player, &engine.value());
     return ref;
 }
 
@@ -192,7 +266,7 @@ PDJE_Wrapper::GetEditor()
         return ref;
     }
 
-    ref->Init(engine->editor.get(), &engine.value());
+    ref->Init(engine->editor, &engine.value());
     return ref;
 }
 

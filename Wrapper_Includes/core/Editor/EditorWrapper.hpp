@@ -11,9 +11,9 @@ class EditorWrapper : public RefCounted {
     GDCLASS(EditorWrapper, RefCounted)
 
   private:
-    editorObject *edit;
-    PDJE         *engine;
-    bool          Flag_is_rendered = false;
+    std::shared_ptr<editorObject> edit;
+    PDJE                         *engine;
+    bool                          Flag_is_rendered = false;
 
   protected:
     static void
@@ -73,7 +73,7 @@ class EditorWrapper : public RefCounted {
     DESTROY_PROJECT();
 
     void
-    Init(editorObject *refobj, PDJE *refengine);
+    Init(std::shared_ptr<editorObject> refobj, PDJE *refengine);
 
     bool
     ConfigNewMusic(String NewMusicName,

@@ -11,8 +11,8 @@ namespace godot {
 class PlayerWrapper : public RefCounted {
     GDCLASS(PlayerWrapper, RefCounted)
   private:
-    audioPlayer *playerobj = nullptr;
-    PDJE        *engineobj = nullptr;
+    std::shared_ptr<audioPlayer> playerobj = nullptr;
+    PDJE                        *engineobj = nullptr;
 
   protected:
     static void
@@ -34,7 +34,7 @@ class PlayerWrapper : public RefCounted {
     String
     GetStatus();
     void
-    Init(audioPlayer *refobj, PDJE *refengine);
+    Init(std::shared_ptr<audioPlayer> refobj, PDJE *refengine);
     PlayerWrapper()  = default;
     ~PlayerWrapper() = default;
 };
