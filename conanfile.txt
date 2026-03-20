@@ -17,6 +17,6 @@ CMakeToolchain
 spdlog/1.15.3:header_only=False
 spdlog/*:use_std_fmt=False
 zlib/*:shared=True
-highway/*:shared=False
+highway/*:shared=True
 
 
