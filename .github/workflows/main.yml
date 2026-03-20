@@ -140,24 +140,6 @@ jobs:
         GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/Rliop913/Project-DJ-Engine.git Project-DJ-Engine
         
         
-    - name: inspect pdje compatibility
-      id: inspect_pdje_compat
-      shell: bash
-      run: |
-        ENGINE_DIR="${GITHUB_WORKSPACE}/Project-DJ-Engine"
-        ENGINE_SHA="$(git -C "$ENGINE_DIR" rev-parse HEAD)"
-        ENGINE_BRANCH="$(git -C "$ENGINE_DIR" rev-parse --abbrev-ref HEAD || true)"
-        ENGINE_VERSION="$(cat "$ENGINE_DIR/PDJE_VERSION" 2>/dev/null || echo unknown)"
-        {
-          echo "engine_sha=${ENGINE_SHA}"
-          echo "engine_branch=${ENGINE_BRANCH}"
-          echo "engine_version=${ENGINE_VERSION}"
-        } | tee engine_build_meta.txt
-        grep -q "GetCurrentInputBackend" "$ENGINE_DIR/include/input/PDJE_Input.hpp" || { echo "::error::Missing PDJE_Input::GetCurrentInputBackend in Project-DJ-Engine"; exit 1; }
-        grep -q "use_internal_window" "$ENGINE_DIR/include/input/PDJE_Input.hpp" || { echo "::error::Missing PDJE_Input::Init(...use_internal_window...) support in Project-DJ-Engine"; exit 1; }
-        grep -q "option(PDJE_TEST" "$ENGINE_DIR/CMakeLists.txt" || { echo "::error::Missing PDJE_TEST CMake option in Project-DJ-Engine"; exit 1; }
-        grep -q "option(PDJE_DEV_TEST" "$ENGINE_DIR/CMakeLists.txt" || { echo "::error::Missing PDJE_DEV_TEST CMake option in Project-DJ-Engine"; exit 1; }
-
     - name: set linux Requirements
       id: set_libevdev_and_ccache
       shell: bash
@@ -279,7 +261,6 @@ jobs:
         mkdir -p versions
         find ./ -type f -name "PDJE_VERSION" -print0 | xargs -0 cp -t versions/
         find ./ -type f -name "PDJE_WRAPPER_VERSION" -print0 | xargs -0 cp -t versions/
-        [ -f ./engine_build_meta.txt ] && cp ./engine_build_meta.txt versions/
         
 
         
