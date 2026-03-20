@@ -153,22 +153,31 @@ endif()
 # target_link_options(PDJE_godot_wrapper PRIVATE  -frtti)
 # target_compile_options(PDJE PRIVATE -fsanitize=address)
 # target_link_options(PDJE PRIVATE -fsanitize=address )
-target_link_libraries(PDJE_godot_wrapper PRIVATE 
+set(_pdje_wrapper_link_libs
 PDJE
 CORE_INCLUDE # PDJE related includes req -- all depts
 GLOBAL_INCLUDE
 SOUNDTOUCH_INCLUDE
 MINIAUDIO_INCLUDE
-INPUT_MAIN_INCLUDE
 IPC_INCLUDE
 CRYPTO_INCLUDE
-JUDGE_INCLUDE
-godotcppEx 
+godotcppEx
 PDJE_LOG_RUNTIME
 PDJE_UTIL
 PDJE_UTIL_DB
 PDJE_UTIL_IMAGE_WAVEFORM
 # PDJE_UTIL_BUNDLE
+)
+
+if(PDJE_DEVELOP_INPUT)
+list(APPEND _pdje_wrapper_link_libs
+INPUT_MAIN_INCLUDE
+JUDGE_INCLUDE
+)
+endif()
+
+target_link_libraries(PDJE_godot_wrapper PRIVATE
+${_pdje_wrapper_link_libs}
 )
 
 

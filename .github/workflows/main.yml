@@ -329,10 +329,13 @@ jobs:
           
           sudo apt-get update
           sudo apt-get install -y p7zip-full
+
+          MACOS_RELEASE_DIR="$(find builds -maxdepth 1 -type d -name 'macOS-*-Release-success_builds' | head -n 1)"
+          test -n "$MACOS_RELEASE_DIR"
           
           cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/release
           cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
-          cp builds/macOS-14-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/release
+          cp "$MACOS_RELEASE_DIR"/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/release
           cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
           cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
