@@ -64,17 +64,18 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorWrapper.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/WrappedEditorArgs.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor/EditorFunctions.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_HighLevelUtilAPI.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/highlevel/adapter/HighLevelWaveformAdapter.cpp
 )
 
 # Low-level util implementation lives in the wrapper layer, so the wrapper
 # target owns these sources directly instead of relying on Project-DJ-Engine.
 set(UtilBundleSrcs
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_LowLevelUtilAPI.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/adapter/LowLevelKeyValueAdapter.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/adapter/LowLevelNearestAdapter.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/adapter/LowLevelRelationalAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_StftResult.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_MIR.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/PDJE_KeyValueDB.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorDB.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorTypes.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/PDJE_RelationalDB.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/PDJE_RelationalTypes.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/adapter/LowLevelWaveformAdapter.cpp
 )
 
@@ -192,6 +193,7 @@ find_package(botan CONFIG REQUIRED)
 setBotanReqLib(PDJE_godot_wrapper)#botan req -- dept 3
 
 setLibreMIDIReqLib(PDJE_godot_wrapper) #libremidi req -- dept 4
+setOpenCLCppReqLib(PDJE_godot_wrapper)
 
 if(LINUX)
   

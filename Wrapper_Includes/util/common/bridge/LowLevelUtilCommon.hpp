@@ -61,49 +61,6 @@ StatusMessageToGodot(const PDJE_UTIL::common::Status &status)
     return CStrToGStr(status.message);
 }
 
-inline Dictionary
-MakeResult(bool           ok,
-           const String  &code,
-           const String  &message,
-           const Variant &data = Variant(nullptr))
-{
-    Dictionary result;
-    result["ok"]      = ok;
-    result["code"]    = code;
-    result["message"] = message;
-    result["data"]    = data;
-    return result;
-}
-
-inline Dictionary
-MakeStatusResult(bool                             ok,
-                 const PDJE_UTIL::common::Status &status,
-                 const Variant                   &data = Variant(nullptr))
-{
-    return MakeResult(ok,
-                      StatusCodeToGodotCode(status.code),
-                      StatusMessageToGodot(status),
-                      data);
-}
-
-inline Dictionary
-MakeSuccessResult(const Variant &data = Variant(nullptr))
-{
-    return MakeResult(true, "OK", String(), data);
-}
-
-inline Dictionary
-MakeNotImplementedResult(const String  &method_name,
-                         const Variant &data = Variant(nullptr))
-{
-    return MakeResult(
-        false,
-        "NOT_IMPLEMENTED",
-        method_name +
-            String(" is a contract placeholder and has no backend yet."),
-        data);
-}
-
 inline bool
 DictionaryBoolAt(const Dictionary &dict, const char *key, bool default_value)
 {

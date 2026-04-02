@@ -1,20 +1,22 @@
 #pragma once
 
-namespace godot {
+#include "util/common/Result.hpp"
 
-class Array;
-class Dictionary;
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
+
+namespace godot {
 
 namespace pdje_low_level_util::waveform {
 
-Dictionary
-EncodeWaveformWebps(const Array &pcm,
-                    int          channel_count,
-                    int          y_pixels,
-                    int          pcm_per_pixel,
-                    int          x_pixels_per_image,
-                    int          compression_level,
-                    int          worker_thread_count);
+PDJE_UTIL::common::Result<Array>
+EncodeWaveformWebps(const PackedFloat32Array &pcm,
+                    int                       channel_count,
+                    int                       y_pixels,
+                    int                       pcm_per_pixel,
+                    int                       x_pixels_per_image,
+                    int                       compression_level,
+                    int                       worker_thread_count);
 
 }
 
