@@ -12,7 +12,7 @@ func _ready() -> void:
 	if engine.SearchMusic(\"title\", \"composer\").is_empty():
 		engine.InitEditor(\"name\", \"none\", \"res://sandbox\")
 		var editor = engine.GetEditor()
-		print(editor.ConfigNewMusic(\"title\", \"composer\", \"res://Project-DJ_Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))#change path here
+		print(editor.ConfigNewMusic(\"title\", \"composer\", \"res://Project-DJ-Engine/DMCA_FREE_DEMO_MUSIC/miku_temp.wav\"))#change path here
 		var edit_args = PDJE_EDITOR_ARG.new()
 		edit_args.InitMusicArg(\"title\", \"120\", 0,0,4)
 		
