@@ -69,14 +69,16 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 # Low-level util implementation lives in the wrapper layer, so the wrapper
 # target owns these sources directly instead of relying on Project-DJ-Engine.
 set(UtilBundleSrcs
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_StftResult.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/PDJE_MIR.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_StftResult.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Bindings.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Waveform.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_STFT.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/PDJE_KeyValueDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorTypes.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/PDJE_RelationalDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/relational/PDJE_RelationalTypes.cpp
-${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/function/image/waveform/adapter/LowLevelWaveformAdapter.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/LowLevelWaveformAdapter.cpp
 )
 
 set(PDJE_GODOT_INCLUDE_DIRS

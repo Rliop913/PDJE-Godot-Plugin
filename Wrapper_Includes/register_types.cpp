@@ -1,8 +1,8 @@
 #include "register_types.h"
 
 #include "PDJE_Core_Wrapper.hpp"
-#include "util/PDJE_StftResult.hpp"
-#include "util/PDJE_MIR.hpp"
+#include "util/MIR/PDJE_StftResult.hpp"
+#include "util/MIR/PDJE_MIR.hpp"
 #include "util/db/keyvalue/PDJE_KeyValueDB.hpp"
 #include "util/db/nearest/PDJE_VectorDB.hpp"
 #include "util/db/nearest/PDJE_VectorTypes.hpp"

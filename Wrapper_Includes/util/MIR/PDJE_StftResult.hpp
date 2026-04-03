@@ -12,7 +12,6 @@ class PDJE_StftResult : public RefCounted {
   private:
     PackedFloat32Array real_;
     PackedFloat32Array imag_;
-    PackedFloat32Array power_;
 
   protected:
     static void
@@ -28,11 +27,6 @@ class PDJE_StftResult : public RefCounted {
     set_imag(const PackedFloat32Array &imag);
     PackedFloat32Array
     get_imag() const;
-
-    void
-    set_power(const PackedFloat32Array &power);
-    PackedFloat32Array
-    get_power() const;
 };
 
 } // namespace godot

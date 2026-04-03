@@ -3,7 +3,7 @@
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-#include "util/function/image/waveform/adapter/LowLevelWaveformAdapter.hpp"
+#include "util/MIR/LowLevelWaveformAdapter.hpp"
 
 #include "util/function/image/WaveformWebp.hpp"
 
@@ -102,7 +102,7 @@ FlattenWaveformBatch(const PDJE_UTIL::function::image::WaveformWebpBatch &batch)
 namespace godot::pdje_low_level_util::waveform {
 
 PDJE_UTIL::common::Result<Array>
-EncodeWaveformWebps(const PackedFloat32Array &pcm,
+EncodeWaveformWebps(const std::vector<float> &pcm,
                     int                       channel_count,
                     int                       y_pixels,
                     int                       pcm_per_pixel,
@@ -119,10 +119,8 @@ EncodeWaveformWebps(const PackedFloat32Array &pcm,
         return PDJE_UTIL::common::Result<Array>::failure(validation);
     }
 
-    const auto pcm_values = ToFloatVector(pcm);
     auto encoded = PDJE_UTIL::function::image::encode_waveform_webps(
-        { .pcm                = std::span<const float>(pcm_values.data(),
-                                        pcm_values.size()),
+        { .pcm                = pcm,
           .channel_count      = static_cast<std::size_t>(channel_count),
           .y_pixels           = static_cast<std::size_t>(y_pixels),
           .pcm_per_pixel      = static_cast<std::size_t>(pcm_per_pixel),

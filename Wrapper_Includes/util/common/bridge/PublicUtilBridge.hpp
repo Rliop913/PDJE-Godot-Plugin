@@ -1,6 +1,8 @@
 #pragma once
 
+#include "PDJE_Core_Wrapper.hpp"
 #include "util/common/bridge/LowLevelUtilCommon.hpp"
+#include "util/db/keyvalue/PDJE_KeyValueDB.hpp"
 
 #include <godot_cpp/core/print_string.hpp>
 #include <godot_cpp/variant/array.hpp>
@@ -72,4 +74,24 @@ variant_to_packed_string_array(const Variant     &value,
     return true;
 }
 
+inline bool
+CheckDB(PDJE_KeyValueDB *kvp)
+{
+    if (kvp == nullptr) {
+        return false;
+    } else if (!kvp->IsOpen()) {
+        return false;
+    }
+    return true;
+}
+inline void
+BuildCacheSourceKey(const String &musicTitle,
+                    const String &composer,
+                    const float  &bpm,
+                    String       &out_source_key)
+{
+    out_source_key = String("query|title:") + musicTitle +
+                     String("|composer:") + composer + String("|bpm:") +
+                     String::num_real(std::floor(bpm));
+}
 } // namespace godot::pdje_public_util::common
