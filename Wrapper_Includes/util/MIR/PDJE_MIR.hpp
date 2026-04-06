@@ -59,6 +59,21 @@ class PDJE_MIR : public Node {
                     int              start_index = 0,
                     int              end_index   = -1);
 
+    Array
+    SoundToRGBWaveform(PDJE_Wrapper    *core_api,
+                       PDJE_KeyValueDB *cache_db,
+                       String           musicTitle,
+                       String           composer,
+                       float            bpm,
+                       int              pcm_per_pixel,
+                       int              width           = 4096,
+                       int              height          = 256,
+                       int              start_index     = 0,
+                       int              end_index       = -1,
+                       int              target_window   = HANNING,
+                       int              window_size_exp = 10,
+                       float            overlap_ratio   = 0.5f);
+
     PackedColorArray
     STFT_MUSIC(PDJE_Wrapper    *core_api,
                PDJE_KeyValueDB *cache_db,

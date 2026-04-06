@@ -1,5 +1,6 @@
 #include "util/MIR/PDJE_MIR.hpp"
 
+#include "util/MIR/PDJE_MIR_CacheKeys.hpp"
 #include "util/MIR/PDJE_StftResult.hpp"
 #include "util/common/bridge/LowLevelUtilCommon.hpp"
 #include "util/common/bridge/PublicUtilBridge.hpp"
@@ -26,6 +27,7 @@ using namespace godot;
 
 namespace {
 
+using godot::pdje_mir_internal::cache_keys::BuildStftMusicCacheKey;
 using godot::pdje_public_util::common::print_method_error;
 
 PackedFloat32Array
@@ -130,10 +132,10 @@ PDJE_MIR::STFT_MUSIC(PDJE_Wrapper    *core_api,
     pdje_public_util::common::BuildCacheSourceKey(
         musicTitle, composer, musSearched.front().bpm, cache_key);
 
-    cache_key = String("MUSR|") + cache_key + String("|WINDOW:") +
-                String::num_int64(target_window) + String("|exp:") +
-                String::num_int64(window_size_exp) + String("|overlap:") +
-                String::num_real(overlap_ratio);
+    cache_key = BuildStftMusicCacheKey(cache_key,
+                                       target_window,
+                                       window_size_exp,
+                                       overlap_ratio);
 
     if (can_use_cache) {
         PackedByteArray cached_blob;
