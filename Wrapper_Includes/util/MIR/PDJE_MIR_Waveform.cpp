@@ -3,20 +3,21 @@
 #include "util/MIR/PDJE_MIR.hpp"
 
 #include "PDJE_Core_Wrapper.hpp"
+#include "util/MIR/PDJE_MIR_CacheKeys.hpp"
 #include "util/MIR/LowLevelWaveformAdapter.hpp"
 #include "util/common/bridge/LowLevelUtilCommon.hpp"
 #include "util/common/bridge/PublicUtilBridge.hpp"
 #include "util/db/keyvalue/PDJE_KeyValueDB.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <godot_cpp/variant/packed_byte_array.hpp>
-#include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-#include <cmath>
 #include <cstdint>
 #include <mutex>
+#include <span>
 #include <utility>
 
 using namespace godot;
@@ -26,6 +27,23 @@ namespace {
 using godot::pdje_low_level_util::common::StatusCodeToGodotCode;
 using godot::pdje_low_level_util::common::StatusMessageToGodot;
 using godot::pdje_public_util::common::print_method_error;
+using godot::pdje_mir_internal::cache_keys::BuildWaveformCacheKey;
+using godot::pdje_mir_internal::cache_keys::BuildWaveformRgbCacheKey;
+using godot::pdje_low_level_util::waveform::WaveformEncodeRequest;
+using godot::pdje_low_level_util::waveform::WaveformStftConfig;
+
+struct WaveformRenderRequest {
+    const char                       *method_name = nullptr;
+    String                            music_title;
+    String                            composer;
+    float                             bpm           = 0.0f;
+    int                               pcm_per_pixel = 0;
+    int                               width         = 0;
+    int                               height        = 0;
+    int                               start_index   = 0;
+    int                               end_index     = -1;
+    std::optional<WaveformStftConfig> stft;
+};
 
 String
 FormatStatusDetail(const PDJE_UTIL::common::Status &status)
@@ -46,15 +64,35 @@ PrintStatusError(const char                      *method_name,
 }
 
 String
-BuildCacheKey(const String &cache_source_key,
-              int           width,
-              int           height,
-              int           pcm_per_pixel)
+BuildRequestCacheKey(const String                &cache_source_key,
+                     const WaveformRenderRequest &request)
 {
-    return String("MUSR|") + cache_source_key + String("|w:") +
-           String::num_int64(width) + String("|h:") +
-           String::num_int64(height) + String("|pp:") +
-           String::num_int64(pcm_per_pixel);
+    if (!request.stft.has_value()) {
+        return BuildWaveformCacheKey(cache_source_key,
+                                     request.width,
+                                     request.height,
+                                     request.pcm_per_pixel);
+    }
+
+    return BuildWaveformRgbCacheKey(cache_source_key,
+                                    request.width,
+                                    request.height,
+                                    request.pcm_per_pixel,
+                                    request.stft->target_window,
+                                    request.stft->window_size_exp,
+                                    request.stft->overlap_ratio);
+}
+
+bool
+ValidateWaveformRenderRequest(const WaveformRenderRequest &request)
+{
+    if (request.pcm_per_pixel <= 0 || request.width <= 0 || request.height <= 0) {
+        print_method_error(request.method_name,
+                           "width, height, and pcm_per_pixel must be positive");
+        return false;
+    }
+
+    return true;
 }
 
 Array
@@ -98,6 +136,83 @@ DecodeImageArray(const PackedByteArray &blob, Array &images)
     return true;
 }
 
+PDJE_UTIL::common::Result<Array>
+EncodeWaveformImages(const std::vector<float>    &pcm,
+                     const WaveformRenderRequest &request)
+{
+    return pdje_low_level_util::waveform::EncodeWaveformWebps(
+        { .pcm                = std::span<const float>(pcm.data(), pcm.size()),
+          .channel_count      = 2,
+          .y_pixels           = request.height,
+          .pcm_per_pixel      = request.pcm_per_pixel,
+          .x_pixels_per_image = request.width,
+          .compression_level  = -1,
+          .worker_thread_count = 0,
+          .stft               = request.stft });
+}
+
+Array
+ExecuteWaveformRequest(PDJE_Wrapper                *core_api,
+                       PDJE_KeyValueDB             *cache_db,
+                       const WaveformRenderRequest &request,
+                       std::mutex                  &cache_write_mutex)
+{
+    Array out;
+
+    if (core_api == nullptr) {
+        print_method_error(request.method_name, "core_api is null");
+        return out;
+    }
+    if (!core_api->engine.has_value()) {
+        print_method_error(request.method_name, "core_api is null");
+        return out;
+    }
+    if (!ValidateWaveformRenderRequest(request)) {
+        return out;
+    }
+
+    auto mus_searched = core_api->engine->SearchMusic(GStrToCStr(request.music_title),
+                                                      GStrToCStr(request.composer),
+                                                      request.bpm);
+    if (mus_searched.empty()) {
+        return {};
+    }
+
+    String cache_source_key;
+    pdje_public_util::common::BuildCacheSourceKey(request.music_title,
+                                                  request.composer,
+                                                  mus_searched.front().bpm,
+                                                  cache_source_key);
+
+    const bool can_use_cache = pdje_public_util::common::CheckDB(cache_db);
+    const String cache_key = BuildRequestCacheKey(cache_source_key, request);
+    if (can_use_cache && cache_db->Contains(cache_key)) {
+        const PackedByteArray cached_blob = cache_db->GetBytes(cache_key);
+        Array                 cached_images;
+        if (DecodeImageArray(cached_blob, cached_images)) {
+            return SliceImages(cached_images,
+                               request.start_index,
+                               request.end_index);
+        }
+    }
+
+    const auto pcm = core_api->engine->GetPCMFromMusData(mus_searched.front(), 2);
+    auto encoded   = EncodeWaveformImages(pcm, request);
+    if (!encoded.ok()) {
+        PrintStatusError(request.method_name, encoded.status());
+        return out;
+    }
+
+    const Array images = encoded.value();
+    if (can_use_cache) {
+        const PackedByteArray blob = UtilityFunctions::var_to_bytes(images);
+        const std::lock_guard<std::mutex> lock(cache_write_mutex);
+        (void)cache_db->PutBytes(cache_key, blob);
+    }
+
+    return SliceImages(images, request.start_index, request.end_index);
+}
+
 } // namespace
 
 Array
@@ -112,64 +227,51 @@ PDJE_MIR::SoundToWaveform(PDJE_Wrapper    *core_api,
                           int              start_index,
                           int              end_index)
 {
-    Array out;
+    return ExecuteWaveformRequest(
+        core_api,
+        cache_db,
+        { .method_name   = "PDJE_MIR.SoundToWaveform",
+          .music_title   = musicTitle,
+          .composer      = composer,
+          .bpm           = bpm,
+          .pcm_per_pixel = pcm_per_pixel,
+          .width         = width,
+          .height        = height,
+          .start_index   = start_index,
+          .end_index     = end_index },
+        s_mir_waveform_cache_write_mutex);
+}
 
-    if (core_api == nullptr) {
-        print_method_error("PDJE_MIR.SoundToWaveform", "core_api is null");
-        return out;
-    }
-    if (!core_api->engine.has_value()) {
-        print_method_error("PDJE_MIR.SoundToWaveform", "core_api is null");
-        return {};
-    }
-    if (pcm_per_pixel <= 0 || width <= 0 || height <= 0) {
-        print_method_error("PDJE_MIR.SoundToWaveform",
-                           "width, height, and pcm_per_pixel must be positive");
-        return out;
-    }
-    auto musSearched = core_api->engine->SearchMusic(
-        GStrToCStr(musicTitle), GStrToCStr(composer), bpm);
-    if (musSearched.empty()) {
-        return {};
-    }
-    String cache_source_key;
-    pdje_public_util::common::BuildCacheSourceKey(
-        musicTitle, composer, musSearched.front().bpm, cache_source_key);
-
-    bool can_use_cache = pdje_public_util::common::CheckDB(cache_db);
-
-    const String cache_key =
-        BuildCacheKey(cache_source_key, width, height, pcm_per_pixel);
-    if (can_use_cache) {
-        PackedByteArray cached_blob;
-        bool            cached_found = false;
-        if (cache_db->TryGetBytesSilently(
-                cache_key, cached_blob, cached_found) &&
-            cached_found) {
-            Array cached_images;
-            if (DecodeImageArray(cached_blob, cached_images)) {
-                return SliceImages(cached_images, start_index, end_index);
-            }
-        }
-    }
-
-    auto pcm_res = core_api->engine->GetPCMFromMusData(musSearched.front());
-
-    auto encoded = pdje_low_level_util::waveform::EncodeWaveformWebps(
-        pcm_res, 2, height, pcm_per_pixel, width, -1, 0);
-    if (!encoded.ok()) {
-        PrintStatusError("PDJE_MIR.SoundToWaveform", encoded.status());
-        return out;
-    }
-
-    const Array images = encoded.value();
-
-    if (can_use_cache) {
-        const PackedByteArray blob = UtilityFunctions::var_to_bytes(images);
-        const std::lock_guard<std::mutex> lock(
-            s_mir_waveform_cache_write_mutex);
-        (void)cache_db->PutBytes(cache_key, blob);
-    }
-
-    return SliceImages(images, start_index, end_index);
+Array
+PDJE_MIR::SoundToRGBWaveform(PDJE_Wrapper    *core_api,
+                             PDJE_KeyValueDB *cache_db,
+                             String           musicTitle,
+                             String           composer,
+                             float            bpm,
+                             int              pcm_per_pixel,
+                             int              width,
+                             int              height,
+                             int              start_index,
+                             int              end_index,
+                             int              target_window,
+                             int              window_size_exp,
+                             float            overlap_ratio)
+{
+    return ExecuteWaveformRequest(
+        core_api,
+        cache_db,
+        { .method_name   = "PDJE_MIR.SoundToRGBWaveform",
+          .music_title   = musicTitle,
+          .composer      = composer,
+          .bpm           = bpm,
+          .pcm_per_pixel = pcm_per_pixel,
+          .width         = width,
+          .height        = height,
+          .start_index   = start_index,
+          .end_index     = end_index,
+          .stft          = WaveformStftConfig{ .target_window = target_window,
+                                               .window_size_exp =
+                                                   window_size_exp,
+                                               .overlap_ratio = overlap_ratio } },
+        s_mir_waveform_cache_write_mutex);
 }
