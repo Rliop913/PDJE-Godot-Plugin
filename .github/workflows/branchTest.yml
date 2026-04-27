@@ -24,26 +24,32 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             build_type: Release
+            cmake_preset: windows-release
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
+            cmake_preset: linux-release
           - os: macOS-15
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
+            cmake_preset: macos-release
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            build_type: Debug
+            build_type: RelWithDebInfo
+            cmake_preset: windows-relwithdebinfo
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-            build_type: Debug
-          #- os: macOS-14
-            #c_compiler: clang
-            #cpp_compiler: clang++
-            #build_type: Debug
+            build_type: RelWithDebInfo
+            cmake_preset: linux-relwithdebinfo
+          - os: macOS-15
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: RelWithDebInfo
+            cmake_preset: macos-relwithdebinfo
     steps:
     - uses: actions/checkout@v4
       with: 
@@ -80,7 +86,7 @@ jobs:
       id: strings
       shell: bash
       run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-dir=${{ github.workspace }}/build/${{ matrix.cmake_preset }}" >> "$GITHUB_OUTPUT"
     
     - name: replace apple clang
       id: replace_apple_clang
@@ -171,20 +177,42 @@ jobs:
 
     
     - name: Configure CMake
+      if: runner.os != 'Windows'
       shell: bash
       run: >
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+        cmake --preset "${{ matrix.cmake_preset }}"
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-        -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}"/conan_cmakes/conan_toolchain.cmake
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S "${{ github.workspace }}"
+
+    - name: Configure CMake
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+        if not defined VSINSTALL (
+          echo Visual Studio installation not found
+          exit /b 1
+        )
+        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+        cmake --preset "${{ matrix.cmake_preset }}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
-      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }}
+      if: runner.os != 'Windows'
+      shell: bash
+      run: cmake --build --preset "${{ matrix.cmake_preset }}"
+
+    - name: Build
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+        if not defined VSINSTALL (
+          echo Visual Studio installation not found
+          exit /b 1
+        )
+        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+        cmake --build --preset "${{ matrix.cmake_preset }}"
 
     - name: Show ccache stats
       if: always()

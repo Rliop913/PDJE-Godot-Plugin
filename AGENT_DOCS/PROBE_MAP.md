@@ -102,6 +102,22 @@ Search:
 - `rg "PDJE_MIR|PDJE_StftResult|LowLevelWaveformAdapter|STFT|waveform"`
 - `rg "SoundToWaveform|SoundToRGBWaveform|STFT_MUSIC|STFT_PCM_DATA|TryGetBytesSilently|Build.*CacheKey" Wrapper_Includes/util/MIR Wrapper_Includes/util/db/keyvalue`
 
+## AI Utilities
+
+Read first:
+
+- [../Wrapper_Includes/util/AI/PDJE_AI.hpp](../Wrapper_Includes/util/AI/PDJE_AI.hpp)
+- [../Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisDetector.hpp](../Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisDetector.hpp)
+- [../Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisResult.hpp](../Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisResult.hpp)
+
+Search:
+
+- `rg "PDJE_AI|PDJE_BeatThisDetector|PDJE_BeatThisResult" Wrapper_Includes CMakeLists.txt`
+- `rg "BeatThisDetector|BeatDetectionResult" Project-DJ-Engine/include/util/ai`
+
+The wrapper v1 AI surface exposes Beat This only. Generic ONNX Runtime session
+and tensor APIs stay internal to upstream `PDJE_UTIL::ai`.
+
 ## Database Utilities
 
 Read first:

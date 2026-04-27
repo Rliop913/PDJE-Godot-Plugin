@@ -3,6 +3,9 @@
 #include "PDJE_Core_Wrapper.hpp"
 #include "util/MIR/PDJE_StftResult.hpp"
 #include "util/MIR/PDJE_MIR.hpp"
+#include "util/AI/PDJE_AI.hpp"
+#include "util/AI/beat_this/PDJE_BeatThisDetector.hpp"
+#include "util/AI/beat_this/PDJE_BeatThisResult.hpp"
 #include "util/db/keyvalue/PDJE_KeyValueDB.hpp"
 #include "util/db/nearest/PDJE_VectorDB.hpp"
 #include "util/db/nearest/PDJE_VectorTypes.hpp"
@@ -39,10 +42,13 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<PDJE_RelationalRow>();
     ClassDB::register_class<PDJE_RelationalExecResult>();
     ClassDB::register_class<PDJE_StftResult>();
+    ClassDB::register_class<PDJE_BeatThisResult>();
+    ClassDB::register_class<PDJE_BeatThisDetector>();
     ClassDB::register_class<PDJE_KeyValueDB>();
     ClassDB::register_class<PDJE_VectorDB>();
     ClassDB::register_class<PDJE_RelationalDB>();
     ClassDB::register_class<PDJE_MIR>();
+    ClassDB::register_class<PDJE_AI>();
 #ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
     ClassDB::register_class<InputLine>();
     ClassDB::register_class<PDJE_Input_Module>();

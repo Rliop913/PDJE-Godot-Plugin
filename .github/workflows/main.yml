@@ -23,26 +23,32 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             build_type: Release
+            cmake_preset: windows-release
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
+            cmake_preset: linux-release
           - os: macOS-15
             c_compiler: clang
             cpp_compiler: clang++
             build_type: Release
+            cmake_preset: macos-release
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            build_type: Debug
+            build_type: RelWithDebInfo
+            cmake_preset: windows-relwithdebinfo
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-            build_type: Debug
-          #- os: macOS-14
-            #c_compiler: clang
-            #cpp_compiler: clang++
-            #build_type: Debug
+            build_type: RelWithDebInfo
+            cmake_preset: linux-relwithdebinfo
+          - os: macOS-15
+            c_compiler: clang
+            cpp_compiler: clang++
+            build_type: RelWithDebInfo
+            cmake_preset: macos-relwithdebinfo
     steps:
     - uses: actions/checkout@v4
       with: 
@@ -79,7 +85,7 @@ jobs:
       id: strings
       shell: bash
       run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-dir=${{ github.workspace }}/build/${{ matrix.cmake_preset }}" >> "$GITHUB_OUTPUT"
     
     - name: replace apple clang
       id: replace_apple_clang
@@ -170,20 +176,42 @@ jobs:
 
     
     - name: Configure CMake
+      if: runner.os != 'Windows'
       shell: bash
       run: >
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+        cmake --preset "${{ matrix.cmake_preset }}"
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-        -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}"/conan_cmakes/conan_toolchain.cmake
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S "${{ github.workspace }}"
+
+    - name: Configure CMake
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+        if not defined VSINSTALL (
+          echo Visual Studio installation not found
+          exit /b 1
+        )
+        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+        cmake --preset "${{ matrix.cmake_preset }}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
-      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }}
+      if: runner.os != 'Windows'
+      shell: bash
+      run: cmake --build --preset "${{ matrix.cmake_preset }}"
+
+    - name: Build
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+        if not defined VSINSTALL (
+          echo Visual Studio installation not found
+          exit /b 1
+        )
+        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+        cmake --build --preset "${{ matrix.cmake_preset }}"
 
     - name: Show ccache stats
       if: always()
@@ -211,40 +239,78 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.build_type }}-failedbuild
         path: ${{ steps.strings.outputs.build-output-dir }}
+
     - name: stage files
       if: success()
       id: stage_valid_files
       shell: bash
       run: |
+        set -euo pipefail
         mkdir -p staged_bins
-        find ./build -type f -name "*PDJE*" | grep -E "\.(so|dll|dylib|exe)$" | while read -r file; do
-          echo "found: $file"
-          cp -v "$file" ./staged_bins
-        done
-        find ./conan_cmakes/direct_deploy/highway/ '(' -type f -o -type l ')' -name "*hwy.*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
-          echo "found: $file"
-          cp -av "$file" ./staged_bins
-        done
-        
-    - name: stage zlib-posix
-      if: runner.os != 'Windows'
-      id: stage_zlib_posix
+
+        stage_by_name() {
+          local root="$1"
+          local name_pattern="$2"
+
+          if [ ! -d "$root" ]; then
+            return 0
+          fi
+
+          while IFS= read -r file; do
+            local base
+            base="$(basename "$file")"
+            if [[ "$base" == *.so || "$base" == *.so.* || "$base" == *.dll || "$base" == *.dylib || "$base" == *.exe ]]; then
+              echo "found: $file"
+              cp -av "$file" ./staged_bins/
+            fi
+          done < <(find "$root" '(' -type f -o -type l ')' -name "$name_pattern" -print)
+        }
+
+        stage_package_dependency() {
+          local name_pattern="$1"
+          local package_root="$2"
+          stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "$name_pattern"
+          stage_by_name "$package_root" "$name_pattern"
+        }
+
+        stage_runtime_dependency() {
+          local name_pattern="$1"
+          stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "$name_pattern"
+          stage_by_name ./conan_cmakes/direct_deploy "$name_pattern"
+        }
+
+        stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "*PDJE*"
+        stage_package_dependency "*hwy.*" ./conan_cmakes/direct_deploy/highway
+
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          stage_package_dependency "*zlib*" ./conan_cmakes/direct_deploy/zlib
+          stage_runtime_dependency "onnxruntime*.dll"
+        elif [ "${{ runner.os }}" = "macOS" ]; then
+          stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
+          stage_runtime_dependency "libonnxruntime*.dylib"
+        else
+          stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
+          stage_runtime_dependency "libonnxruntime*.so*"
+        fi
+
+        ls -la staged_bins
+
+    - name: Validate staged runtime dependencies
+      if: success() && runner.os != 'Windows'
       shell: bash
+      run: python .github/scripts/validate_staged_runtime_deps.py staged_bins
+
+    - name: Validate staged runtime dependencies
+      if: success() && runner.os == 'Windows'
+      shell: cmd
       run: |
-        find ./conan_cmakes/direct_deploy/zlib/ '(' -type f -o -type l ')' -name "*libz*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
-          echo "found: $file"
-          cp -av "$file" ./staged_bins
-        done
-        
-    - name: stage zlib-windows
-      if: runner.os == 'Windows'
-      id: stage_zlib_windows
-      shell: bash
-      run: |
-        find ./conan_cmakes/direct_deploy/zlib/ '(' -type f -o -type l ')' -name "*zlib*" | grep -E "\.(so|dll|dylib)" | while read -r file; do
-          echo "found: $file"
-          cp -av "$file" ./staged_bins
-        done
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+        if not defined VSINSTALL (
+          echo Visual Studio installation not found
+          exit /b 1
+        )
+        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+        python .github/scripts/validate_staged_runtime_deps.py staged_bins
 
     - name: Upload artifacts
       if: success()
@@ -299,27 +365,29 @@ jobs:
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macos/release
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
           mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
-          #mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
+          mkdir -p Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
           
           rm -f Project_DJ_Godot/addons/Project_DJ_Godot/win/release/* 2>/dev/null || true
           rm -f Project_DJ_Godot/addons/Project_DJ_Godot/linux/release/* 2>/dev/null || true
           rm -f Project_DJ_Godot/addons/Project_DJ_Godot/macos/release/* 2>/dev/null || true
           rm -f Project_DJ_Godot/addons/Project_DJ_Godot/win/debug/* 2>/dev/null || true
           rm -f Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug/* 2>/dev/null || true
-          # rm -f Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug/* 2>/dev/null || true
+          rm -f Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug/* 2>/dev/null || true
           
           sudo apt-get update
           sudo apt-get install -y p7zip-full
 
           MACOS_RELEASE_DIR="$(find builds -maxdepth 1 -type d -name 'macOS-*-Release-success_builds' | head -n 1)"
+          MACOS_RELWITHDEBINFO_DIR="$(find builds -maxdepth 1 -type d -name 'macOS-*-RelWithDebInfo-success_builds' | head -n 1)"
           test -n "$MACOS_RELEASE_DIR"
+          test -n "$MACOS_RELWITHDEBINFO_DIR"
           
           cp builds/windows-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/release
           cp builds/ubuntu-latest-Release-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/release
           cp "$MACOS_RELEASE_DIR"/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/release
-          cp builds/windows-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
-          cp builds/ubuntu-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
-          # cp builds/macOS-latest-Debug-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
+          cp builds/windows-latest-RelWithDebInfo-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/win/debug
+          cp builds/ubuntu-latest-RelWithDebInfo-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
+          cp "$MACOS_RELWITHDEBINFO_DIR"/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
 
           find Project_DJ_Godot/addons -type f | grep -E "\.(so|dll|dylib|exe)$" | while read -r file; do
             echo "found: $file"

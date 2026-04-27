@@ -115,6 +115,24 @@ Current public results are:
 Keep the STFT engine pointer, waveform/STFT cache keys, mutexes, and PCM
 splitting details inside the MIR implementation.
 
+## AI Facade
+
+`PDJE_AI` is the Godot-facing AI utility facade. The v1 public API exposes Beat
+This beat/downbeat detection through `PDJE_BeatThisDetector` and
+`PDJE_BeatThisResult`; generic ONNX Runtime sessions, tensors, and model IO stay
+internal to upstream `PDJE_UTIL::ai`.
+
+`PDJE_BeatThisDetector` owns an upstream
+`PDJE_UTIL::ai::BeatThisDetector`. Empty model paths use the upstream default
+Beat This model, while non-empty Godot paths are converted with `GpathToCPath`.
+`DetectPCM()` accepts interleaved `PackedFloat32Array` audio, validates shape and
+sample rate, downmixes to mono, and returns beat/downbeat timestamps in seconds
+as `PackedFloat64Array` fields on `PDJE_BeatThisResult`.
+
+`DetectMusic()` follows the MIR pattern: receive a `PDJE_Wrapper *`, search for
+the first matching music entry, request mono PCM from `GetPCMFromMusData()`, and
+run Beat This against the core decoder sample rate.
+
 ## Input And Judge Signal Bridges
 
 Input and judge wrapper classes are conditional. In
@@ -194,6 +212,7 @@ the main thread path used by the current wrappers.
 - Core/player/editor wrappers live under `Wrapper_Includes/core/`.
 - Shared data-line wrappers live under `Wrapper_Includes/global/DataLine/`.
 - MIR wrappers live under `Wrapper_Includes/util/MIR/`.
+- AI wrappers live under `Wrapper_Includes/util/AI/`.
 - Key-value, relational, and nearest/vector DB wrappers live under
   `Wrapper_Includes/util/db/`.
 - Input and judge wrappers live under `Wrapper_Includes/input/` and
