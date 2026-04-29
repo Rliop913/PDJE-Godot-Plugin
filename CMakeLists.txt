@@ -21,12 +21,10 @@ cmake_policy(SET CMP0091 NEW)
 
 project(PDJE_godot_wrapper VERSION 0.1.0 LANGUAGES C CXX)
 
-
-set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
-
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_ID_LOWER)
-
 string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${BUILD_TYPE_LOWER}")
+
 include(ExternalProject)
 include(cmake/godotExternalSetter.cmake)
 
