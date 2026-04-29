@@ -174,6 +174,17 @@ jobs:
       run: |
         ccache --zero-stats
 
+    - name: Probe build jobs
+      id: build_jobs
+      shell: pwsh
+      run: |
+        $count = [Environment]::ProcessorCount
+        if ($count -lt 1) {
+          $count = 1
+        }
+        "count=$count" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Using $count build jobs"
+
     
     - name: Configure CMake
       if: runner.os != 'Windows'
@@ -184,34 +195,18 @@ jobs:
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
-    - name: Configure CMake
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: |
-        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
-        if not defined VSINSTALL (
-          echo Visual Studio installation not found
-          exit /b 1
-        )
-        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-        cmake --preset "${{ matrix.cmake_preset }}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-
     - name: Build
       if: runner.os != 'Windows'
       shell: bash
-      run: cmake --build --preset "${{ matrix.cmake_preset }}"
+      run: cmake --build --preset "${{ matrix.cmake_preset }}" --parallel "${{ steps.build_jobs.outputs.count }}"
 
     - name: Build
       if: runner.os == 'Windows'
       shell: cmd
+      env:
+        PDJE_CMAKE_EXTRA_ARGS: "-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
       run: |
-        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
-        if not defined VSINSTALL (
-          echo Visual Studio installation not found
-          exit /b 1
-        )
-        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-        cmake --build --preset "${{ matrix.cmake_preset }}"
+        call .\windows_conf_and_build.bat ${{ matrix.build_type }} ${{ steps.build_jobs.outputs.count }} off
 
     - name: Show ccache stats
       if: always()
@@ -276,7 +271,24 @@ jobs:
         stage_runtime_dependency() {
           local name_pattern="$1"
           stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "$name_pattern"
+          stage_by_name "${{ steps.strings.outputs.build-output-dir }}/_deps/pdje_onnxruntime_prebuilt-src/lib" "$name_pattern"
           stage_by_name ./conan_cmakes/direct_deploy "$name_pattern"
+        }
+
+        require_staged_file() {
+          local file_name="$1"
+          if [ ! -e "./staged_bins/$file_name" ]; then
+            echo "error: expected staged runtime file '$file_name'" >&2
+            exit 1
+          fi
+        }
+
+        require_staged_pattern() {
+          local name_pattern="$1"
+          if ! compgen -G "./staged_bins/$name_pattern" > /dev/null; then
+            echo "error: expected staged runtime file matching '$name_pattern'" >&2
+            exit 1
+          fi
         }
 
         stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "*PDJE*"
@@ -285,12 +297,17 @@ jobs:
         if [ "${{ runner.os }}" = "Windows" ]; then
           stage_package_dependency "*zlib*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "onnxruntime*.dll"
+          require_staged_file "onnxruntime.dll"
+          require_staged_file "onnxruntime_providers_shared.dll"
         elif [ "${{ runner.os }}" = "macOS" ]; then
           stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "libonnxruntime*.dylib"
+          require_staged_pattern "libonnxruntime*.dylib"
         else
           stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "libonnxruntime*.so*"
+          require_staged_pattern "libonnxruntime.so*"
+          require_staged_file "libonnxruntime_providers_shared.so"
         fi
 
         ls -la staged_bins

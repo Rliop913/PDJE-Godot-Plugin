@@ -175,6 +175,17 @@ jobs:
       run: |
         ccache --zero-stats
 
+    - name: Probe build jobs
+      id: build_jobs
+      shell: pwsh
+      run: |
+        $count = [Environment]::ProcessorCount
+        if ($count -lt 1) {
+          $count = 1
+        }
+        "count=$count" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Using $count build jobs"
+
     
     - name: Configure CMake
       if: runner.os != 'Windows'
@@ -185,34 +196,18 @@ jobs:
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
-    - name: Configure CMake
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: |
-        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
-        if not defined VSINSTALL (
-          echo Visual Studio installation not found
-          exit /b 1
-        )
-        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-        cmake --preset "${{ matrix.cmake_preset }}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-
     - name: Build
       if: runner.os != 'Windows'
       shell: bash
-      run: cmake --build --preset "${{ matrix.cmake_preset }}"
+      run: cmake --build --preset "${{ matrix.cmake_preset }}" --parallel "${{ steps.build_jobs.outputs.count }}"
 
     - name: Build
       if: runner.os == 'Windows'
       shell: cmd
+      env:
+        PDJE_CMAKE_EXTRA_ARGS: "-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
       run: |
-        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
-        if not defined VSINSTALL (
-          echo Visual Studio installation not found
-          exit /b 1
-        )
-        call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-        cmake --build --preset "${{ matrix.cmake_preset }}"
+        call .\windows_conf_and_build.bat ${{ matrix.build_type }} ${{ steps.build_jobs.outputs.count }} off
 
     - name: Show ccache stats
       if: always()

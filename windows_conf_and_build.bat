@@ -26,9 +26,9 @@ if /I "%PDJE_CONFIG%"=="Release" (
 call "%PDJE_VCVARS_BAT%" || exit /b 1
 call "%PDJE_ENV_BAT%" || exit /b 1
 if /I "%PDJE_FRESH%"=="on" (
-    cmake --fresh --preset %PDJE_PRESET% || exit /b 1
+    cmake --fresh --preset %PDJE_PRESET% %PDJE_CMAKE_EXTRA_ARGS% || exit /b 1
 ) else if /I "%PDJE_FRESH%"=="off" (
-    cmake --preset %PDJE_PRESET% || exit /b 1
+    cmake --preset %PDJE_PRESET% %PDJE_CMAKE_EXTRA_ARGS% || exit /b 1
 ) else (
     echo Usage: call windows_conf_and_build.bat [Release^|RelWithDebInfo] [jobs] [on^|off]
     exit /b 2
