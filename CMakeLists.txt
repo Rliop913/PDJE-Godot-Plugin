@@ -21,12 +21,10 @@ cmake_policy(SET CMP0091 NEW)
 
 project(PDJE_godot_wrapper VERSION 0.1.0 LANGUAGES C CXX)
 
-
-set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${CMAKE_BUILD_TYPE}")
-
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_ID_LOWER)
-
 string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_LOWER)
+set(PLATFORM_BUILD_PATH  "${PLATFORM_ID_LOWER}-${BUILD_TYPE_LOWER}")
+
 include(ExternalProject)
 include(cmake/godotExternalSetter.cmake)
 
@@ -73,6 +71,9 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_StftResult.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Bindings.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Waveform.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_STFT.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/AI/PDJE_AI.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisDetector.cpp
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/AI/beat_this/PDJE_BeatThisResult.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/keyvalue/PDJE_KeyValueDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/db/nearest/PDJE_VectorTypes.cpp
@@ -96,10 +97,14 @@ set(PDJE_WRAPPER_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/core/Editor
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/AI
+    ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/AI/beat_this
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/input/
     ${CMAKE_SOURCE_DIR}/Wrapper_Includes/judge
     ${CMAKE_SOURCE_DIR}/Project-DJ-Engine/include
     ${CMAKE_SOURCE_DIR}/Project-DJ-Engine/include/util
+    ${CMAKE_SOURCE_DIR}/Project-DJ-Engine/include/util/function/image
+    ${CMAKE_SOURCE_DIR}/Project-DJ-Engine/include/util/function/stft
     # ${PDJE_INCLUDE_CORE}
     # ${PDJE_INCLUDE_GLOBAL}
     # ${PDJE_INCLUDE_INPUT_MAINPROC}
@@ -120,6 +125,9 @@ add_library(PDJE_godot_wrapper SHARED
 ${WrapperSrcs}
 ${UtilBundleSrcs}
 )
+if(COMMAND pdje_copy_onnxruntime_runtime)
+  pdje_copy_onnxruntime_runtime(PDJE_godot_wrapper)
+endif()
 set_target_properties(PDJE_godot_wrapper PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(PDJE_godot_wrapper PROPERTIES VISIBILITY_INLINES_HIDDEN ON)
 if(UNIX AND NOT APPLE)
@@ -167,10 +175,14 @@ CRYPTO_INCLUDE
 godotcppEx
 PDJE_LOG_RUNTIME
 PDJE_UTIL
-PDJE_UTIL_DB
-PDJE_UTIL_IMAGE_WAVEFORM
 # PDJE_UTIL_BUNDLE
 )
+
+foreach(_pdje_optional_util_target PDJE_UTIL_DB PDJE_UTIL_IMAGE_WAVEFORM)
+  if(TARGET ${_pdje_optional_util_target})
+    list(APPEND _pdje_wrapper_link_libs ${_pdje_optional_util_target})
+  endif()
+endforeach()
 
 if(PDJE_DEVELOP_INPUT)
 list(APPEND _pdje_wrapper_link_libs
