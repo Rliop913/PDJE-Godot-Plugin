@@ -21,9 +21,6 @@ PDJE_StftResult::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "imag"),
                  "set_imag",
                  "get_imag");
-    ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "power"),
-                 "set_power",
-                 "get_power");
 }
 
 void

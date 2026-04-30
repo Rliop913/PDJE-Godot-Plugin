@@ -17,7 +17,7 @@ class PDJE_AI : public Node {
 
   public:
     Ref<PDJE_BeatThisDetector>
-    CreateBeatThisDetector(String model_path = "");
+    CreateBeatThisDetector(String model_path);
 
     PDJE_AI();
     ~PDJE_AI();
