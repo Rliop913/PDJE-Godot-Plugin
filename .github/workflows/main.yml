@@ -291,6 +291,19 @@ jobs:
           fi
         }
 
+        materialize_staged_symlink() {
+          local file_name="$1"
+          local staged_path="./staged_bins/$file_name"
+          local materialized_path="${staged_path}.materialized"
+
+          if [ -L "$staged_path" ]; then
+            rm -f "$materialized_path"
+            cp -L -p "$staged_path" "$materialized_path"
+            rm -f "$staged_path"
+            mv "$materialized_path" "$staged_path"
+          fi
+        }
+
         stage_by_name "${{ steps.strings.outputs.build-output-dir }}" "*PDJE*"
         stage_package_dependency "*hwy.*" ./conan_cmakes/direct_deploy/highway
 
@@ -308,6 +321,8 @@ jobs:
           stage_package_dependency "libz.so*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "libonnxruntime*.so*"
           require_staged_pattern "libonnxruntime.so*"
+          require_staged_file "libonnxruntime.so.1"
+          materialize_staged_symlink "libonnxruntime.so.1"
           require_staged_file "libonnxruntime_providers_shared.so"
         fi
 
@@ -371,6 +386,8 @@ jobs:
           path: builds
 
       - run: |
+          set -euo pipefail
+
           tree .
           gh auth setup-git 
           gh repo clone https://github.com/Rliop913/Project_DJ_Godot
@@ -407,7 +424,20 @@ jobs:
           cp builds/ubuntu-latest-RelWithDebInfo-success_builds/* Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           cp "$MACOS_RELWITHDEBINFO_DIR"/* Project_DJ_Godot/addons/Project_DJ_Godot/macos/debug
 
-          find Project_DJ_Godot/addons -type f | grep -E "\.(so|dll|dylib|exe)$" | while read -r file; do
+          for linux_dir in \
+            Project_DJ_Godot/addons/Project_DJ_Godot/linux/release \
+            Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
+          do
+            test -f "$linux_dir/libonnxruntime.so.1"
+            LD_LIBRARY_PATH="$linux_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ldd "$linux_dir/libPDJE_godot_wrapper.so" | tee "$linux_dir/ldd-check.txt"
+            if grep -q "not found" "$linux_dir/ldd-check.txt"; then
+              echo "error: unresolved Linux runtime dependency in $linux_dir" >&2
+              exit 1
+            fi
+            rm -f "$linux_dir/ldd-check.txt"
+          done
+
+          find Project_DJ_Godot/addons -type f | grep -E "(\.so(\..*)?|\.dll|\.dylib|\.exe)$" | while read -r file; do
             echo "found: $file"
             outfile="${file}.7z"
           
