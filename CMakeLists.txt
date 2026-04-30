@@ -44,6 +44,53 @@ set(PDJE_DEVELOP_INPUT ON CACHE BOOL "Turn on input build")
 endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/Project-DJ-Engine)
 
+function(_pdje_append_sibling_runtime_path targetName)
+  if(NOT TARGET "${targetName}")
+    return()
+  endif()
+
+  get_target_property(_pdje_target_type "${targetName}" TYPE)
+  if(NOT _pdje_target_type MATCHES "^(SHARED_LIBRARY|MODULE_LIBRARY)$")
+    return()
+  endif()
+
+  if(APPLE)
+    set(_pdje_runtime_path "@loader_path")
+    set_target_properties("${targetName}" PROPERTIES MACOSX_RPATH ON)
+  elseif(UNIX)
+    set(_pdje_runtime_path "\$ORIGIN")
+    set_target_properties("${targetName}" PROPERTIES BUILD_RPATH_USE_ORIGIN TRUE)
+    target_link_options("${targetName}" PRIVATE "-Wl,--enable-new-dtags")
+  else()
+    return()
+  endif()
+
+  foreach(_pdje_rpath_prop BUILD_RPATH INSTALL_RPATH)
+    get_target_property(_pdje_current_rpath "${targetName}" "${_pdje_rpath_prop}")
+    if(NOT _pdje_current_rpath OR _pdje_current_rpath STREQUAL "_pdje_current_rpath-NOTFOUND")
+      set(_pdje_current_rpath "")
+    endif()
+
+    set(_pdje_new_rpath ${_pdje_current_rpath})
+    if(NOT "${_pdje_runtime_path}" IN_LIST _pdje_new_rpath)
+      list(APPEND _pdje_new_rpath "${_pdje_runtime_path}")
+      set_target_properties("${targetName}" PROPERTIES
+        "${_pdje_rpath_prop}" "${_pdje_new_rpath}"
+      )
+    endif()
+  endforeach()
+endfunction()
+
+foreach(_pdje_runtime_target
+  PDJE_UTIL
+  PDJE_MODULE_INPUT
+  PDJE_MODULE_JUDGE
+  CPDJE_MODULE_INPUT
+  CPDJE_MODULE_JUDGE
+)
+  _pdje_append_sibling_runtime_path("${_pdje_runtime_target}")
+endforeach()
+
 if(WIN32 AND PDJE_DYNAMIC AND TARGET PDJE_MODULE_INPUT_PROCESS)
 # Prevent PDJE_API from resolving to dllimport inside the input subprocess EXE.
 target_compile_definitions(PDJE_MODULE_INPUT_PROCESS PRIVATE PDJE_BUILDING)
