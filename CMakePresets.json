@@ -30,7 +30,8 @@
         "HWY_ENABLE_TESTS": false,
         "CAPNP_BUILD_TESTS": false,
         "PDJE_TEST": false,
-        "PDJE_DEV_TEST": false
+        "PDJE_DEV_TEST": false,
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5"
       }
     },
     {
