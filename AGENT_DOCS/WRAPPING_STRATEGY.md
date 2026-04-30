@@ -123,8 +123,10 @@ This beat/downbeat detection through `PDJE_BeatThisDetector` and
 internal to upstream `PDJE_UTIL::ai`.
 
 `PDJE_BeatThisDetector` owns an upstream
-`PDJE_UTIL::ai::BeatThisDetector`. Empty model paths use the upstream default
-Beat This model, while non-empty Godot paths are converted with `GpathToCPath`.
+`PDJE_UTIL::ai::BeatThisDetector`. Godot callers must provide a non-empty
+`.onnx` model path; wrapper initialization rejects empty, missing, or non-file
+paths before constructing the upstream detector. Accepted Godot paths are
+converted with `GpathToCPath`.
 `DetectPCM()` accepts interleaved `PackedFloat32Array` audio, validates shape and
 sample rate, downmixes to mono, and returns beat/downbeat timestamps in seconds
 as `PackedFloat64Array` fields on `PDJE_BeatThisResult`.

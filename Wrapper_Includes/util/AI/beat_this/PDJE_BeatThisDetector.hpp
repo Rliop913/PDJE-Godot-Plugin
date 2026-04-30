@@ -31,7 +31,7 @@ class PDJE_BeatThisDetector : public RefCounted {
     ~PDJE_BeatThisDetector();
 
     bool
-    Init(String model_path = "");
+    Init(String model_path);
     bool
     IsInitialized() const;
     String

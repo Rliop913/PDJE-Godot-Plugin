@@ -84,8 +84,7 @@ void
 PDJE_BeatThisDetector::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("Init", "model_path"),
-                         &PDJE_BeatThisDetector::Init,
-                         DEFVAL(""));
+                         &PDJE_BeatThisDetector::Init);
     ClassDB::bind_method(D_METHOD("IsInitialized"),
                          &PDJE_BeatThisDetector::IsInitialized);
     ClassDB::bind_method(D_METHOD("GetModelPath"),
@@ -113,11 +112,36 @@ PDJE_BeatThisDetector::Init(String model_path)
 
     try {
         if (model_path.is_empty()) {
-            detector_ = std::make_unique<PDJE_UTIL::ai::BeatThisDetector>();
-        } else {
-            detector_ = std::make_unique<PDJE_UTIL::ai::BeatThisDetector>(
-                GpathToCPath(model_path));
+            print_method_error("PDJE_BeatThisDetector.Init",
+                               "'model_path' must not be empty");
+            return false;
         }
+
+        const std::filesystem::path resolved_model_path =
+            GpathToCPath(model_path);
+        std::error_code fs_error;
+
+        if (!std::filesystem::exists(resolved_model_path, fs_error) ||
+            fs_error) {
+            print_method_error("PDJE_BeatThisDetector.Init",
+                               "model file does not exist");
+            return false;
+        }
+        if (!std::filesystem::is_regular_file(resolved_model_path,
+                                              fs_error) ||
+            fs_error) {
+            print_method_error("PDJE_BeatThisDetector.Init",
+                               "model path is not a regular file");
+            return false;
+        }
+        if (resolved_model_path.extension() != ".onnx") {
+            print_method_error("PDJE_BeatThisDetector.Init",
+                               "model file must have .onnx extension");
+            return false;
+        }
+
+        detector_ = std::make_unique<PDJE_UTIL::ai::BeatThisDetector>(
+            resolved_model_path);
     } catch (const std::exception &ex) {
         print_method_error("PDJE_BeatThisDetector.Init",
                            ExceptionDetail(ex));

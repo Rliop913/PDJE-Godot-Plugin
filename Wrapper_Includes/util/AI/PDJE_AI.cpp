@@ -10,8 +10,7 @@ void
 PDJE_AI::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("CreateBeatThisDetector", "model_path"),
-                         &PDJE_AI::CreateBeatThisDetector,
-                         DEFVAL(""));
+                         &PDJE_AI::CreateBeatThisDetector);
 }
 
 PDJE_AI::PDJE_AI() = default;
