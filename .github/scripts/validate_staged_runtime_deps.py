@@ -14,6 +14,7 @@ from pathlib import Path
 PROJECT_PREFIXES_POSIX = ("libPDJE", "libonnxruntime", "libhwy")
 PROJECT_PREFIXES_WINDOWS = ("onnxruntime", "zlib", "hwy", "libhwy")
 LINUX_NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library:\s*\[([^\]]+)\]")
+LINUX_RPATH_RE = re.compile(r"\((?:RUNPATH|RPATH)\).*Library r(?:un)?path:\s*\[([^\]]*)\]")
 
 
 def fail(message: str) -> None:
@@ -105,6 +106,15 @@ def linux_needed_deps(output: str) -> list[str]:
     return deps
 
 
+def linux_rpaths(output: str) -> list[str]:
+    rpaths: list[str] = []
+    for raw_line in output.splitlines():
+        match = LINUX_RPATH_RE.search(raw_line)
+        if match:
+            rpaths.extend(entry for entry in match.group(1).split(":") if entry)
+    return rpaths
+
+
 def validate_linux(staged_dir: Path) -> list[str]:
     if shutil.which("readelf") is None:
         return ["readelf is required to validate Linux runtime dependencies"]
@@ -131,9 +141,15 @@ def validate_linux(staged_dir: Path) -> list[str]:
         for dep in missing:
             failures.append(f"{target.name} has unresolved dependency {dep}")
         needed_output = run(["readelf", "-d", str(target)])
-        for dep in linux_needed_deps(needed_output):
+        needed_deps = linux_needed_deps(needed_output)
+        rpaths = linux_rpaths(needed_output)
+        for dep in needed_deps:
             if is_project_posix_dep(dep):
                 require_staged(dep, target, names, failures)
+        if any(is_project_posix_dep(dep) for dep in needed_deps) and "$ORIGIN" not in rpaths:
+            failures.append(
+                f"{target.name} references staged runtime libraries, but RUNPATH/RPATH lacks $ORIGIN"
+            )
 
     return failures
 

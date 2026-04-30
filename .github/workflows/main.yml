@@ -429,7 +429,8 @@ jobs:
             Project_DJ_Godot/addons/Project_DJ_Godot/linux/debug
           do
             test -f "$linux_dir/libonnxruntime.so.1"
-            LD_LIBRARY_PATH="$linux_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ldd "$linux_dir/libPDJE_godot_wrapper.so" | tee "$linux_dir/ldd-check.txt"
+            ldd "$linux_dir/libPDJE_godot_wrapper.so" | tee "$linux_dir/ldd-check.txt"
+            ldd "$linux_dir/libPDJE_UTIL.so" | tee -a "$linux_dir/ldd-check.txt"
             if grep -q "not found" "$linux_dir/ldd-check.txt"; then
               echo "error: unresolved Linux runtime dependency in $linux_dir" >&2
               exit 1
