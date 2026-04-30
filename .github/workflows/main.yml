@@ -300,12 +300,11 @@ jobs:
           require_staged_file "onnxruntime.dll"
           require_staged_file "onnxruntime_providers_shared.dll"
         elif [ "${{ runner.os }}" = "macOS" ]; then
-          stage_package_dependency "libz.dylib" ./conan_cmakes/direct_deploy/zlib
-          stage_package_dependency "libz.*.dylib" ./conan_cmakes/direct_deploy/zlib
+          stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "libonnxruntime*.dylib"
           require_staged_pattern "libonnxruntime*.dylib"
         else
-          stage_package_dependency "libz.so*" ./conan_cmakes/direct_deploy/zlib
+          stage_package_dependency "*libz*" ./conan_cmakes/direct_deploy/zlib
           stage_runtime_dependency "libonnxruntime*.so*"
           require_staged_pattern "libonnxruntime.so*"
           require_staged_file "libonnxruntime_providers_shared.so"

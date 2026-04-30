@@ -11,9 +11,8 @@ import sys
 from pathlib import Path
 
 
-PROJECT_PREFIXES_POSIX = ("libPDJE", "libonnxruntime", "libhwy")
+PROJECT_PREFIXES_POSIX = ("libPDJE", "libonnxruntime", "libhwy", "libz")
 PROJECT_PREFIXES_WINDOWS = ("onnxruntime", "zlib", "hwy", "libhwy")
-LINUX_NEEDED_RE = re.compile(r"\(NEEDED\).*Shared library:\s*\[([^\]]+)\]")
 
 
 def fail(message: str) -> None:
@@ -61,19 +60,6 @@ def require_staged(
         failures.append(f"{target.name} references {dep_name}, but it is not in staged_bins")
 
 
-def is_zlib_posix_dep(dep_name: str) -> bool:
-    return (
-        dep_name == "libz.so"
-        or dep_name.startswith("libz.so.")
-        or dep_name == "libz.dylib"
-        or re.fullmatch(r"libz\..*\.dylib", dep_name) is not None
-    )
-
-
-def is_project_posix_dep(dep_name: str) -> bool:
-    return dep_name.startswith(PROJECT_PREFIXES_POSIX) or is_zlib_posix_dep(dep_name)
-
-
 def linux_deps(output: str) -> tuple[list[str], list[str]]:
     deps: list[str] = []
     missing: list[str] = []
@@ -96,19 +82,7 @@ def linux_deps(output: str) -> tuple[list[str], list[str]]:
     return [basename_posix(dep) for dep in deps], [basename_posix(dep) for dep in missing]
 
 
-def linux_needed_deps(output: str) -> list[str]:
-    deps: list[str] = []
-    for raw_line in output.splitlines():
-        match = LINUX_NEEDED_RE.search(raw_line)
-        if match:
-            deps.append(basename_posix(match.group(1)))
-    return deps
-
-
 def validate_linux(staged_dir: Path) -> list[str]:
-    if shutil.which("readelf") is None:
-        return ["readelf is required to validate Linux runtime dependencies"]
-
     names = staged_names(staged_dir)
     targets = sorted(
         entry
@@ -126,13 +100,12 @@ def validate_linux(staged_dir: Path) -> list[str]:
         f"{staged_library_path}:{existing_library_path}" if existing_library_path else staged_library_path
     )
     for target in targets:
-        ldd_output = run(["ldd", str(target)], env=ldd_env)
-        _, missing = linux_deps(ldd_output)
+        output = run(["ldd", str(target)], env=ldd_env)
+        deps, missing = linux_deps(output)
         for dep in missing:
             failures.append(f"{target.name} has unresolved dependency {dep}")
-        needed_output = run(["readelf", "-d", str(target)])
-        for dep in linux_needed_deps(needed_output):
-            if is_project_posix_dep(dep):
+        for dep in deps:
+            if dep.startswith(PROJECT_PREFIXES_POSIX):
                 require_staged(dep, target, names, failures)
 
     return failures
@@ -165,7 +138,7 @@ def validate_macos(staged_dir: Path) -> list[str]:
     for target in targets:
         output = run(["otool", "-L", str(target)])
         for dep in macos_deps(output):
-            if is_project_posix_dep(dep):
+            if dep.startswith(PROJECT_PREFIXES_POSIX):
                 require_staged(dep, target, names, failures)
 
     return failures
