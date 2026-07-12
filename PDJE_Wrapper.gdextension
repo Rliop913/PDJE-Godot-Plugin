@@ -6,6 +6,8 @@ reloadable = false
 
 [libraries]
 windows.debug.x86_64 = "res://build/windows-relwithdebinfo/PDJE_godot_wrapper.dll"
-windows.release.x86_64 = "res://build/windows-relwithdebinfo/PDJE_godot_wrapper.dll"
-linux.debug.x86_64 = "res://build/libPDJE_godot_wrapper.so"
-linux.release.x86_64 = "res://build/libPDJE_godot_wrapper.so"
+windows.release.x86_64 = "res://build/windows-release/PDJE_godot_wrapper.dll"
+linux.debug.x86_64 = "res://build/linux-relwithdebinfo/libPDJE_godot_wrapper.so"
+linux.release.x86_64 = "res://build/linux-release/libPDJE_godot_wrapper.so"
+macos.debug = "res://build/macos-relwithdebinfo/libPDJE_godot_wrapper.dylib"
+macos.release = "res://build/macos-release/libPDJE_godot_wrapper.dylib"

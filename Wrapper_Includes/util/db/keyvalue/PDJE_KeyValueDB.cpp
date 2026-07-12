@@ -3,54 +3,39 @@
 #include "util/common/bridge/LowLevelUtilCommon.hpp"
 #include "util/common/bridge/PublicUtilBridge.hpp"
 #include "util/db/backends/RocksDbBackend.hpp"
+#include "util/db/keyvalue/Database.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 
 #include <cstddef>
 #include <memory>
 #include <span>
+#include <utility>
 
 using namespace godot;
 
 namespace godot::pdje_keyvalue_db_internal {
 
-using NativeKeyValueBackend = PDJE_UTIL::db::backends::RocksDbBackend;
+using NativeKeyValueDatabase = PDJE_UTIL::db::keyvalue::KeyValueDatabase<
+    PDJE_UTIL::db::backends::RocksDbBackend>;
 
 struct State {
-    NativeKeyValueBackend backend;
-    String                path;
-    bool                  is_open = false;
+    NativeKeyValueDatabase database;
+    String                 path;
 };
 
 } // namespace godot::pdje_keyvalue_db_internal
 
 namespace {
 
-using godot::pdje_keyvalue_db_internal::NativeKeyValueBackend;
+using godot::pdje_keyvalue_db_internal::NativeKeyValueDatabase;
 using godot::pdje_keyvalue_db_internal::State;
 using godot::pdje_low_level_util::common::BytesToPackedByteArray;
 using godot::pdje_low_level_util::common::KeysToPackedStringArray;
 using godot::pdje_low_level_util::common::PackedByteArrayToBytes;
-using godot::pdje_low_level_util::common::StatusCodeToGodotCode;
-using godot::pdje_low_level_util::common::StatusMessageToGodot;
+using godot::pdje_public_util::common::call_or_error;
 using godot::pdje_public_util::common::print_method_error;
-
-String
-FormatStatusDetail(const PDJE_UTIL::common::Status &status)
-{
-    const String code    = StatusCodeToGodotCode(status.code);
-    const String message = StatusMessageToGodot(status);
-    if (message.is_empty()) {
-        return code;
-    }
-    return "[" + code + "] " + message;
-}
-
-void
-PrintStatusError(const char *method_name, const PDJE_UTIL::common::Status &status)
-{
-    print_method_error(method_name, FormatStatusDetail(status));
-}
+using godot::pdje_public_util::common::value_or_error;
 
 bool
 ValidatePath(const char *method_name, const String &path)
@@ -66,7 +51,7 @@ ValidatePath(const char *method_name, const String &path)
 bool
 RequireOpen(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state != nullptr && state->is_open) {
+    if (state != nullptr && state->database.is_open) {
         return true;
     }
 
@@ -74,7 +59,7 @@ RequireOpen(const char *method_name, const std::unique_ptr<State> &state)
     return false;
 }
 
-NativeKeyValueBackend::config_type
+NativeKeyValueDatabase::config_type
 MakeConfig(const String &path,
            bool          create_if_missing,
            bool          truncate_if_exists,
@@ -87,20 +72,17 @@ MakeConfig(const String &path,
 void
 ResetState(State &state)
 {
-    state.path    = String();
-    state.is_open = false;
+    state.path = String();
 }
 
 bool
 CloseState(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state == nullptr || !state->is_open) {
+    if (state == nullptr || !state->database.is_open) {
         return true;
     }
 
-    auto closed = state->backend.close();
-    if (!closed.ok()) {
-        PrintStatusError(method_name, closed.status());
+    if (!call_or_error(method_name, [&]() { state->database.close(); })) {
         return false;
     }
 
@@ -153,17 +135,13 @@ PDJE_KeyValueDB::Create(String path, bool truncate_if_exists)
         return false;
     }
 
-    auto created =
-        NativeKeyValueBackend::create(MakeConfig(path,
-                                                 false,
-                                                 truncate_if_exists,
-                                                 false));
-    if (!created.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.Create", created.status());
-        return false;
-    }
-
-    return true;
+    const auto config = MakeConfig(path, false, false, false);
+    return call_or_error("PDJE_KeyValueDB.Create", [&]() {
+        if (truncate_if_exists) {
+            NativeKeyValueDatabase::destroy(config);
+        }
+        NativeKeyValueDatabase::create(config);
+    });
 }
 
 bool
@@ -173,19 +151,16 @@ PDJE_KeyValueDB::Destroy(String path)
         return false;
     }
 
-    if (state_ != nullptr && state_->is_open && state_->path == path &&
+    if (state_ != nullptr && state_->database.is_open &&
+        state_->path == path &&
         !CloseState("PDJE_KeyValueDB.Destroy", state_)) {
         return false;
     }
 
-    auto destroyed =
-        NativeKeyValueBackend::destroy(MakeConfig(path, false, false, false));
-    if (!destroyed.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.Destroy", destroyed.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_KeyValueDB.Destroy", [&]() {
+        NativeKeyValueDatabase::destroy(
+            MakeConfig(path, false, false, false));
+    });
 }
 
 bool
@@ -197,7 +172,7 @@ PDJE_KeyValueDB::Open(String path,
     if (!ValidatePath("PDJE_KeyValueDB.Open", path)) {
         return false;
     }
-    if (state_ != nullptr && state_->is_open) {
+    if (state_ != nullptr && state_->database.is_open) {
         print_method_error("PDJE_KeyValueDB.Open",
                            "KeyValue database is already open");
         return false;
@@ -207,17 +182,18 @@ PDJE_KeyValueDB::Open(String path,
         state_ = std::make_unique<State>();
     }
 
-    auto opened = state_->backend.open(MakeConfig(path,
-                                                  create_if_missing,
-                                                  truncate_if_exists,
-                                                  read_only));
-    if (!opened.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.Open", opened.status());
+    auto opened = value_or_error("PDJE_KeyValueDB.Open", [&]() {
+        return NativeKeyValueDatabase::open(MakeConfig(path,
+                                                       create_if_missing,
+                                                       truncate_if_exists,
+                                                       read_only));
+    });
+    if (!opened.has_value()) {
         return false;
     }
 
-    state_->path    = path;
-    state_->is_open = true;
+    state_->database = std::move(*opened);
+    state_->path     = path;
     return true;
 }
 
@@ -233,7 +209,7 @@ PDJE_KeyValueDB::Close()
 bool
 PDJE_KeyValueDB::IsOpen() const
 {
-    return state_ != nullptr && state_->is_open;
+    return state_ != nullptr && state_->database.is_open;
 }
 
 String
@@ -249,13 +225,10 @@ PDJE_KeyValueDB::Contains(String key)
         return false;
     }
 
-    auto contains = state_->backend.contains(GStrToCStr(key));
-    if (!contains.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.Contains", contains.status());
-        return false;
-    }
-
-    return contains.value();
+    auto contains = value_or_error("PDJE_KeyValueDB.Contains", [&]() {
+        return state_->database.contains(GStrToCStr(key));
+    });
+    return contains.value_or(false);
 }
 
 String
@@ -265,13 +238,10 @@ PDJE_KeyValueDB::GetText(String key)
         return String();
     }
 
-    auto text = state_->backend.get_text(GStrToCStr(key));
-    if (!text.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.GetText", text.status());
-        return String();
-    }
-
-    return CStrToGStr(text.value());
+    auto text = value_or_error("PDJE_KeyValueDB.GetText", [&]() {
+        return state_->database.get_text(GStrToCStr(key));
+    });
+    return text.has_value() ? CStrToGStr(*text) : String();
 }
 
 PackedByteArray
@@ -281,13 +251,11 @@ PDJE_KeyValueDB::GetBytes(String key)
         return PackedByteArray();
     }
 
-    auto bytes = state_->backend.get_bytes(GStrToCStr(key));
-    if (!bytes.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.GetBytes", bytes.status());
-        return PackedByteArray();
-    }
-
-    return BytesToPackedByteArray(bytes.value());
+    auto bytes = value_or_error("PDJE_KeyValueDB.GetBytes", [&]() {
+        return state_->database.get_bytes(GStrToCStr(key));
+    });
+    return bytes.has_value() ? BytesToPackedByteArray(*bytes)
+                             : PackedByteArray();
 }
 
 bool
@@ -298,21 +266,22 @@ PDJE_KeyValueDB::TryGetBytesSilently(String          key,
     out_value = PackedByteArray();
     out_found = false;
 
-    if (state_ == nullptr || !state_->is_open) {
+    if (state_ == nullptr || !state_->database.is_open) {
         return false;
     }
 
-    auto bytes = state_->backend.get_bytes(GStrToCStr(key));
-    if (!bytes.ok()) {
-        if (bytes.status().code == PDJE_UTIL::common::StatusCode::not_found) {
+    try {
+        const auto native_key = GStrToCStr(key);
+        if (!state_->database.contains(native_key)) {
             return true;
         }
+        out_value =
+            BytesToPackedByteArray(state_->database.get_bytes(native_key));
+        out_found = true;
+        return true;
+    } catch (...) {
         return false;
     }
-
-    out_value = BytesToPackedByteArray(bytes.value());
-    out_found = true;
-    return true;
 }
 
 bool
@@ -322,13 +291,9 @@ PDJE_KeyValueDB::PutText(String key, String value)
         return false;
     }
 
-    auto stored = state_->backend.put_text(GStrToCStr(key), GStrToCStr(value));
-    if (!stored.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.PutText", stored.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_KeyValueDB.PutText", [&]() {
+        state_->database.put_text(GStrToCStr(key), GStrToCStr(value));
+    });
 }
 
 bool
@@ -339,15 +304,11 @@ PDJE_KeyValueDB::PutBytes(String key, PackedByteArray value)
     }
 
     const auto bytes = PackedByteArrayToBytes(value);
-    auto stored = state_->backend.put_bytes(
-        GStrToCStr(key),
-        std::span<const std::byte>(bytes.data(), bytes.size()));
-    if (!stored.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.PutBytes", stored.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_KeyValueDB.PutBytes", [&]() {
+        state_->database.put_bytes(
+            GStrToCStr(key),
+            std::span<const std::byte>(bytes.data(), bytes.size()));
+    });
 }
 
 bool
@@ -357,13 +318,9 @@ PDJE_KeyValueDB::Erase(String key)
         return false;
     }
 
-    auto erased = state_->backend.erase(GStrToCStr(key));
-    if (!erased.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.Erase", erased.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_KeyValueDB.Erase", [&]() {
+        state_->database.erase(GStrToCStr(key));
+    });
 }
 
 PackedStringArray
@@ -373,13 +330,11 @@ PDJE_KeyValueDB::ListKeys(String prefix)
         return PackedStringArray();
     }
 
-    auto keys = state_->backend.list_keys(GStrToCStr(prefix));
-    if (!keys.ok()) {
-        PrintStatusError("PDJE_KeyValueDB.ListKeys", keys.status());
-        return PackedStringArray();
-    }
-
-    return KeysToPackedStringArray(keys.value());
+    auto keys = value_or_error("PDJE_KeyValueDB.ListKeys", [&]() {
+        return state_->database.list_keys(GStrToCStr(prefix));
+    });
+    return keys.has_value() ? KeysToPackedStringArray(*keys)
+                            : PackedStringArray();
 }
 
 PDJE_KeyValueDB::PDJE_KeyValueDB() = default;

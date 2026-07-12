@@ -292,6 +292,71 @@ target_include_directories( PDJE_godot_wrapper PRIVATE
 
 target_compile_definitions(PDJE_godot_wrapper PRIVATE SPDLOG_FMT_EXTERNAL)
 
+set(_pdje_wrapper_runtime_targets
+  PDJE
+  PDJE_UTIL
+  PDJE_LOG_RUNTIME
+  PDJE_MODULE_INPUT
+  PDJE_MODULE_JUDGE
+)
+foreach(_pdje_runtime_target IN LISTS _pdje_wrapper_runtime_targets)
+  if(TARGET ${_pdje_runtime_target})
+    get_target_property(_pdje_runtime_target_type
+                        ${_pdje_runtime_target}
+                        TYPE)
+    if(_pdje_runtime_target_type MATCHES "^(SHARED_LIBRARY|MODULE_LIBRARY)$")
+      add_custom_command(
+        TARGET PDJE_godot_wrapper
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:${_pdje_runtime_target}>
+                $<TARGET_FILE_DIR:PDJE_godot_wrapper>
+        VERBATIM
+      )
+    endif()
+  endif()
+endforeach()
+
+if(WIN32)
+  file(GLOB_RECURSE _pdje_conan_runtime_dlls CONFIGURE_DEPENDS
+       "${CMAKE_SOURCE_DIR}/conan_cmakes/direct_deploy/*/bin/*.dll")
+
+  add_custom_command(
+    TARGET PDJE_godot_wrapper
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:PDJE_godot_wrapper>
+            $<TARGET_FILE_DIR:PDJE_godot_wrapper>
+    COMMAND_EXPAND_LISTS
+    VERBATIM
+  )
+
+  if(_pdje_conan_runtime_dlls)
+    add_custom_command(
+      TARGET PDJE_godot_wrapper
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${_pdje_conan_runtime_dlls}
+              $<TARGET_FILE_DIR:PDJE_godot_wrapper>
+      COMMAND_EXPAND_LISTS
+      VERBATIM
+    )
+  endif()
+endif()
+
+set(PDJE_GODOT_EXECUTABLE "" CACHE FILEPATH
+    "Godot executable used for headless GDExtension API tests")
+add_custom_target(
+  pdje_godot_headless_util_test
+  COMMAND ${CMAKE_COMMAND}
+          "-DPDJE_GODOT_EXECUTABLE=${PDJE_GODOT_EXECUTABLE}"
+          "-DPDJE_GODOT_PROJECT_DIR=${CMAKE_SOURCE_DIR}"
+          -P "${CMAKE_SOURCE_DIR}/cmake/RunGodotHeadlessUtilTests.cmake"
+  DEPENDS PDJE_godot_wrapper
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  USES_TERMINAL
+)
+
 
 if(APPLE)
 

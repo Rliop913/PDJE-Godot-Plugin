@@ -12,6 +12,8 @@ project only; upstream engine details stay in `Project-DJ-Engine/AGENT_DOCS/`.
 4. [WRAPPING_STRATEGY.md](WRAPPING_STRATEGY.md) for the current
    code-pattern-based wrapper strategy.
 5. [VERIFY.md](VERIFY.md) before build, Godot load, or runtime checks.
+6. [HEADLESS_TESTS.md](HEADLESS_TESTS.md) for executable GDExtension API
+   coverage.
 
 ## Reference Pages
 
@@ -19,6 +21,8 @@ project only; upstream engine details stay in `Project-DJ-Engine/AGENT_DOCS/`.
 - [WRAPPING_STRATEGY.md](WRAPPING_STRATEGY.md): actual wrapper-side facade,
   handle, data-carrier, DB, MIR, input, and judge patterns.
 - [KNOWN_GAPS.md](KNOWN_GAPS.md): current harness limitations and follow-ups.
+- [HEADLESS_TESTS.md](HEADLESS_TESTS.md): Godot headless test entrypoint,
+  coverage, and failure contract.
 
 ## Main Local Files
 

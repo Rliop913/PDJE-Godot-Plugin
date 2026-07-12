@@ -24,9 +24,8 @@ using namespace godot;
 
 namespace {
 
-using godot::pdje_low_level_util::common::StatusCodeToGodotCode;
-using godot::pdje_low_level_util::common::StatusMessageToGodot;
 using godot::pdje_public_util::common::print_method_error;
+using godot::pdje_public_util::common::value_or_error;
 using godot::pdje_mir_internal::cache_keys::BuildWaveformCacheKey;
 using godot::pdje_mir_internal::cache_keys::BuildWaveformRgbCacheKey;
 using godot::pdje_low_level_util::waveform::WaveformEncodeRequest;
@@ -44,24 +43,6 @@ struct WaveformRenderRequest {
     int                               end_index     = -1;
     std::optional<WaveformStftConfig> stft;
 };
-
-String
-FormatStatusDetail(const PDJE_UTIL::common::Status &status)
-{
-    const String code    = StatusCodeToGodotCode(status.code);
-    const String message = StatusMessageToGodot(status);
-    if (message.is_empty()) {
-        return code;
-    }
-    return "[" + code + "] " + message;
-}
-
-void
-PrintStatusError(const char                      *method_name,
-                 const PDJE_UTIL::common::Status &status)
-{
-    print_method_error(method_name, FormatStatusDetail(status));
-}
 
 String
 BuildRequestCacheKey(const String                &cache_source_key,
@@ -136,7 +117,7 @@ DecodeImageArray(const PackedByteArray &blob, Array &images)
     return true;
 }
 
-PDJE_UTIL::common::Result<Array>
+Array
 EncodeWaveformImages(const std::vector<float>    &pcm,
                      const WaveformRenderRequest &request)
 {
@@ -197,13 +178,15 @@ ExecuteWaveformRequest(PDJE_Wrapper                *core_api,
     }
 
     const auto pcm = core_api->engine->GetPCMFromMusData(mus_searched.front(), 2);
-    auto encoded   = EncodeWaveformImages(pcm, request);
-    if (!encoded.ok()) {
-        PrintStatusError(request.method_name, encoded.status());
+    auto encoded = value_or_error(request.method_name,
+                                  [&]() {
+                                      return EncodeWaveformImages(pcm, request);
+                                  });
+    if (!encoded.has_value()) {
         return out;
     }
 
-    const Array images = encoded.value();
+    const Array images = *encoded;
     if (can_use_cache) {
         const PackedByteArray blob = UtilityFunctions::var_to_bytes(images);
         const std::lock_guard<std::mutex> lock(cache_write_mutex);

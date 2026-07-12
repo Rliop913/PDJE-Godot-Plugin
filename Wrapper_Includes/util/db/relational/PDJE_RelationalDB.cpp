@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <utility>
+#include <variant>
 
 using namespace godot;
 
@@ -22,7 +24,6 @@ using NativeRelationalDatabase = PDJE_UTIL::db::relational::RelationalDatabase<
 struct State {
     NativeRelationalDatabase database;
     String                   path;
-    bool                     is_open = false;
 };
 
 } // namespace godot::pdje_relational_db_internal
@@ -31,28 +32,11 @@ namespace {
 
 using godot::pdje_low_level_util::common::BytesToPackedByteArray;
 using godot::pdje_low_level_util::common::PackedByteArrayToBytes;
-using godot::pdje_low_level_util::common::StatusCodeToGodotCode;
-using godot::pdje_low_level_util::common::StatusMessageToGodot;
+using godot::pdje_public_util::common::call_or_error;
 using godot::pdje_public_util::common::print_method_error;
+using godot::pdje_public_util::common::value_or_error;
 using godot::pdje_relational_db_internal::NativeRelationalDatabase;
 using godot::pdje_relational_db_internal::State;
-
-String
-FormatStatusDetail(const PDJE_UTIL::common::Status &status)
-{
-    const String code    = StatusCodeToGodotCode(status.code);
-    const String message = StatusMessageToGodot(status);
-    if (message.is_empty()) {
-        return code;
-    }
-    return "[" + code + "] " + message;
-}
-
-void
-PrintStatusError(const char *method_name, const PDJE_UTIL::common::Status &status)
-{
-    print_method_error(method_name, FormatStatusDetail(status));
-}
 
 bool
 ValidatePath(const char *method_name, const String &path)
@@ -68,7 +52,7 @@ ValidatePath(const char *method_name, const String &path)
 bool
 RequireOpen(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state != nullptr && state->is_open) {
+    if (state != nullptr && state->database.is_open) {
         return true;
     }
 
@@ -89,20 +73,17 @@ MakeConfig(const String &path,
 void
 ResetState(State &state)
 {
-    state.path    = String();
-    state.is_open = false;
+    state.path = String();
 }
 
 bool
 CloseState(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state == nullptr || !state->is_open) {
+    if (state == nullptr || !state->database.is_open) {
         return true;
     }
 
-    auto closed = state->database.close();
-    if (!closed.ok()) {
-        PrintStatusError(method_name, closed.status());
+    if (!call_or_error(method_name, [&]() { state->database.close(); })) {
         return false;
     }
 
@@ -113,21 +94,21 @@ CloseState(const char *method_name, const std::unique_ptr<State> &state)
 Variant
 MakeGodotValue(const PDJE_UTIL::db::relational::Value &value)
 {
-    switch (value.kind()) {
-    case PDJE_UTIL::db::relational::ValueKind::null_value:
+    if (std::holds_alternative<std::monostate>(value.storage)) {
         return Variant();
-    case PDJE_UTIL::db::relational::ValueKind::integer:
-        return Variant(
-            static_cast<int64_t>(std::get<std::int64_t>(value.storage)));
-    case PDJE_UTIL::db::relational::ValueKind::real:
-        return Variant(std::get<double>(value.storage));
-    case PDJE_UTIL::db::relational::ValueKind::text:
-        return Variant(CStrToGStr(std::get<PDJE_UTIL::db::Text>(value.storage)));
-    case PDJE_UTIL::db::relational::ValueKind::bytes:
-        return Variant(BytesToPackedByteArray(
-            std::get<PDJE_UTIL::db::Bytes>(value.storage)));
     }
-
+    if (const auto *integer = std::get_if<std::int64_t>(&value.storage)) {
+        return Variant(static_cast<int64_t>(*integer));
+    }
+    if (const auto *real = std::get_if<double>(&value.storage)) {
+        return Variant(*real);
+    }
+    if (const auto *text = std::get_if<PDJE_UTIL::db::Text>(&value.storage)) {
+        return Variant(CStrToGStr(*text));
+    }
+    if (const auto *bytes = std::get_if<PDJE_UTIL::db::Bytes>(&value.storage)) {
+        return Variant(BytesToPackedByteArray(*bytes));
+    }
     return Variant();
 }
 
@@ -249,14 +230,13 @@ PDJE_RelationalDB::Create(String path, bool truncate_if_exists)
         return false;
     }
 
-    auto created = PDJE_UTIL::db::backends::SqliteBackend::create(
-        MakeConfig(path, false, truncate_if_exists, false));
-    if (!created.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Create", created.status());
-        return false;
-    }
-
-    return true;
+    const auto config = MakeConfig(path, false, false, false);
+    return call_or_error("PDJE_RelationalDB.Create", [&]() {
+        if (truncate_if_exists) {
+            NativeRelationalDatabase::destroy(config);
+        }
+        NativeRelationalDatabase::create(config);
+    });
 }
 
 bool
@@ -266,19 +246,16 @@ PDJE_RelationalDB::Destroy(String path)
         return false;
     }
 
-    if (state_ != nullptr && state_->is_open && state_->path == path &&
+    if (state_ != nullptr && state_->database.is_open &&
+        state_->path == path &&
         !CloseState("PDJE_RelationalDB.Destroy", state_)) {
         return false;
     }
 
-    auto destroyed = PDJE_UTIL::db::backends::SqliteBackend::destroy(
-        MakeConfig(path, false, false, false));
-    if (!destroyed.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Destroy", destroyed.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_RelationalDB.Destroy", [&]() {
+        NativeRelationalDatabase::destroy(
+            MakeConfig(path, false, false, false));
+    });
 }
 
 bool
@@ -290,7 +267,7 @@ PDJE_RelationalDB::Open(String path,
     if (!ValidatePath("PDJE_RelationalDB.Open", path)) {
         return false;
     }
-    if (state_ != nullptr && state_->is_open) {
+    if (state_ != nullptr && state_->database.is_open) {
         print_method_error("PDJE_RelationalDB.Open",
                            "Relational database is already open");
         return false;
@@ -300,18 +277,18 @@ PDJE_RelationalDB::Open(String path,
         state_ = std::make_unique<State>();
     }
 
-    auto opened = NativeRelationalDatabase::open(MakeConfig(path,
-                                                            create_if_missing,
-                                                            truncate_if_exists,
-                                                            read_only));
-    if (!opened.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Open", opened.status());
+    auto opened = value_or_error("PDJE_RelationalDB.Open", [&]() {
+        return NativeRelationalDatabase::open(MakeConfig(path,
+                                                         create_if_missing,
+                                                         truncate_if_exists,
+                                                         read_only));
+    });
+    if (!opened.has_value()) {
         return false;
     }
 
-    state_->database = std::move(opened.value());
+    state_->database = std::move(*opened);
     state_->path     = path;
-    state_->is_open  = true;
     return true;
 }
 
@@ -327,7 +304,7 @@ PDJE_RelationalDB::Close()
 bool
 PDJE_RelationalDB::IsOpen() const
 {
-    return state_ != nullptr && state_->is_open;
+    return state_ != nullptr && state_->database.is_open;
 }
 
 String
@@ -348,13 +325,11 @@ PDJE_RelationalDB::Execute(String sql, Array params)
         return Ref<PDJE_RelationalExecResult>();
     }
 
-    auto executed = state_->database.execute(GStrToCStr(sql), native_params);
-    if (!executed.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Execute", executed.status());
-        return Ref<PDJE_RelationalExecResult>();
-    }
-
-    return MakeExecResultRef(executed.value());
+    auto executed = value_or_error("PDJE_RelationalDB.Execute", [&]() {
+        return state_->database.execute(GStrToCStr(sql), native_params);
+    });
+    return executed.has_value() ? MakeExecResultRef(*executed)
+                                : Ref<PDJE_RelationalExecResult>();
 }
 
 Array
@@ -369,14 +344,15 @@ PDJE_RelationalDB::Query(String sql, Array params)
         return Array();
     }
 
-    auto queried = state_->database.query(GStrToCStr(sql), native_params);
-    if (!queried.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Query", queried.status());
+    auto queried = value_or_error("PDJE_RelationalDB.Query", [&]() {
+        return state_->database.query(GStrToCStr(sql), native_params);
+    });
+    if (!queried.has_value()) {
         return Array();
     }
 
     Array rows;
-    for (const auto &row : queried.value().rows) {
+    for (const auto &row : queried->rows) {
         rows.append(MakeRowRef(row));
     }
     return rows;
@@ -389,13 +365,8 @@ PDJE_RelationalDB::BeginTransaction()
         return false;
     }
 
-    auto begun = state_->database.begin_transaction();
-    if (!begun.ok()) {
-        PrintStatusError("PDJE_RelationalDB.BeginTransaction", begun.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_RelationalDB.BeginTransaction",
+                         [&]() { state_->database.begin_transaction(); });
 }
 
 bool
@@ -405,13 +376,8 @@ PDJE_RelationalDB::Commit()
         return false;
     }
 
-    auto committed = state_->database.commit();
-    if (!committed.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Commit", committed.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_RelationalDB.Commit",
+                         [&]() { state_->database.commit(); });
 }
 
 bool
@@ -421,13 +387,8 @@ PDJE_RelationalDB::Rollback()
         return false;
     }
 
-    auto rolled_back = state_->database.rollback();
-    if (!rolled_back.ok()) {
-        PrintStatusError("PDJE_RelationalDB.Rollback", rolled_back.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_RelationalDB.Rollback",
+                         [&]() { state_->database.rollback(); });
 }
 
 PDJE_RelationalDB::PDJE_RelationalDB() = default;

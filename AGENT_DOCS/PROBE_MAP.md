@@ -74,7 +74,7 @@ Boundary conversions and errors:
 - [../Wrapper_Includes/global/pdje_util_common.hpp](../Wrapper_Includes/global/pdje_util_common.hpp)
 - [../Wrapper_Includes/util/common/bridge/LowLevelUtilCommon.hpp](../Wrapper_Includes/util/common/bridge/LowLevelUtilCommon.hpp)
 - [../Wrapper_Includes/util/common/bridge/PublicUtilBridge.hpp](../Wrapper_Includes/util/common/bridge/PublicUtilBridge.hpp)
-- Search: `rg "GStrToCStr|CStrToGStr|GpathToCPath|print_method_error|StatusCodeToGodotCode" Wrapper_Includes`
+- Search: `rg "GStrToCStr|CStrToGStr|GpathToCPath|print_method_error|call_or_error|value_or_error" Wrapper_Includes`
 
 ## Data Lines
 
@@ -145,6 +145,19 @@ Search:
 - `rg "PDJE_Input_Module|PDJE_Judge_Module|PDJE_GODOT_ENABLE_INPUT_WRAPPER"`
 - `rg "PDJE_DEVELOP_INPUT|PDJE_INPUT_LINK_LIB|PDJE_MODULE_INPUT"`
 - `rg "InitializeInputLine|emit_input_signal|AddDataLines|SetCustomEvents|call_deferred" Wrapper_Includes/input Wrapper_Includes/judge Wrapper_Includes/global/DataLine`
+
+## Headless Godot Tests
+
+Read first:
+
+- [HEADLESS_TESTS.md](HEADLESS_TESTS.md)
+- [../tests/headless/util_api_test.gd](../tests/headless/util_api_test.gd)
+- [../cmake/RunGodotHeadlessUtilTests.cmake](../cmake/RunGodotHeadlessUtilTests.cmake)
+
+Search:
+
+- `rg "pdje_godot_headless_util_test|PDJE_GODOT_EXECUTABLE"`
+- `rg "_test_|PDJE_GODOT_HEADLESS_TESTS" tests/headless`
 
 ## Upstream Behavior
 
