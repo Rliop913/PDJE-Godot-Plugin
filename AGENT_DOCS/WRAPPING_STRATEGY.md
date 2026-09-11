@@ -84,7 +84,7 @@ and MIDI logs into Godot signals through `emit_input_signal()`.
 
 `PDJE_KeyValueDB`, `PDJE_VectorDB`, and `PDJE_RelationalDB` are independent
 utility facades. They do not require `PDJE_Wrapper`; each owns a wrapper-side
-`State` object and a native backend:
+`State` object and one of the upstream generic database wrappers:
 
 - `PDJE_KeyValueDB` wraps the RocksDB backend and exposes text/bytes/key
   operations.
@@ -93,10 +93,12 @@ utility facades. They do not require `PDJE_Wrapper`; each owns a wrapper-side
 - `PDJE_RelationalDB` wraps the SQLite relational database and exposes execute,
   query, and transaction methods.
 
-Keep backend config, open/close state, status conversion, and native value
-conversion inside the wrapper implementation. The Godot API should continue to
-return `bool`, `String`, `Packed*Array`, `Array`, or `RefCounted` result
-objects.
+Keep backend config, open/close state, exception conversion, and native value
+conversion inside the wrapper implementation. Upstream Util DB operations
+return values directly and report failures with standard exceptions. Those
+exceptions must be caught before crossing the GDExtension boundary. The Godot
+API should continue to return `bool`, `String`, `Packed*Array`, `Array`, or
+`RefCounted` result objects.
 
 ## MIR Facade
 
@@ -184,19 +186,19 @@ Use the existing boundary helpers before adding new conversion code:
   [../Wrapper_Includes/global/pdje_util_common.hpp](../Wrapper_Includes/global/pdje_util_common.hpp)
   for strings and project paths.
 - [../Wrapper_Includes/util/common/bridge/LowLevelUtilCommon.hpp](../Wrapper_Includes/util/common/bridge/LowLevelUtilCommon.hpp)
-  for low-level status, byte array, key array, and numeric `Variant`
-  conversions.
+  for byte array, key array, and numeric `Variant` conversions.
 - [../Wrapper_Includes/util/common/bridge/PublicUtilBridge.hpp](../Wrapper_Includes/util/common/bridge/PublicUtilBridge.hpp)
-  for public wrapper helpers such as method error reporting, packed array
-  parsing, cache DB checks, and cache source keys.
+  for public wrapper helpers such as method error reporting, native exception
+  capture, packed array parsing, cache DB checks, and cache source keys.
 
 For binary, vector, SQL, and cache values, prefer these helpers over ad hoc
 string or byte manipulation.
 
 ## Failure And Callback Conventions
 
-The current wrapper does not expose C++ exceptions to Godot. It reports failure
-with the narrowest Godot-facing fallback for the method:
+The current wrapper does not expose C++ exceptions to Godot. Use
+`call_or_error` or `value_or_error` around exception-based upstream Util calls,
+then report failure with the narrowest Godot-facing fallback for the method:
 
 - `false` for boolean operations.
 - Empty `Array`, `Dictionary`, `Packed*Array`, or `String` values for value

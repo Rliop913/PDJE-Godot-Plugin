@@ -45,8 +45,21 @@ To verify Godot integration, confirm that:
 - The entry symbol remains `pdje_wrapper_init`.
 - Godot can open [../project.godot](../project.godot) and load the extension.
 
-Launching Godot is an interactive/runtime check. Ask the user before starting a
-GUI process or making editor-generated changes.
+The repeatable runtime route is the headless API target documented in
+[HEADLESS_TESTS.md](HEADLESS_TESTS.md). It loads the built extension and calls
+the registered Util APIs from GDScript. Use manual GUI scenes only for behavior
+that requires interactive rendering or input.
+
+Typical host flow after configuring `PDJE_GODOT_EXECUTABLE`:
+
+```sh
+cmake --build --preset <host>-relwithdebinfo \
+  --target pdje_godot_headless_util_test
+```
+
+The target depends on `PDJE_godot_wrapper`, so it rebuilds the extension before
+launching Godot headless. A zero exit status and
+`PDJE_GODOT_HEADLESS_TESTS_PASSED` are both required.
 
 ## Input/Judge Availability
 

@@ -3,8 +3,6 @@
 // #include "util/PDJE_Util.hpp"
 #include "pdje_util_common.hpp"
 
-#include "util/common/Status.hpp"
-#include "util/common/StatusCode.hpp"
 #include "util/db/DbTypes.hpp"
 
 #include <cmath>
@@ -19,47 +17,6 @@
 #include <godot_cpp/variant/variant.hpp>
 
 namespace godot::pdje_low_level_util::common {
-
-inline String
-StatusCodeToGodotCode(PDJE_UTIL::common::StatusCode code)
-{
-    using PDJE_UTIL::common::StatusCode;
-
-    switch (code) {
-    case StatusCode::ok:
-        return "OK";
-    case StatusCode::invalid_argument:
-        return "INVALID_ARGUMENT";
-    case StatusCode::not_found:
-        return "NOT_FOUND";
-    case StatusCode::type_mismatch:
-        return "TYPE_MISMATCH";
-    case StatusCode::unsupported:
-        return "UNSUPPORTED";
-    case StatusCode::io_error:
-        return "IO_ERROR";
-    case StatusCode::closed:
-        return "CLOSED";
-    case StatusCode::backend_error:
-        return "BACKEND_ERROR";
-    case StatusCode::out_of_range:
-        return "OUT_OF_RANGE";
-    case StatusCode::internal_error:
-        return "INTERNAL_ERROR";
-    }
-
-    return "INTERNAL_ERROR";
-}
-
-inline String
-StatusMessageToGodot(const PDJE_UTIL::common::Status &status)
-{
-    if (status.message.empty()) {
-        return String();
-    }
-
-    return CStrToGStr(status.message);
-}
 
 inline bool
 DictionaryBoolAt(const Dictionary &dict, const char *key, bool default_value)

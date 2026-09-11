@@ -12,6 +12,11 @@
 #include <godot_cpp/variant/variant.hpp>
 
 #include <cstdint>
+#include <exception>
+#include <functional>
+#include <optional>
+#include <type_traits>
+#include <utility>
 
 namespace godot::pdje_public_util::common {
 
@@ -19,6 +24,42 @@ inline void
 print_method_error(const char *method_name, const String &detail)
 {
     print_error(String(method_name) + " failed: " + detail);
+}
+
+inline String
+exception_detail(const std::exception &exception)
+{
+    return CStrToGStr(exception.what());
+}
+
+template <typename Callable>
+bool
+call_or_error(const char *method_name, Callable &&callable) noexcept
+{
+    try {
+        std::invoke(std::forward<Callable>(callable));
+        return true;
+    } catch (const std::exception &exception) {
+        print_method_error(method_name, exception_detail(exception));
+    } catch (...) {
+        print_method_error(method_name, "unknown native Util error");
+    }
+    return false;
+}
+
+template <typename Callable>
+auto
+value_or_error(const char *method_name, Callable &&callable) noexcept
+    -> std::optional<std::invoke_result_t<Callable>>
+{
+    try {
+        return std::invoke(std::forward<Callable>(callable));
+    } catch (const std::exception &exception) {
+        print_method_error(method_name, exception_detail(exception));
+    } catch (...) {
+        print_method_error(method_name, "unknown native Util error");
+    }
+    return std::nullopt;
 }
 
 inline bool

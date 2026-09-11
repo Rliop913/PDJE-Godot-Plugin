@@ -1,7 +1,6 @@
 #pragma once
 
 #include "STFT_Parallel.hpp"
-#include "util/common/Result.hpp"
 #include <godot_cpp/variant/array.hpp>
 #include <optional>
 #include <span>
@@ -28,7 +27,7 @@ struct WaveformEncodeRequest {
     std::optional<WaveformStftConfig> stft;
 };
 
-PDJE_UTIL::common::Result<Array>
+Array
 EncodeWaveformWebps(const WaveformEncodeRequest &request);
 
 }

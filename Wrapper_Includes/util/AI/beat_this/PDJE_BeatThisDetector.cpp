@@ -168,7 +168,7 @@ PDJE_BeatThisDetector::GetModelPath() const
         return {};
     }
 
-    return CStrToGStr(detector_->model_path().string());
+    return CStrToGStr(detector_->model_path.string());
 }
 
 Ref<PDJE_BeatThisResult>

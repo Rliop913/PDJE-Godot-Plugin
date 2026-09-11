@@ -12,6 +12,7 @@
 #include <cstring>
 #include <memory>
 #include <span>
+#include <utility>
 #include <vector>
 
 using namespace godot;
@@ -25,7 +26,6 @@ struct State {
     NativeNearestIndex index;
     String             root_path;
     int64_t            dimension = 0;
-    bool               is_open   = false;
 };
 
 } // namespace godot::pdje_vector_db_internal
@@ -35,28 +35,11 @@ namespace {
 using godot::pdje_low_level_util::common::BytesToPackedByteArray;
 using godot::pdje_low_level_util::common::KeysToPackedStringArray;
 using godot::pdje_low_level_util::common::PackedByteArrayToBytes;
-using godot::pdje_low_level_util::common::StatusCodeToGodotCode;
-using godot::pdje_low_level_util::common::StatusMessageToGodot;
+using godot::pdje_public_util::common::call_or_error;
 using godot::pdje_public_util::common::print_method_error;
+using godot::pdje_public_util::common::value_or_error;
 using godot::pdje_vector_db_internal::NativeNearestIndex;
 using godot::pdje_vector_db_internal::State;
-
-String
-FormatStatusDetail(const PDJE_UTIL::common::Status &status)
-{
-    const String code    = StatusCodeToGodotCode(status.code);
-    const String message = StatusMessageToGodot(status);
-    if (message.is_empty()) {
-        return code;
-    }
-    return "[" + code + "] " + message;
-}
-
-void
-PrintStatusError(const char *method_name, const PDJE_UTIL::common::Status &status)
-{
-    print_method_error(method_name, FormatStatusDetail(status));
-}
 
 bool
 ValidateConfig(const char *method_name,
@@ -82,7 +65,7 @@ ValidateConfig(const char *method_name,
 bool
 RequireOpen(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state != nullptr && state->is_open) {
+    if (state != nullptr && state->index.is_open) {
         return true;
     }
 
@@ -111,19 +94,16 @@ ResetState(State &state)
 {
     state.root_path = String();
     state.dimension = 0;
-    state.is_open   = false;
 }
 
 bool
 CloseState(const char *method_name, const std::unique_ptr<State> &state)
 {
-    if (state == nullptr || !state->is_open) {
+    if (state == nullptr || !state->index.is_open) {
         return true;
     }
 
-    auto closed = state->index.close();
-    if (!closed.ok()) {
-        PrintStatusError(method_name, closed.status());
+    if (!call_or_error(method_name, [&]() { state->index.close(); })) {
         return false;
     }
 
@@ -273,19 +253,14 @@ PDJE_VectorDB::Create(String root_path,
         return false;
     }
 
-    auto created = NativeNearestIndex::create(MakeConfig(root_path,
-                                                         dimension,
-                                                         trees,
-                                                         prefault,
-                                                         false,
-                                                         truncate_if_exists,
-                                                         false));
-    if (!created.ok()) {
-        PrintStatusError("PDJE_VectorDB.Create", created.status());
-        return false;
-    }
-
-    return true;
+    const auto config = MakeConfig(
+        root_path, dimension, trees, prefault, false, false, false);
+    return call_or_error("PDJE_VectorDB.Create", [&]() {
+        if (truncate_if_exists) {
+            NativeNearestIndex::destroy(config);
+        }
+        NativeNearestIndex::create(config);
+    });
 }
 
 bool
@@ -295,24 +270,21 @@ PDJE_VectorDB::Destroy(String root_path, int dimension, int trees, bool prefault
         return false;
     }
 
-    if (state_ != nullptr && state_->is_open && state_->root_path == root_path &&
+    if (state_ != nullptr && state_->index.is_open &&
+        state_->root_path == root_path &&
         !CloseState("PDJE_VectorDB.Destroy", state_)) {
         return false;
     }
 
-    auto destroyed = NativeNearestIndex::destroy(MakeConfig(root_path,
-                                                            dimension,
-                                                            trees,
-                                                            prefault,
-                                                            false,
-                                                            false,
-                                                            false));
-    if (!destroyed.ok()) {
-        PrintStatusError("PDJE_VectorDB.Destroy", destroyed.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_VectorDB.Destroy", [&]() {
+        NativeNearestIndex::destroy(MakeConfig(root_path,
+                                               dimension,
+                                               trees,
+                                               prefault,
+                                               false,
+                                               false,
+                                               false));
+    });
 }
 
 bool
@@ -327,7 +299,7 @@ PDJE_VectorDB::Open(String root_path,
     if (!ValidateConfig("PDJE_VectorDB.Open", root_path, dimension, trees)) {
         return false;
     }
-    if (state_ != nullptr && state_->is_open) {
+    if (state_ != nullptr && state_->index.is_open) {
         print_method_error("PDJE_VectorDB.Open",
                            "Vector database is already open");
         return false;
@@ -337,22 +309,22 @@ PDJE_VectorDB::Open(String root_path,
         state_ = std::make_unique<State>();
     }
 
-    auto opened = NativeNearestIndex::open(MakeConfig(root_path,
-                                                      dimension,
-                                                      trees,
-                                                      prefault,
-                                                      create_if_missing,
-                                                      truncate_if_exists,
-                                                      read_only));
-    if (!opened.ok()) {
-        PrintStatusError("PDJE_VectorDB.Open", opened.status());
+    auto opened = value_or_error("PDJE_VectorDB.Open", [&]() {
+        return NativeNearestIndex::open(MakeConfig(root_path,
+                                                   dimension,
+                                                   trees,
+                                                   prefault,
+                                                   create_if_missing,
+                                                   truncate_if_exists,
+                                                   read_only));
+    });
+    if (!opened.has_value()) {
         return false;
     }
 
-    state_->index     = std::move(opened.value());
+    state_->index     = std::move(*opened);
     state_->root_path = root_path;
     state_->dimension = dimension;
-    state_->is_open   = true;
     return true;
 }
 
@@ -368,7 +340,7 @@ PDJE_VectorDB::Close()
 bool
 PDJE_VectorDB::IsOpen() const
 {
-    return state_ != nullptr && state_->is_open;
+    return state_ != nullptr && state_->index.is_open;
 }
 
 String
@@ -390,13 +362,10 @@ PDJE_VectorDB::Contains(String id)
         return false;
     }
 
-    auto contains = state_->index.contains(GStrToCStr(id));
-    if (!contains.ok()) {
-        PrintStatusError("PDJE_VectorDB.Contains", contains.status());
-        return false;
-    }
-
-    return contains.value();
+    auto contains = value_or_error("PDJE_VectorDB.Contains", [&]() {
+        return state_->index.contains(GStrToCStr(id));
+    });
+    return contains.value_or(false);
 }
 
 Ref<PDJE_VectorItem>
@@ -406,13 +375,11 @@ PDJE_VectorDB::GetItem(String id)
         return Ref<PDJE_VectorItem>();
     }
 
-    auto item = state_->index.get_item(GStrToCStr(id));
-    if (!item.ok()) {
-        PrintStatusError("PDJE_VectorDB.GetItem", item.status());
-        return Ref<PDJE_VectorItem>();
-    }
-
-    return MakeVectorItemRef(item.value());
+    auto item = value_or_error("PDJE_VectorDB.GetItem", [&]() {
+        return state_->index.get_item(GStrToCStr(id));
+    });
+    return item.has_value() ? MakeVectorItemRef(*item)
+                            : Ref<PDJE_VectorItem>();
 }
 
 bool
@@ -431,13 +398,9 @@ PDJE_VectorDB::UpsertItem(Ref<PDJE_VectorItem> item)
         return false;
     }
 
-    auto upserted = state_->index.upsert_item(MakeNearestItem(item));
-    if (!upserted.ok()) {
-        PrintStatusError("PDJE_VectorDB.UpsertItem", upserted.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_VectorDB.UpsertItem", [&]() {
+        state_->index.upsert_item(MakeNearestItem(item));
+    });
 }
 
 bool
@@ -447,13 +410,9 @@ PDJE_VectorDB::EraseItem(String id)
         return false;
     }
 
-    auto erased = state_->index.erase_item(GStrToCStr(id));
-    if (!erased.ok()) {
-        PrintStatusError("PDJE_VectorDB.EraseItem", erased.status());
-        return false;
-    }
-
-    return true;
+    return call_or_error("PDJE_VectorDB.EraseItem", [&]() {
+        state_->index.erase_item(GStrToCStr(id));
+    });
 }
 
 Array
@@ -474,16 +433,17 @@ PDJE_VectorDB::Search(PackedFloat32Array query_embedding, int limit, int search_
     }
 
     const auto query_values = ToFloatVector(query_embedding);
-    auto hits = state_->index.search(
-        std::span<const float>(query_values.data(), query_values.size()),
-        { static_cast<std::size_t>(limit), search_k });
-    if (!hits.ok()) {
-        PrintStatusError("PDJE_VectorDB.Search", hits.status());
+    auto hits = value_or_error("PDJE_VectorDB.Search", [&]() {
+        return state_->index.search(
+            std::span<const float>(query_values.data(), query_values.size()),
+            { static_cast<std::size_t>(limit), search_k });
+    });
+    if (!hits.has_value()) {
         return Array();
     }
 
     Array out;
-    for (const auto &hit : hits.value()) {
+    for (const auto &hit : *hits) {
         out.append(MakeVectorHitRef(hit));
     }
     return out;
@@ -496,13 +456,10 @@ PDJE_VectorDB::ListKeys()
         return PackedStringArray();
     }
 
-    auto keys = state_->index.list_keys();
-    if (!keys.ok()) {
-        PrintStatusError("PDJE_VectorDB.ListKeys", keys.status());
-        return PackedStringArray();
-    }
-
-    return KeysToPackedStringArray(keys.value());
+    auto keys = value_or_error("PDJE_VectorDB.ListKeys",
+                               [&]() { return state_->index.list_keys(); });
+    return keys.has_value() ? KeysToPackedStringArray(*keys)
+                            : PackedStringArray();
 }
 
 PDJE_VectorDB::PDJE_VectorDB() = default;

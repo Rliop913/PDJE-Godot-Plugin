@@ -29,6 +29,9 @@ namespace {
 
 using godot::pdje_mir_internal::cache_keys::BuildStftMusicCacheKey;
 using godot::pdje_public_util::common::print_method_error;
+using godot::pdje_public_util::common::value_or_error;
+
+constexpr int kPdjeDecodedSampleRate = 48000;
 
 PackedFloat32Array
 ToPackedFloat32Array(const std::vector<float> &values)
@@ -85,6 +88,70 @@ SplitChannel(const std::vector<float> &arr, const int ch)
     return output;
 }
 
+bool
+ValidateStftGeometry(const char *method_name,
+                     int         target_window,
+                     int         window_size_exp,
+                     float       overlap_ratio)
+{
+    if (target_window < static_cast<int>(PDJE_PARALLEL::WINDOW_LIST::BLACKMAN) ||
+        target_window > static_cast<int>(PDJE_PARALLEL::WINDOW_LIST::NONE)) {
+        print_method_error(method_name, "invalid target_window");
+        return false;
+    }
+    if (window_size_exp < 6 || window_size_exp >= 31) {
+        print_method_error(method_name,
+                           "'window_size_exp' must be in the range [6, 31)");
+        return false;
+    }
+    if (!std::isfinite(overlap_ratio) || overlap_ratio < 0.0f ||
+        overlap_ratio >= 1.0f) {
+        print_method_error(method_name,
+                           "'overlap_ratio' must be in the range [0.0, 1.0)");
+        return false;
+    }
+    return true;
+}
+
+PDJE_PARALLEL::STFTRequest
+BuildStftRequest(int                         target_window,
+                 int                         window_size_exp,
+                 float                       overlap_ratio,
+                 PDJE_PARALLEL::POST_PROCESS post_process)
+{
+    post_process.check_values();
+    const int n_fft = static_cast<int>(1u << window_size_exp);
+    const auto hop_length = std::max(
+        1u,
+        static_cast<unsigned int>(
+            static_cast<float>(n_fft) * (1.0f - overlap_ratio)));
+
+    std::optional<PDJE_PARALLEL::MelFilterBankSpec> mel_filter_bank;
+    if (post_process.mel_scale) {
+        mel_filter_bank = PDJE_PARALLEL::MelFilterBankSpec{
+            .sample_rate = kPdjeDecodedSampleRate,
+            .n_fft       = n_fft,
+            .n_mels      = 80,
+            .f_min       = 0.0f,
+            .f_max       = -1.0f,
+            .mel_formula = PDJE_PARALLEL::MelFormula::Slaney,
+            .norm        = PDJE_PARALLEL::MelNorm::Slaney,
+        };
+    }
+
+    return {
+        .sample_rate     = kPdjeDecodedSampleRate,
+        .n_fft           = n_fft,
+        .hop_length      = hop_length,
+        .target_window =
+            static_cast<PDJE_PARALLEL::WINDOW_LIST>(target_window),
+        .post_process    = post_process,
+        .frame_policy    = PDJE_PARALLEL::FRAME_POLICY::LEGACY_ZERO_PAD,
+        .mel_filter_bank = mel_filter_bank,
+        .dc_remove       = true,
+    };
+}
+
 } // namespace
 
 PDJE_MIR::PDJE_MIR() = default;
@@ -114,16 +181,19 @@ PDJE_MIR::STFT_MUSIC(PDJE_Wrapper    *core_api,
         return {};
     }
     bool can_use_cache = pdje_public_util::common::CheckDB(cache_db);
-    if (window_size_exp < 6 || window_size_exp >= 31) {
-        print_method_error("PDJE_MIR.STFT_PCM_DATA",
-                           "'window_size_exp' must be in the range [6, 31)");
+    if (std::isfinite(overlap_ratio)) {
+        overlap_ratio = std::clamp(overlap_ratio, 0.0f, 1.0f);
+        if (overlap_ratio == 1.0f) {
+            overlap_ratio -= 0.1f;
+        }
+        overlap_ratio = std::trunc(overlap_ratio * 100.0f) / 100.0f;
+    }
+    if (!ValidateStftGeometry("PDJE_MIR.STFT_MUSIC",
+                              target_window,
+                              window_size_exp,
+                              overlap_ratio)) {
         return {};
     }
-    overlap_ratio = std::clamp(overlap_ratio, 0.0f, 1.0f);
-    if (overlap_ratio == 1.0f) {
-        overlap_ratio -= 0.1f;
-    }
-    overlap_ratio = std::trunc(overlap_ratio * 100.0f) / 100.0f;
     if (!stft_ptr) {
         stft_ptr = std::make_unique<PDJE_PARALLEL::STFT>();
     }
@@ -160,12 +230,18 @@ PDJE_MIR::STFT_MUSIC(PDJE_Wrapper    *core_api,
                                               .to_db             = true,
                                               .normalize_min_max = true,
                                               .to_rgb            = true };
-    auto [real, imag] = stft_ptr.value()->calculate(
-        pcm,
-        static_cast<PDJE_PARALLEL::WINDOW_LIST>(target_window),
-        window_size_exp,
-        overlap_ratio,
-        post_process);
+    auto calculated = value_or_error("PDJE_MIR.STFT_MUSIC", [&]() {
+        return stft_ptr.value()->calculate(
+            pcm,
+            BuildStftRequest(target_window,
+                             window_size_exp,
+                             overlap_ratio,
+                             post_process));
+    });
+    if (!calculated.has_value()) {
+        return {};
+    }
+    auto [real, imag] = std::move(*calculated);
 
     if (real.empty()) {
         return {};
@@ -208,14 +284,17 @@ PDJE_MIR::STFT_PCM_DATA(PackedFloat32Array pcm,
         return {};
     }
 
-    if (window_size_exp < 6 || window_size_exp >= 31) {
-        print_method_error("PDJE_MIR.STFT_PCM_DATA",
-                           "'window_size_exp' must be in the range [6, 31)");
-        return {};
+    if (std::isfinite(overlap_ratio)) {
+        overlap_ratio = std::clamp(overlap_ratio, 0.0f, 1.0f);
+        if (overlap_ratio == 1.0f) {
+            overlap_ratio -= 0.1f;
+        }
     }
-    overlap_ratio = std::clamp(overlap_ratio, 0.0f, 1.0f);
-    if (overlap_ratio == 1.0f) {
-        overlap_ratio -= 0.1f;
+    if (!ValidateStftGeometry("PDJE_MIR.STFT_PCM_DATA",
+                              target_window,
+                              window_size_exp,
+                              overlap_ratio)) {
+        return {};
     }
     if (!stft_ptr) {
         stft_ptr = std::make_unique<PDJE_PARALLEL::STFT>();
@@ -232,12 +311,18 @@ PDJE_MIR::STFT_PCM_DATA(PackedFloat32Array pcm,
                                                   .normalize_min_max =
                                                       normalize_min_max,
                                                   .to_rgb = to_rgb };
-        auto [real, imag] = stft_ptr.value()->calculate(
-            samples,
-            static_cast<PDJE_PARALLEL::WINDOW_LIST>(target_window),
-            window_size_exp,
-            overlap_ratio,
-            post_process);
+        auto calculated = value_or_error("PDJE_MIR.STFT_PCM_DATA", [&]() {
+            return stft_ptr.value()->calculate(
+                samples,
+                BuildStftRequest(target_window,
+                                 window_size_exp,
+                                 overlap_ratio,
+                                 post_process));
+        });
+        if (!calculated.has_value()) {
+            return {};
+        }
+        auto [real, imag] = std::move(*calculated);
         Ref<PDJE_StftResult> result;
         result.instantiate();
         result->set_real(ToPackedFloat32Array(real));
