@@ -114,6 +114,7 @@ ${CMAKE_SOURCE_DIR}/Wrapper_Includes/global/DataLine/CoreLine.cpp
 # Low-level util implementation lives in the wrapper layer, so the wrapper
 # target owns these sources directly instead of relying on Project-DJ-Engine.
 set(UtilBundleSrcs
+${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/common/fuzzysearch/FuzzyDB.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_StftResult.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Bindings.cpp
 ${CMAKE_SOURCE_DIR}/Wrapper_Includes/util/MIR/PDJE_MIR_Waveform.cpp

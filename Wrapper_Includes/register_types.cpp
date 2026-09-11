@@ -11,6 +11,7 @@
 #include "util/db/nearest/PDJE_VectorTypes.hpp"
 #include "util/db/relational/PDJE_RelationalDB.hpp"
 #include "util/db/relational/PDJE_RelationalTypes.hpp"
+#include "util/common/fuzzysearch/FuzzyDB.hpp"
 #ifdef PDJE_GODOT_ENABLE_INPUT_WRAPPER
 #include "InputLine.hpp"
 #include "PDJE_Input_Wrapper.hpp"
@@ -44,6 +45,7 @@ initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<PDJE_StftResult>();
     ClassDB::register_class<PDJE_BeatThisResult>();
     ClassDB::register_class<PDJE_BeatThisDetector>();
+    ClassDB::register_class<FuzzyDB>();
     ClassDB::register_class<PDJE_KeyValueDB>();
     ClassDB::register_class<PDJE_VectorDB>();
     ClassDB::register_class<PDJE_RelationalDB>();

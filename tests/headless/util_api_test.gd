@@ -18,6 +18,7 @@ func _run() -> void:
 		return
 
 	_test_registered_classes()
+	_test_fuzzy_db()
 	_test_key_value_db()
 	_test_relational_db()
 	_test_vector_db()
@@ -42,6 +43,7 @@ func _expect(condition: bool, message: String) -> void:
 
 func _test_registered_classes() -> void:
 	for registered_class in [
+		"FuzzyDB",
 		"PDJE_KeyValueDB",
 		"PDJE_VectorDB",
 		"PDJE_VectorItem",
@@ -58,6 +60,21 @@ func _test_registered_classes() -> void:
 		_expect(ClassDB.class_exists(registered_class),
 			"ClassDB is missing %s" % registered_class)
 
+func _test_fuzzy_db() -> void:
+	var db := FuzzyDB.new()
+	db.store("alpah")
+	db.store("alpha")
+	db.store("beta")
+
+	var results: Array = db.query("alpha", 2)
+	_expect(results.size() == 2, "FuzzyDB query result count mismatch")
+	if results.size() == 2:
+		_expect(results[0] == {
+			"similarity": 100.0,
+			"queried_string": "alpha",
+		}, "FuzzyDB best match mismatch")
+		_expect(results[1]["queried_string"] == "alpah",
+			"FuzzyDB ranking mismatch")
 
 func _test_key_value_db() -> void:
 	var path := _test_root + "/key_value"
